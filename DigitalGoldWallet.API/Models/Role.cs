@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace DigitalGoldWallet.API.Models;
+
+public partial class Role
+{
+    public int RoleId { get; set; }
+
+    public string RoleName { get; set; } = null!;
+
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
+
+    public virtual ICollection<Vendor> Vendors { get; set; } = new List<Vendor>();
+}
