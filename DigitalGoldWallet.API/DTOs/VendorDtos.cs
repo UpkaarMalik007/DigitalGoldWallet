@@ -25,8 +25,6 @@ public class VendorDto
 
     public DateTime? CreatedAt { get; set; }
 
-    // Used only while creating vendor.
-    // Do not return password in API responses.
     public string? Password { get; set; }
 
     public List<VendorBranchDto> Branches { get; set; } = new();

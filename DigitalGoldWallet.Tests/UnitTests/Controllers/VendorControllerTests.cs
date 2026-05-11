@@ -23,9 +23,6 @@ public class VendorControllerTests
         _vendorController = new VendorController(_vendorServiceMock.Object);
     }
 
-    // =========================
-    // CASE 1: Get Vendor By ID
-    // =========================
 
     [Fact]
     public async Task GetVendorById_ShouldReturnOkResult_WhenVendorExists()
@@ -67,10 +64,6 @@ public class VendorControllerTests
             service => service.GetVendorByIdAsync(999),
             Times.Once);
     }
-
-    // =========================
-    // CASE 2: Search Vendors
-    // =========================
 
     [Fact]
     public async Task SearchVendors_ShouldReturnOkResult_WhenSearchNameIsValid()
@@ -116,9 +109,6 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // =========================
-    // CASE 3: Create Vendor
-    // =========================
 
     [Fact]
     public async Task CreateVendor_ShouldReturnCreatedAtActionResult_WhenVendorIsCreated()
@@ -175,10 +165,6 @@ public class VendorControllerTests
             service => service.CreateVendorAsync(createDto),
             Times.Once);
     }
-
-    // =========================
-    // CASE 4: Get Vendor Price
-    // =========================
 
     [Fact]
     public async Task GetVendorPrice_ShouldReturnOkResult_WhenVendorExists()
