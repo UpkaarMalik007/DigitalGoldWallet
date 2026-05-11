@@ -5,29 +5,29 @@ namespace DigitalGoldWallet.API.Services.Interfaces;
 
 public interface IVendorService
 {
-    Task<List<VendorListDto>> GetAllVendorsAsync();
+    Task<List<VendorDto>> GetAllVendorsAsync();
 
-    Task<VendorDetailsDto> GetVendorByIdAsync(int vendorId);
+    Task<VendorDto> GetVendorByIdAsync(int vendorId);
 
-    Task<List<VendorListDto>> SearchVendorsByNameAsync(string name);
+    Task<List<VendorDto>> SearchVendorsByNameAsync(string name);
 
     Task<List<VendorBranchDto>> GetBranchesByVendorIdAsync(int vendorId);
 
     Task<decimal> GetVendorPriceAsync(int vendorId);
 
-    Task<VendorDetailsDto> CreateVendorAsync(CreateVendorDto dto);
+    Task<VendorDto> CreateVendorAsync(VendorDto dto);
 
-    Task<VendorDetailsDto> UpdateVendorAsync(int vendorId, UpdateVendorDto dto, ClaimsPrincipal user);
+    Task<VendorDto> UpdateVendorAsync(int vendorId, VendorDto dto, ClaimsPrincipal user);
 
-    Task UpdateVendorContactAsync(int vendorId, UpdateVendorContactDto dto, ClaimsPrincipal user);
+    Task UpdateVendorContactAsync(int vendorId, VendorDto dto, ClaimsPrincipal user);
 
-    Task UpdateVendorPriceAsync(int vendorId, UpdateVendorPriceDto dto, ClaimsPrincipal user);
+    Task UpdateVendorPriceAsync(int vendorId, decimal currentGoldPrice, ClaimsPrincipal user);
 
-    Task<VendorBranchDto> AddVendorBranchAsync(int vendorId, CreateVendorBranchDto dto, ClaimsPrincipal user);
+    Task<VendorBranchDto> AddVendorBranchAsync(int vendorId, VendorBranchDto dto, ClaimsPrincipal user);
 
-    Task UpdateBranchStockAsync(int branchId, UpdateBranchStockDto dto, ClaimsPrincipal user);
+    Task UpdateBranchStockAsync(int branchId, decimal quantity, ClaimsPrincipal user);
 
-    Task<VendorInventoryDto> GetVendorInventoryAsync(int vendorId, ClaimsPrincipal user);
+    Task<VendorDto> GetVendorInventoryAsync(int vendorId, ClaimsPrincipal user);
 
     Task<List<VendorTransactionDto>> GetVendorTransactionsAsync(int vendorId, ClaimsPrincipal user);
 }

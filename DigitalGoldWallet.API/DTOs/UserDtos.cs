@@ -33,6 +33,21 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
 }
 
+public class AddressDto
+{
+    public int AddressId { get; set; }
+
+    public string Street { get; set; } = string.Empty;
+
+    public string City { get; set; } = string.Empty;
+
+    public string State { get; set; } = string.Empty;
+
+    public string? PostalCode { get; set; }
+
+    public string Country { get; set; } = string.Empty;
+}
+
 public class UpdateAddressDto
 {
     public string? Street { get; set; }

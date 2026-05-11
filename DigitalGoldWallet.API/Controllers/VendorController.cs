@@ -21,7 +21,7 @@ public class VendorController : ControllerBase
     [Authorize(Roles = "Admin,User,Vendor")]
     public async Task<IActionResult> GetAllVendors()
     {
-        List<VendorListDto> vendors = await _vendorService.GetAllVendorsAsync();
+        List<VendorDto> vendors = await _vendorService.GetAllVendorsAsync();
 
         return Ok(new
         {
@@ -35,7 +35,7 @@ public class VendorController : ControllerBase
     [Authorize(Roles = "Admin,User,Vendor")]
     public async Task<IActionResult> GetVendorById(int id)
     {
-        VendorDetailsDto vendor = await _vendorService.GetVendorByIdAsync(id);
+        VendorDto vendor = await _vendorService.GetVendorByIdAsync(id);
 
         return Ok(new
         {
@@ -49,7 +49,7 @@ public class VendorController : ControllerBase
     [Authorize(Roles = "Admin,User,Vendor")]
     public async Task<IActionResult> SearchVendors([FromQuery] string name)
     {
-        List<VendorListDto> vendors = await _vendorService.SearchVendorsByNameAsync(name);
+        List<VendorDto> vendors = await _vendorService.SearchVendorsByNameAsync(name);
 
         if (vendors.Count == 0)
         {
@@ -103,9 +103,9 @@ public class VendorController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CreateVendor([FromBody] CreateVendorDto dto)
+    public async Task<IActionResult> CreateVendor([FromBody] VendorDto dto)
     {
-        VendorDetailsDto createdVendor = await _vendorService.CreateVendorAsync(dto);
+        VendorDto createdVendor = await _vendorService.CreateVendorAsync(dto);
 
         return CreatedAtAction(
             nameof(GetVendorById),
@@ -120,9 +120,9 @@ public class VendorController : ControllerBase
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Vendor")]
-    public async Task<IActionResult> UpdateVendor(int id, [FromBody] UpdateVendorDto dto)
+    public async Task<IActionResult> UpdateVendor(int id, [FromBody] VendorDto dto)
     {
-        VendorDetailsDto updatedVendor = await _vendorService.UpdateVendorAsync(id, dto, User);
+        VendorDto updatedVendor = await _vendorService.UpdateVendorAsync(id, dto, User);
 
         return Ok(new
         {
@@ -134,7 +134,7 @@ public class VendorController : ControllerBase
 
     [HttpPatch("{id:int}/contact")]
     [Authorize(Roles = "Vendor")]
-    public async Task<IActionResult> UpdateVendorContact(int id, [FromBody] UpdateVendorContactDto dto)
+    public async Task<IActionResult> UpdateVendorContact(int id, [FromBody] VendorDto dto)
     {
         await _vendorService.UpdateVendorContactAsync(id, dto, User);
 
@@ -147,9 +147,9 @@ public class VendorController : ControllerBase
 
     [HttpPut("{id:int}/price")]
     [Authorize(Roles = "Vendor")]
-    public async Task<IActionResult> UpdateVendorPrice(int id, [FromBody] UpdateVendorPriceDto dto)
+    public async Task<IActionResult> UpdateVendorPrice(int id, [FromBody] decimal currentGoldPrice)
     {
-        await _vendorService.UpdateVendorPriceAsync(id, dto, User);
+        await _vendorService.UpdateVendorPriceAsync(id, currentGoldPrice, User);
 
         return Ok(new
         {
@@ -160,7 +160,7 @@ public class VendorController : ControllerBase
 
     [HttpPost("{id:int}/branches")]
     [Authorize(Roles = "Vendor")]
-    public async Task<IActionResult> AddVendorBranch(int id, [FromBody] CreateVendorBranchDto dto)
+    public async Task<IActionResult> AddVendorBranch(int id, [FromBody] VendorBranchDto dto)
     {
         VendorBranchDto createdBranch = await _vendorService.AddVendorBranchAsync(id, dto, User);
 
@@ -174,9 +174,9 @@ public class VendorController : ControllerBase
 
     [HttpPut("branches/{branchId:int}/stock")]
     [Authorize(Roles = "Vendor")]
-    public async Task<IActionResult> UpdateBranchStock(int branchId, [FromBody] UpdateBranchStockDto dto)
+    public async Task<IActionResult> UpdateBranchStock(int branchId, [FromBody] decimal quantity)
     {
-        await _vendorService.UpdateBranchStockAsync(branchId, dto, User);
+        await _vendorService.UpdateBranchStockAsync(branchId, quantity, User);
 
         return Ok(new
         {
@@ -189,7 +189,7 @@ public class VendorController : ControllerBase
     [Authorize(Roles = "Admin,Vendor")]
     public async Task<IActionResult> GetVendorInventory(int id)
     {
-        VendorInventoryDto inventory = await _vendorService.GetVendorInventoryAsync(id, User);
+        VendorDto inventory = await _vendorService.GetVendorInventoryAsync(id, User);
 
         return Ok(new
         {
