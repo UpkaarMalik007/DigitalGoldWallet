@@ -64,26 +64,6 @@ public class CreateVendorDto
     public string Password { get; set; } = string.Empty;
 }
 
-public class VendorLoginDto
-{
-    public string ContactEmail { get; set; } = string.Empty;
-
-    public string Password { get; set; } = string.Empty;
-}
-
-public class VendorLoginResponseDto
-{
-    public int VendorId { get; set; }
-
-    public string VendorName { get; set; } = string.Empty;
-
-    public string? ContactEmail { get; set; }
-
-    public string Role { get; set; } = "Vendor";
-
-    public string Token { get; set; } = string.Empty;
-}
-
 public class UpdateVendorDto
 {
     public string VendorName { get; set; } = string.Empty;

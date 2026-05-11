@@ -5,8 +5,6 @@ namespace DigitalGoldWallet.API.Services.Interfaces;
 
 public interface IVendorService
 {
-    Task<VendorLoginResponseDto> LoginVendorAsync(VendorLoginDto dto);
-
     Task<List<VendorListDto>> GetAllVendorsAsync();
 
     Task<VendorDetailsDto> GetVendorByIdAsync(int vendorId);

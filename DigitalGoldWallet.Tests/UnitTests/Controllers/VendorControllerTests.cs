@@ -22,71 +22,7 @@ public class VendorControllerTests
         _vendorController = new VendorController(_vendorServiceMock.Object);
     }
 
-    // CASE 1: Vendor Login
-    // Positive test
-    [Fact]
-    public async Task LoginVendor_ShouldReturnOkResult_WhenCredentialsAreValid()
-    {
-        VendorLoginDto loginDto = new()
-        {
-            ContactEmail = "rohit.sona@example.com",
-            Password = "Vendor@123"
-        };
-
-        VendorLoginResponseDto loginResponse = new()
-        {
-            VendorId = 1,
-            VendorName = "Sona Jewellers",
-            ContactEmail = "rohit.sona@example.com",
-            Role = "Vendor",
-            Token = "fake-jwt-token"
-        };
-
-        _vendorServiceMock
-            .Setup(service => service.LoginVendorAsync(loginDto))
-            .ReturnsAsync(loginResponse);
-
-        IActionResult result = await _vendorController.LoginVendor(loginDto);
-
-        OkObjectResult okResult = result.Should()
-            .BeOfType<OkObjectResult>()
-            .Subject;
-
-        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
-        okResult.Value.Should().NotBeNull();
-
-        _vendorServiceMock.Verify(
-            service => service.LoginVendorAsync(loginDto),
-            Times.Once);
-    }
-
-    // CASE 1: Vendor Login
-    // Negative test
-    [Fact]
-    public async Task LoginVendor_ShouldThrowBadRequestException_WhenCredentialsAreInvalid()
-    {
-        VendorLoginDto loginDto = new()
-        {
-            ContactEmail = "wrong@example.com",
-            Password = "WrongPassword"
-        };
-
-        _vendorServiceMock
-            .Setup(service => service.LoginVendorAsync(loginDto))
-            .ThrowsAsync(new BadRequestException("Invalid email or password."));
-
-        Func<Task> action = async () => await _vendorController.LoginVendor(loginDto);
-
-        await action.Should()
-            .ThrowAsync<BadRequestException>()
-            .WithMessage("Invalid email or password.");
-
-        _vendorServiceMock.Verify(
-            service => service.LoginVendorAsync(loginDto),
-            Times.Once);
-    }
-
-    // CASE 2: Get Vendor By ID
+    // CASE 1: Get Vendor By ID
     // Positive test
     [Fact]
     public async Task GetVendorById_ShouldReturnOkResult_WhenVendorExists()
@@ -123,7 +59,7 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // CASE 2: Get Vendor By ID
+    // CASE 1: Get Vendor By ID
     // Negative test
     [Fact]
     public async Task GetVendorById_ShouldThrowNotFoundException_WhenVendorDoesNotExist()
@@ -143,7 +79,7 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // CASE 3: Search Vendors
+    // CASE 2: Search Vendors
     // Positive test
     [Fact]
     public async Task SearchVendors_ShouldReturnOkResult_WhenSearchNameIsValid()
@@ -181,7 +117,7 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // CASE 3: Search Vendors
+    // CASE 2: Search Vendors
     // Negative test
     [Fact]
     public async Task SearchVendors_ShouldThrowBadRequestException_WhenSearchNameIsEmpty()
@@ -201,7 +137,7 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // CASE 4: Create Vendor
+    // CASE 3: Create Vendor
     // Positive test
     [Fact]
     public async Task CreateVendor_ShouldReturnCreatedAtActionResult_WhenVendorIsCreated()
@@ -209,7 +145,7 @@ public class VendorControllerTests
         CreateVendorDto createDto = new()
         {
             VendorName = "Test Gold Vendor",
-            Description = "Test vendor for authentication and registration",
+            Description = "Test vendor for registration",
             ContactPersonName = "Test Person",
             ContactEmail = "test.vendor@example.com",
             ContactPhone = "+91 9876543210",
@@ -222,7 +158,7 @@ public class VendorControllerTests
         {
             VendorId = 10,
             VendorName = "Test Gold Vendor",
-            Description = "Test vendor for authentication and registration",
+            Description = "Test vendor for registration",
             ContactPersonName = "Test Person",
             ContactEmail = "test.vendor@example.com",
             ContactPhone = "+91 9876543210",
@@ -252,7 +188,7 @@ public class VendorControllerTests
             Times.Once);
     }
 
-    // CASE 4: Create Vendor
+    // CASE 3: Create Vendor
     // Negative test
     [Fact]
     public async Task CreateVendor_ShouldThrowValidationException_WhenDtoIsInvalid()
@@ -275,6 +211,49 @@ public class VendorControllerTests
 
         _vendorServiceMock.Verify(
             service => service.CreateVendorAsync(createDto),
+            Times.Once);
+    }
+
+    // CASE 4: Get Vendor Price
+    // Positive test
+    [Fact]
+    public async Task GetVendorPrice_ShouldReturnOkResult_WhenVendorExists()
+    {
+        _vendorServiceMock
+            .Setup(service => service.GetVendorPriceAsync(1))
+            .ReturnsAsync(6500);
+
+        IActionResult result = await _vendorController.GetVendorPrice(1);
+
+        OkObjectResult okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
+
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+        okResult.Value.Should().NotBeNull();
+
+        _vendorServiceMock.Verify(
+            service => service.GetVendorPriceAsync(1),
+            Times.Once);
+    }
+
+    // CASE 4: Get Vendor Price
+    // Negative test
+    [Fact]
+    public async Task GetVendorPrice_ShouldThrowNotFoundException_WhenVendorDoesNotExist()
+    {
+        _vendorServiceMock
+            .Setup(service => service.GetVendorPriceAsync(999))
+            .ThrowsAsync(new NotFoundException("Vendor not found."));
+
+        Func<Task> action = async () => await _vendorController.GetVendorPrice(999);
+
+        await action.Should()
+            .ThrowAsync<NotFoundException>()
+            .WithMessage("Vendor not found.");
+
+        _vendorServiceMock.Verify(
+            service => service.GetVendorPriceAsync(999),
             Times.Once);
     }
 }

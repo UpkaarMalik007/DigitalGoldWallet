@@ -96,7 +96,7 @@ builder.Services.AddScoped<IVendorService, VendorService>();
 // Custom route/query validator
 builder.Services.AddScoped<VendorValidator>();
 
-// FluentValidation validators
+// Vendor FluentValidation validators
 builder.Services.AddScoped<IValidator<CreateVendorDto>, CreateVendorDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateVendorDto>, UpdateVendorDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateVendorContactDto>, UpdateVendorContactDtoValidator>();

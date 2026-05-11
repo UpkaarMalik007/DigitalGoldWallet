@@ -17,20 +17,6 @@ public class VendorController : ControllerBase
         _vendorService = vendorService;
     }
 
-    [HttpPost("login")]
-    [AllowAnonymous]
-    public async Task<IActionResult> LoginVendor([FromBody] VendorLoginDto dto)
-    {
-        VendorLoginResponseDto loginResponse = await _vendorService.LoginVendorAsync(dto);
-
-        return Ok(new
-        {
-            statusCode = StatusCodes.Status200OK,
-            message = "Vendor login successful.",
-            data = loginResponse
-        });
-    }
-
     [HttpGet]
     [Authorize(Roles = "Admin,User,Vendor")]
     public async Task<IActionResult> GetAllVendors()
@@ -64,6 +50,16 @@ public class VendorController : ControllerBase
     public async Task<IActionResult> SearchVendors([FromQuery] string name)
     {
         List<VendorListDto> vendors = await _vendorService.SearchVendorsByNameAsync(name);
+
+        if (vendors.Count == 0)
+        {
+            return Ok(new
+            {
+                statusCode = StatusCodes.Status200OK,
+                message = "Search executed successfully. No matching vendors found.",
+                data = vendors
+            });
+        }
 
         return Ok(new
         {

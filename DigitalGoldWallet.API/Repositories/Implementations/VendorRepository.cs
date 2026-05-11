@@ -40,6 +40,16 @@ public class VendorRepository : IVendorRepository
                 v.ContactEmail.ToLower() == normalizedEmail);
     }
 
+    public async Task<bool> VendorEmailExistsAsync(string email)
+    {
+        string normalizedEmail = email.Trim().ToLower();
+
+        return await _context.Vendors
+            .AnyAsync(v =>
+                v.ContactEmail != null &&
+                v.ContactEmail.ToLower() == normalizedEmail);
+    }
+
     public async Task<List<Vendor>> SearchVendorsByNameAsync(string name)
     {
         string searchName = name.Trim().ToLower();

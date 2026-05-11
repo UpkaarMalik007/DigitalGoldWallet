@@ -39,7 +39,7 @@ public class GlobalExceptionMiddleware
 
         switch (exception)
         {
-            case DigitalGoldWallet.API.Exceptions.BadRequestException:
+            case BadRequestException:
                 statusCode = (int)HttpStatusCode.BadRequest;
                 response = new
                 {
@@ -48,7 +48,34 @@ public class GlobalExceptionMiddleware
                 };
                 break;
 
-            case DigitalGoldWallet.API.Exceptions.NotFoundException:
+            case UnauthorizedException:
+                statusCode = (int)HttpStatusCode.Unauthorized;
+                response = new
+                {
+                    statusCode,
+                    message = exception.Message
+                };
+                break;
+
+            case UnauthorizedAccessException:
+                statusCode = (int)HttpStatusCode.Unauthorized;
+                response = new
+                {
+                    statusCode,
+                    message = exception.Message
+                };
+                break;
+
+            case ForbiddenException:
+                statusCode = (int)HttpStatusCode.Forbidden;
+                response = new
+                {
+                    statusCode,
+                    message = exception.Message
+                };
+                break;
+
+            case NotFoundException:
                 statusCode = (int)HttpStatusCode.NotFound;
                 response = new
                 {
@@ -57,8 +84,8 @@ public class GlobalExceptionMiddleware
                 };
                 break;
 
-            case DigitalGoldWallet.API.Exceptions.ForbiddenException:
-                statusCode = (int)HttpStatusCode.Forbidden;
+            case ConflictException:
+                statusCode = (int)HttpStatusCode.Conflict;
                 response = new
                 {
                     statusCode,
@@ -82,15 +109,6 @@ public class GlobalExceptionMiddleware
                 };
                 break;
 
-            case UnauthorizedAccessException:
-                statusCode = (int)HttpStatusCode.Unauthorized;
-                response = new
-                {
-                    statusCode,
-                    message = exception.Message
-                };
-                break;
-
             default:
                 statusCode = (int)HttpStatusCode.InternalServerError;
 
@@ -102,19 +120,6 @@ public class GlobalExceptionMiddleware
                     message = "An unexpected error occurred. Please try again later."
                 };
                 break;
-
-            //default:
-            //    statusCode = (int)HttpStatusCode.InternalServerError;
-
-            //    _logger.LogError(exception, "An unhandled exception occurred.");
-
-            //    response = new
-            //    {
-            //        statusCode,
-            //        message = exception.Message,
-            //        details = exception.InnerException?.Message
-            //    };
-            //    break;
         }
 
         context.Response.StatusCode = statusCode;

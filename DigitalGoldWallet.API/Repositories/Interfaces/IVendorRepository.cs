@@ -10,6 +10,8 @@ public interface IVendorRepository
 
     Task<Vendor?> GetVendorByEmailAsync(string email);
 
+    Task<bool> VendorEmailExistsAsync(string email);
+
     Task<List<Vendor>> SearchVendorsByNameAsync(string name);
 
     Task<bool> VendorExistsAsync(int vendorId);

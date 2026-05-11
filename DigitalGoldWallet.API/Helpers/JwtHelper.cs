@@ -17,6 +17,21 @@ public class JwtHelper
         _jwtSettings = jwtSettings.Value;
     }
 
+    public string GenerateUserToken(User user)
+    {
+        string role = GetUserRoleName(user.RoleId);
+
+        List<Claim> claims =
+        [
+            new Claim("userId", user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, role),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.Name)
+        ];
+
+        return GenerateToken(claims);
+    }
+
     public string GenerateVendorToken(Vendor vendor)
     {
         List<Claim> claims =
@@ -47,5 +62,16 @@ public class JwtHelper
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string GetUserRoleName(int roleId)
+    {
+        return roleId switch
+        {
+            1 => "Admin",
+            2 => "User",
+            3 => "Vendor",
+            _ => "User"
+        };
     }
 }

@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Exceptions;
-using DigitalGoldWallet.API.Helpers;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
@@ -16,7 +15,6 @@ public class VendorService : IVendorService
 
     private readonly IVendorRepository _vendorRepository;
     private readonly VendorValidator _vendorValidator;
-    private readonly JwtHelper _jwtHelper;
 
     private readonly IValidator<CreateVendorDto> _createVendorValidator;
     private readonly IValidator<UpdateVendorDto> _updateVendorValidator;
@@ -28,7 +26,6 @@ public class VendorService : IVendorService
     public VendorService(
         IVendorRepository vendorRepository,
         VendorValidator vendorValidator,
-        JwtHelper jwtHelper,
         IValidator<CreateVendorDto> createVendorValidator,
         IValidator<UpdateVendorDto> updateVendorValidator,
         IValidator<UpdateVendorContactDto> updateVendorContactValidator,
@@ -38,61 +35,12 @@ public class VendorService : IVendorService
     {
         _vendorRepository = vendorRepository;
         _vendorValidator = vendorValidator;
-        _jwtHelper = jwtHelper;
         _createVendorValidator = createVendorValidator;
         _updateVendorValidator = updateVendorValidator;
         _updateVendorContactValidator = updateVendorContactValidator;
         _updateVendorPriceValidator = updateVendorPriceValidator;
         _createVendorBranchValidator = createVendorBranchValidator;
         _updateBranchStockValidator = updateBranchStockValidator;
-    }
-
-    public async Task<VendorLoginResponseDto> LoginVendorAsync(VendorLoginDto dto)
-    {
-        if (dto is null)
-        {
-            throw new BadRequestException("Login data is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(dto.ContactEmail))
-        {
-            throw new BadRequestException("Email is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(dto.Password))
-        {
-            throw new BadRequestException("Password is required.");
-        }
-
-        Vendor? vendor = await _vendorRepository.GetVendorByEmailAsync(dto.ContactEmail);
-
-        if (vendor is null)
-        {
-            throw new BadRequestException("Invalid email or password.");
-        }
-
-        if (string.IsNullOrWhiteSpace(vendor.Password))
-        {
-            throw new BadRequestException("Password is not set for this vendor.");
-        }
-
-        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, vendor.Password);
-
-        if (!isPasswordValid)
-        {
-            throw new BadRequestException("Invalid email or password.");
-        }
-
-        string token = _jwtHelper.GenerateVendorToken(vendor);
-
-        return new VendorLoginResponseDto
-        {
-            VendorId = vendor.VendorId,
-            VendorName = vendor.VendorName,
-            ContactEmail = vendor.ContactEmail,
-            Role = "Vendor",
-            Token = token
-        };
     }
 
     public async Task<List<VendorListDto>> GetAllVendorsAsync()
