@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalGoldWallet.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase
@@ -31,41 +32,6 @@ public class UsersController : ControllerBase
     private bool IsUserAllowed(int userId)
     {
         return IsAdmin() || GetLoggedInUserId() == userId;
-    }
-
-    [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Register(RegisterRequestDto dto)
-    {
-        var result = await _service.RegisterAsync(dto);
-
-        return StatusCode(201, new
-        {
-            Message = "User registered successfully",
-            Data = result
-        });
-    }
-
-    [HttpPost("login")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Login(LoginRequestDto dto)
-    {
-        var result = await _service.LoginAsync(dto);
-
-        return Ok(new
-        {
-            Message = "Login successful",
-            Data = result
-        });
-    }
-
-    [HttpPost("logout")]
-    [Authorize(Roles = "User,Admin")]
-    public async Task<IActionResult> Logout()
-    {
-        var result = await _service.LogoutAsync();
-
-        return Ok(result);
     }
 
     [HttpGet]

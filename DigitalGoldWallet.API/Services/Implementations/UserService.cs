@@ -19,133 +19,14 @@ public class UserService : IUserService
 
     public UserService(
         IUserRepository repository,
-        IMapper mapper,
-        JwtHelper jwtHelper)
+        IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;
-        _jwtHelper = jwtHelper;
     }
 
-    // =========================================
-    // AUTH
-    // =========================================
 
-    public async Task<AuthResponseDto> RegisterAsync(
-        RegisterRequestDto dto)
-    {
-        var existingUser =
-            await _repository.GetUserByEmailAsync(dto.Email);
-
-        if (existingUser != null)
-        {
-            throw new ConflictException(
-                "User already exists");
-        }
-
-        if (dto.Password != dto.ConfirmPassword)
-        {
-            throw new BadRequestException(
-                "Passwords do not match");
-        }
-
-        var user = new User
-        {
-            Name = dto.Name,
-
-            Email = dto.Email,
-
-            Password =
-                BCrypt.Net.BCrypt.HashPassword(
-                    dto.Password),
-
-            Balance = 0,
-
-            RoleId = 2
-        };
-
-        var createdUser =
-            await _repository.CreateUserAsync(user);
-
-        createdUser =
-            await _repository.GetUserByEmailAsync(
-                createdUser.Email);
-
-        var token =
-            _jwtHelper.GenerateToken(createdUser!);
-
-        return new AuthResponseDto
-        {
-            UserId = createdUser!.UserId,
-
-            Name = createdUser.Name,
-
-            Email = createdUser.Email,
-
-            Role = createdUser.Role.RoleName,
-
-            Token = token,
-
-            ExpiresAt = DateTime.UtcNow.AddDays(1)
-        };
-    }
-
-    public async Task<AuthResponseDto> LoginAsync(
-        LoginRequestDto dto)
-    {
-        var user =
-            await _repository.GetUserByEmailAsync(
-                dto.Email);
-
-        if (user == null)
-        {
-            throw new UnauthorizedException(
-                "Invalid email or password");
-        }
-
-        bool isPasswordValid =
-            BCrypt.Net.BCrypt.Verify(
-                dto.Password,
-                user.Password);
-
-        if (!isPasswordValid)
-        {
-            throw new UnauthorizedException(
-                "Invalid email or password");
-        }
-
-        var token =
-            _jwtHelper.GenerateToken(user);
-
-        return new AuthResponseDto
-        {
-            UserId = user.UserId,
-
-            Name = user.Name,
-
-            Email = user.Email,
-
-            Role = user.Role.RoleName,
-
-            Token = token,
-
-            ExpiresAt = DateTime.UtcNow.AddDays(1)
-        };
-    }
-
-    public async Task<LogoutResponseDto> LogoutAsync()
-    {
-        await _repository.LogoutAsync();
-
-        return new LogoutResponseDto
-        {
-            Message = "Logout successful"
-        };
-    }
-
-    // =========================================
-    // USERS
-    // =========================================
+  
 
     public async Task<IEnumerable<UserDto>>
         GetAllUsersAsync()
@@ -253,9 +134,7 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    // =========================================
-    // ADDRESS
-    // =========================================
+    
 
     public async Task<AddressDto?> GetAddressByIdAsync(
         int addressId)
@@ -317,9 +196,7 @@ public class UserService : IUserService
         return _mapper.Map<AddressDto>(address);
     }
 
-    // =========================================
-    // DASHBOARD
-    // =========================================
+    
 
     public async Task<DashboardDto?> GetDashboardAsync(
         int userId)
@@ -357,9 +234,7 @@ public class UserService : IUserService
         };
     }
 
-    // =========================================
-    // VIRTUAL GOLD HOLDINGS
-    // =========================================
+   
 
     public async Task<
         IEnumerable<VirtualGoldHoldingDto>>
@@ -383,9 +258,7 @@ public class UserService : IUserService
             (holdings);
     }
 
-    // =========================================
-    // PHYSICAL GOLD HOLDINGS
-    // =========================================
+   
 
     public async Task<
         IEnumerable<PhysicalGoldHoldingDto>>
@@ -409,9 +282,7 @@ public class UserService : IUserService
             (holdings);
     }
 
-    // =========================================
-    // WALLET BALANCE
-    // =========================================
+   
 
     public async Task<WalletBalanceDto>
         GetWalletBalanceAsync(int userId)

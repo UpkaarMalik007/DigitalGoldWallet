@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using DigitalGoldWallet.API.Controllers;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -19,125 +21,33 @@ public class UsersControllerTests
         _controller = new UsersController(_mockService.Object);
     }
 
- 
-
-    [Fact]
-    public async Task Register_ShouldReturn201_WhenUserRegisteredSuccessfully()
+    private void SetUserClaims(int userId, string role)
     {
-        var request = new RegisterRequestDto
+        var claims = new List<Claim>
         {
-            Name = "Upkaar Malik",
-            Email = "upkaar@gmail.com",
-            Password = "User@123",
-            ConfirmPassword = "User@123"
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Role, role)
         };
 
-        var response = new AuthResponseDto
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var principal = new ClaimsPrincipal(identity);
+
+        _controller.ControllerContext = new ControllerContext
         {
-            UserId = 1,
-            Name = "Upkaar Malik",
-            Email = "upkaar@gmail.com",
-            Role = "User",
-            Token = "jwt-token",
-            ExpiresAt = DateTime.UtcNow.AddDays(1)
+            HttpContext = new DefaultHttpContext
+            {
+                User = principal
+            }
         };
-
-        _mockService
-            .Setup(x => x.RegisterAsync(request))
-            .ReturnsAsync(response);
-
-        var result = await _controller.Register(request);
-
-        var objectResult =
-            result.Should().BeOfType<ObjectResult>().Subject;
-
-        objectResult.StatusCode.Should().Be(201);
     }
 
-
+    // 1. GET USER - POSITIVE
     [Fact]
-    public async Task Register_ShouldThrowConflictException_WhenEmailAlreadyExists()
-    {
-        var request = new RegisterRequestDto
-        {
-            Name = "Upkaar Malik",
-            Email = "upkaar@gmail.com",
-            Password = "User@123",
-            ConfirmPassword = "User@123"
-        };
-
-        _mockService
-            .Setup(x => x.RegisterAsync(request))
-            .ThrowsAsync(new ConflictException("User already exists"));
-
-        var action = async () =>
-            await _controller.Register(request);
-
-        await action.Should()
-            .ThrowAsync<ConflictException>()
-            .WithMessage("User already exists");
-    }
-
-
-
-    [Fact]
-    public async Task Login_ShouldReturn200_WhenCredentialsAreValid()
-    {
-        var request = new LoginRequestDto
-        {
-            Email = "upkaar@gmail.com",
-            Password = "User@123"
-        };
-
-        var response = new AuthResponseDto
-        {
-            UserId = 1,
-            Name = "Upkaar Malik",
-            Email = "upkaar@gmail.com",
-            Role = "User",
-            Token = "jwt-token",
-            ExpiresAt = DateTime.UtcNow.AddDays(1)
-        };
-
-        _mockService
-            .Setup(x => x.LoginAsync(request))
-            .ReturnsAsync(response);
-
-        var result = await _controller.Login(request);
-
-        var okResult =
-            result.Should().BeOfType<OkObjectResult>().Subject;
-
-        okResult.StatusCode.Should().Be(200);
-    }
-
-
-    [Fact]
-    public async Task Login_ShouldThrowUnauthorizedException_WhenCredentialsAreInvalid()
-    {
-        var request = new LoginRequestDto
-        {
-            Email = "wrong@gmail.com",
-            Password = "Wrong@123"
-        };
-
-        _mockService
-            .Setup(x => x.LoginAsync(request))
-            .ThrowsAsync(new UnauthorizedException("Invalid email or password"));
-
-        var action = async () =>
-            await _controller.Login(request);
-
-        await action.Should()
-            .ThrowAsync<UnauthorizedException>()
-            .WithMessage("Invalid email or password");
-    }
-
-
-    [Fact]
-    public async Task GetUserById_ShouldReturn200_WhenUserExists()
+    public async Task GetUserById_ShouldReturn200_WhenSameUserRequests()
     {
         var userId = 1;
+
+        SetUserClaims(userId, "User");
 
         var response = new UserDto
         {
@@ -154,37 +64,31 @@ public class UsersControllerTests
 
         var result = await _controller.GetUserById(userId);
 
-        var okResult =
-            result.Should().BeOfType<OkObjectResult>().Subject;
+        var okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
 
         okResult.StatusCode.Should().Be(200);
     }
 
-
-
+    // 1. GET USER - NEGATIVE
     [Fact]
-    public async Task GetUserById_ShouldThrowNotFoundException_WhenUserDoesNotExist()
+    public async Task GetUserById_ShouldReturn403_WhenDifferentUserRequests()
     {
-        var userId = 99;
+        SetUserClaims(1, "User");
 
-        _mockService
-            .Setup(x => x.GetUserByIdAsync(userId))
-            .ThrowsAsync(new NotFoundException($"User with Id {userId} not found"));
+        var result = await _controller.GetUserById(2);
 
-        var action = async () =>
-            await _controller.GetUserById(userId);
-
-        await action.Should()
-            .ThrowAsync<NotFoundException>()
-            .WithMessage($"User with Id {userId} not found");
+        result.Should().BeOfType<ForbidResult>();
     }
 
-
-
+    // 2. UPDATE USER - POSITIVE
     [Fact]
-    public async Task UpdateUser_ShouldReturn200_WhenUserUpdatedSuccessfully()
+    public async Task UpdateUser_ShouldReturn200_WhenSameUserUpdates()
     {
         var userId = 1;
+
+        SetUserClaims(userId, "User");
 
         var request = new UpdateUserDto
         {
@@ -207,33 +111,101 @@ public class UsersControllerTests
 
         var result = await _controller.UpdateUser(userId, request);
 
-        var okResult =
-            result.Should().BeOfType<OkObjectResult>().Subject;
+        var okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
 
         okResult.StatusCode.Should().Be(200);
     }
 
-
-
+    // 2. UPDATE USER - NEGATIVE
     [Fact]
-    public async Task UpdateUser_ShouldThrowNotFoundException_WhenUserDoesNotExist()
+    public async Task UpdateUser_ShouldReturn403_WhenDifferentUserUpdates()
     {
-        var userId = 99;
+        SetUserClaims(1, "User");
 
         var request = new UpdateUserDto
         {
-            Name = "Updated User"
+            Name = "Wrong User"
+        };
+
+        var result = await _controller.UpdateUser(2, request);
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
+    // 3. DASHBOARD - POSITIVE
+    [Fact]
+    public async Task GetDashboard_ShouldReturn200_WhenSameUserRequests()
+    {
+        var userId = 1;
+
+        SetUserClaims(userId, "User");
+
+        var response = new DashboardDto
+        {
+            WalletBalance = 1000,
+            TotalGoldHoldings = 5
         };
 
         _mockService
-            .Setup(x => x.UpdateUserAsync(userId, request))
-            .ThrowsAsync(new NotFoundException($"User with Id {userId} not found"));
+            .Setup(x => x.GetDashboardAsync(userId))
+            .ReturnsAsync(response);
 
-        var action = async () =>
-            await _controller.UpdateUser(userId, request);
+        var result = await _controller.GetDashboard(userId);
 
-        await action.Should()
-            .ThrowAsync<NotFoundException>()
-            .WithMessage($"User with Id {userId} not found");
+        var okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
+
+        okResult.StatusCode.Should().Be(200);
+    }
+
+    // 3. DASHBOARD - NEGATIVE
+    [Fact]
+    public async Task GetDashboard_ShouldReturn403_WhenDifferentUserRequests()
+    {
+        SetUserClaims(1, "User");
+
+        var result = await _controller.GetDashboard(2);
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
+    // 4. WALLET BALANCE - POSITIVE
+    [Fact]
+    public async Task GetWalletBalance_ShouldReturn200_WhenSameUserRequests()
+    {
+        var userId = 1;
+
+        SetUserClaims(userId, "User");
+
+        var response = new WalletBalanceDto
+        {
+            Balance = 1000
+        };
+
+        _mockService
+            .Setup(x => x.GetWalletBalanceAsync(userId))
+            .ReturnsAsync(response);
+
+        var result = await _controller.GetWalletBalance(userId);
+
+        var okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
+
+        okResult.StatusCode.Should().Be(200);
+    }
+
+    // 4. WALLET BALANCE - NEGATIVE
+    [Fact]
+    public async Task GetWalletBalance_ShouldReturn403_WhenDifferentUserRequests()
+    {
+        SetUserClaims(1, "User");
+
+        var result = await _controller.GetWalletBalance(2);
+
+        result.Should().BeOfType<ForbidResult>();
     }
 }

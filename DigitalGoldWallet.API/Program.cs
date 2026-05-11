@@ -1,5 +1,6 @@
 using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Helpers;
+using DigitalGoldWallet.API.Middleware;
 using DigitalGoldWallet.API.Middlewares;
 using DigitalGoldWallet.API.Repositories;
 using DigitalGoldWallet.API.Repositories.Interfaces;
@@ -28,7 +29,7 @@ namespace DigitalGoldWallet.API
             builder.Services.AddControllers();
 
             builder.Services.AddFluentValidationAutoValidation();
-            builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
+            
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>

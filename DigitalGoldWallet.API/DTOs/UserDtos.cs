@@ -1,46 +1,5 @@
 namespace DigitalGoldWallet.API.DTOs;
 
-public class RegisterRequestDto
-{
-    public string Name { get; set; } = null!;
-
-    public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
-
-    public string ConfirmPassword { get; set; } = null!;
-}
-
-public class LoginRequestDto
-{
-    public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
-}
-
-public class AuthResponseDto
-{
-    public int UserId { get; set; }
-
-    public string Name { get; set; } = null!;
-
-    public string Email { get; set; } = null!;
-    public string Role { get; set; }
-
-    public string Token { get; set; } = null!;
-
-    public DateTime ExpiresAt { get; set; }
-}
-
-public class LogoutResponseDto
-{
-    public string Message { get; set; } = null!;
-}
-
-// ========================================
-// User DTOs
-// ========================================
-
 public class CreateUserDto
 {
     public string Name { get; set; } = null!;
@@ -87,10 +46,6 @@ public class UserDto
 }
 
 
-// ========================================
-// Address DTOs
-// ========================================
-
 public class AddressDto
 {
     public int AddressId { get; set; }
@@ -120,9 +75,7 @@ public class UpdateAddressDto
 }
 
 
-// ========================================
-// Dashboard DTO
-// ========================================
+
 
 public class DashboardDto
 {
@@ -134,9 +87,7 @@ public class DashboardDto
 }
 
 
-// ========================================
-// Virtual Gold Holding DTO
-// ========================================
+
 
 public class VirtualGoldHoldingDto
 {
@@ -150,9 +101,7 @@ public class VirtualGoldHoldingDto
 }
 
 
-// ========================================
-// Physical Gold Holding DTO
-// ========================================
+
 
 public class PhysicalGoldHoldingDto
 {
@@ -168,9 +117,6 @@ public class PhysicalGoldHoldingDto
 }
 
 
-// ========================================
-// Wallet Balance DTO
-// ========================================
 
 public class WalletBalanceDto
 {
