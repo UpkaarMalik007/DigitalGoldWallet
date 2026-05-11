@@ -1,13 +1,15 @@
-using System.Text;
+//NAVTA
+
 using DigitalGoldWallet.API.Configuration;
 using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Helpers;
+using DigitalGoldWallet.API.Mappings;
 using DigitalGoldWallet.API.Middleware;
+using DigitalGoldWallet.API.Repos.Implementations;
+using DigitalGoldWallet.API.Repos.Interfaces;
 using DigitalGoldWallet.API.Repositories;
 using DigitalGoldWallet.API.Repositories.Implementations;
 using DigitalGoldWallet.API.Repositories.Interfaces;
-using DigitalGoldWallet.API.Repos.Implementations;
-using DigitalGoldWallet.API.Repos.Interfaces;
 using DigitalGoldWallet.API.Services;
 using DigitalGoldWallet.API.Services.Implementations;
 using DigitalGoldWallet.API.Services.Interface;
@@ -19,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +52,7 @@ if (string.IsNullOrWhiteSpace(jwtSettings.Key))
 builder.Services.AddScoped<JwtHelper>();
 
 // Auth
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -66,8 +70,10 @@ builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 
 // Transaction
+builder.Services.AddAutoMapper(typeof(TransactionProfile));
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<TransactionValidator>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -200,4 +206,4 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { }
+//NAVTA

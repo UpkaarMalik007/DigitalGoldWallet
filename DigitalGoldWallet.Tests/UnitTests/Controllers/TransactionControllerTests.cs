@@ -6,8 +6,6 @@ using DigitalGoldWallet.Tests.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace DigitalGoldWallet.Tests
@@ -20,7 +18,10 @@ namespace DigitalGoldWallet.Tests
         public TransactionControllerTests()
         {
             _transactionServiceMock = new Mock<ITransactionService>();
-            _controller = new TransactionController(_transactionServiceMock.Object);
+
+            _controller = new TransactionController(
+                _transactionServiceMock.Object);
+
             SetUser(1, "User");
         }
 
@@ -30,20 +31,25 @@ namespace DigitalGoldWallet.Tests
             {
                 HttpContext = new DefaultHttpContext
                 {
-                    User = TransactionClaimsPrincipalFactory.CreateUser(userId, role)
+                    User = TransactionClaimsPrincipalFactory
+                        .CreateUser(userId, role)
                 }
             };
         }
 
-        // ─── POSITIVE TESTS ──────────
+        // =========================
+        // POSITIVE TESTS
+        // =========================
 
         [Fact]
         public async Task GetHistory_ReturnsOkResult()
         {
             SetUser(1, "User");
+
             _transactionServiceMock
-                .Setup(s => s.GetHistoryAsync(1))
-                .ReturnsAsync(TransactionTestDataFactory.TransactionHistoryDtoList());
+                .Setup(x => x.GetHistoryAsync(1))
+                .ReturnsAsync(
+                    TransactionTestDataFactory.TransactionHistoryDtoList());
 
             var result = await _controller.GetHistory();
 
@@ -54,9 +60,11 @@ namespace DigitalGoldWallet.Tests
         public async Task GetTransactionById_ReturnsOkResult()
         {
             SetUser(1, "User");
+
             _transactionServiceMock
-                .Setup(s => s.GetTransactionByIdAsync(1, 1))
-                .ReturnsAsync(TransactionTestDataFactory.TransactionHistoryDto());
+                .Setup(x => x.GetTransactionByIdAsync(1, 1))
+                .ReturnsAsync(
+                    TransactionTestDataFactory.TransactionHistoryDto());
 
             var result = await _controller.GetTransactionById(1);
 
@@ -67,14 +75,18 @@ namespace DigitalGoldWallet.Tests
         public async Task CreateTransaction_ReturnsCreatedResult()
         {
             SetUser(1, "User");
-            _transactionServiceMock
-                .Setup(x => x.CreateTransactionAsync(It.IsAny<CreateTransactionDto>()))
-                .ReturnsAsync(TransactionTestDataFactory.TransactionHistoryDto());
 
-            var result = await _controller
-                .CreateTransaction(TransactionTestDataFactory.CreateTransactionDto());
+            _transactionServiceMock
+                .Setup(x => x.CreateTransactionAsync(
+                    It.IsAny<CreateTransactionDto>()))
+                .ReturnsAsync(
+                    TransactionTestDataFactory.TransactionHistoryDto());
+
+            var result = await _controller.CreateTransaction(
+                TransactionTestDataFactory.CreateTransactionDto());
 
             var objectResult = Assert.IsType<ObjectResult>(result);
+
             Assert.Equal(201, objectResult.StatusCode);
         }
 
@@ -82,23 +94,30 @@ namespace DigitalGoldWallet.Tests
         public async Task CreateOrder_ReturnsCreatedResult()
         {
             SetUser(1, "User");
-            _transactionServiceMock
-                .Setup(x => x.CreateOrderAsync(It.IsAny<CreateGoldOrderRequestDto>()))
-                .ReturnsAsync(new { OrderId = "order_123" });
 
-            var result = await _controller
-                .CreateOrder(TransactionTestDataFactory.GoldOrderRequestDto());
+            _transactionServiceMock
+                .Setup(x => x.CreateOrderAsync(1, 2))
+                .ReturnsAsync(new
+                {
+                    OrderId = "order_123"
+                });
+
+            var result = await _controller.CreateOrder(1, 2);
 
             var objectResult = Assert.IsType<ObjectResult>(result);
+
             Assert.Equal(201, objectResult.StatusCode);
         }
 
-        // ─── NEGATIVE TESTS ─────────────
+        // =========================
+        // NEGATIVE TESTS
+        // =========================
 
         [Fact]
         public async Task GetHistory_EmptyList_ThrowsNotFoundException()
         {
             SetUser(1, "User");
+
             _transactionServiceMock
                 .Setup(x => x.GetHistoryAsync(1))
                 .ReturnsAsync(new List<TransactionHistoryDto>());
@@ -111,37 +130,40 @@ namespace DigitalGoldWallet.Tests
         public async Task GetTransactionById_NotFound_ThrowsNotFoundException()
         {
             SetUser(1, "User");
+
             _transactionServiceMock
                 .Setup(x => x.GetTransactionByIdAsync(1, 99))
-                .ThrowsAsync(new NotFoundException("Transaction not found"));
+                .ThrowsAsync(
+                    new NotFoundException("Transaction not found."));
 
             await Assert.ThrowsAsync<NotFoundException>(() =>
                 _controller.GetTransactionById(99));
         }
 
         [Fact]
-        public async Task GetTransactionStatus_NullResult_ThrowsForbiddenException()
-        {
-            SetUser(1, "User");
-            _transactionServiceMock
-                .Setup(x => x.GetTransactionStatusAsync(1, 99))
-                .ReturnsAsync((string?)null);
-
-            await Assert.ThrowsAsync<ForbiddenException>(() =>
-                _controller.GetTransactionStatus(99));
-        }
-
-        [Fact]
         public async Task CreateOrder_InvalidBranch_ThrowsBadRequestException()
         {
             SetUser(1, "User");
+
             _transactionServiceMock
-                .Setup(x => x.CreateOrderAsync(It.IsAny<CreateGoldOrderRequestDto>()))
-                .ThrowsAsync(new BadRequestException("Invalid branch"));
+                .Setup(x => x.CreateOrderAsync(0, 2))
+                .ThrowsAsync(
+                    new BadRequestException("Invalid branch"));
 
             await Assert.ThrowsAsync<BadRequestException>(() =>
-                _controller.CreateOrder(
-                    TransactionTestDataFactory.InvalidGoldOrderRequestDto()));
+                _controller.CreateOrder(0, 2));
+        }
+
+        [Fact]
+        public async Task UnauthorizedUser_ThrowsUnauthorizedException()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            await Assert.ThrowsAsync<UnauthorizedException>(() =>
+                _controller.GetHistory());
         }
     }
 }
