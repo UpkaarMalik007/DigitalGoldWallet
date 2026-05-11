@@ -44,7 +44,6 @@ public class VendorBranchDto
 
     public DateTime? CreatedAt { get; set; }
 
-    // Address fields are flattened here to avoid separate AddressDto.
     public string? Street { get; set; }
 
     public string? City { get; set; }
