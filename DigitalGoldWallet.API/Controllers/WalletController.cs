@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace DigitalGoldWallet.API.Controllers
 {
-    // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class WalletController : ControllerBase

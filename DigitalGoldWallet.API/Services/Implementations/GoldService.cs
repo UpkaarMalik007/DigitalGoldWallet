@@ -2,6 +2,7 @@ using DigitalGoldWallet.API.DTOs.Gold;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
+using DigitalGoldWallet.API.Exceptions;
 using AutoMapper;
 
 namespace DigitalGoldWallet.API.Services.Implementations
@@ -28,7 +29,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new NotFoundException("User not found");
             }
 
             if (user.Balance < dto.Amount)
@@ -42,12 +43,12 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             if (branch == null)
             {
-                throw new Exception("Branch not found");
+                throw new NotFoundException("Branch not found");
             }
 
             if (branch.Vendor == null)
             {
-                throw new Exception("Vendor not found");
+                throw new NotFoundException("Vendor not found");
             }
 
             decimal goldPrice =
@@ -114,7 +115,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new NotFoundException("User not found");
             }
 
             var holding = await _goldRepository
