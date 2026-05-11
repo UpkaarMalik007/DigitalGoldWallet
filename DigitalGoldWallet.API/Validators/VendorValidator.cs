@@ -29,38 +29,56 @@ public class VendorValidator
             throw new BadRequestException("Search name is required.");
         }
     }
+
+    public void ValidateGoldPrice(decimal currentGoldPrice)
+    {
+        if (currentGoldPrice <= 0)
+        {
+            throw new BadRequestException("Current gold price must be greater than zero.");
+        }
+    }
+
+    public void ValidateQuantity(decimal quantity)
+    {
+        if (quantity < 0)
+        {
+            throw new BadRequestException("Branch quantity cannot be negative.");
+        }
+    }
 }
 
-public class CreateVendorDtoValidator : AbstractValidator<CreateVendorDto>
+public class CreateVendorDtoValidator : AbstractValidator<VendorDto>
 {
     public CreateVendorDtoValidator()
     {
-        RuleFor(x => x.VendorName)
+        RuleFor(dto => dto.VendorName)
             .NotEmpty()
             .WithMessage("Vendor name is required.")
             .Matches(@"^[A-Za-z0-9\s&.,'-]{2,100}$")
             .WithMessage("Vendor name must be 2 to 100 characters and can contain letters, numbers, spaces, &, comma, dot, apostrophe, and hyphen only.");
 
-        RuleFor(x => x.ContactEmail)
+        RuleFor(dto => dto.ContactEmail)
             .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactEmail))
+            .When(dto => !string.IsNullOrWhiteSpace(dto.ContactEmail))
             .WithMessage("Invalid email format.");
 
-        RuleFor(x => x.ContactPhone)
+        RuleFor(dto => dto.ContactPhone)
             .Matches(@"^\+?[0-9\s\-]{10,15}$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactPhone))
+            .When(dto => !string.IsNullOrWhiteSpace(dto.ContactPhone))
             .WithMessage("Invalid phone number format.");
 
-        RuleFor(x => x.WebsiteUrl)
+        RuleFor(dto => dto.WebsiteUrl)
             .Matches(@"^(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$")
-            .When(x => !string.IsNullOrWhiteSpace(x.WebsiteUrl))
+            .When(dto => !string.IsNullOrWhiteSpace(dto.WebsiteUrl))
             .WithMessage("Invalid website URL format.");
 
-        RuleFor(x => x.CurrentGoldPrice)
+        RuleFor(dto => dto.CurrentGoldPrice)
+            .NotNull()
+            .WithMessage("Current gold price is required.")
             .GreaterThan(0)
             .WithMessage("Current gold price must be greater than zero.");
 
-        RuleFor(x => x.Password)
+        RuleFor(dto => dto.Password)
             .NotEmpty()
             .WithMessage("Password is required.")
             .Matches(@"^(?=.*[A-Za-z])(?=.*\d).{6,}$")
@@ -68,92 +86,71 @@ public class CreateVendorDtoValidator : AbstractValidator<CreateVendorDto>
     }
 }
 
-public class UpdateVendorDtoValidator : AbstractValidator<UpdateVendorDto>
+public class UpdateVendorDtoValidator : AbstractValidator<VendorDto>
 {
     public UpdateVendorDtoValidator()
     {
-        RuleFor(x => x.VendorName)
+        RuleFor(dto => dto.VendorName)
             .NotEmpty()
             .WithMessage("Vendor name is required.")
             .Matches(@"^[A-Za-z0-9\s&.,'-]{2,100}$")
             .WithMessage("Vendor name must be 2 to 100 characters and can contain letters, numbers, spaces, &, comma, dot, apostrophe, and hyphen only.");
 
-        RuleFor(x => x.ContactEmail)
-            .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactEmail))
-            .WithMessage("Invalid email format.");
-
-        RuleFor(x => x.ContactPhone)
-            .Matches(@"^\+?[0-9\s\-]{10,15}$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactPhone))
-            .WithMessage("Invalid phone number format.");
-
-        RuleFor(x => x.WebsiteUrl)
-            .Matches(@"^(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$")
-            .When(x => !string.IsNullOrWhiteSpace(x.WebsiteUrl))
-            .WithMessage("Invalid website URL format.");
+        Include(new VendorContactFieldsValidator());
     }
 }
 
-public class UpdateVendorContactDtoValidator : AbstractValidator<UpdateVendorContactDto>
+public class UpdateVendorContactDtoValidator : AbstractValidator<VendorDto>
 {
     public UpdateVendorContactDtoValidator()
     {
-        RuleFor(x => x)
-            .Must(x =>
-                !string.IsNullOrWhiteSpace(x.ContactPersonName)
-                || !string.IsNullOrWhiteSpace(x.ContactEmail)
-                || !string.IsNullOrWhiteSpace(x.ContactPhone)
-                || !string.IsNullOrWhiteSpace(x.WebsiteUrl))
+        RuleFor(dto => dto)
+            .Must(dto =>
+                !string.IsNullOrWhiteSpace(dto.ContactPersonName)
+                || !string.IsNullOrWhiteSpace(dto.ContactEmail)
+                || !string.IsNullOrWhiteSpace(dto.ContactPhone)
+                || !string.IsNullOrWhiteSpace(dto.WebsiteUrl))
             .WithMessage("At least one contact field is required.");
 
-        RuleFor(x => x.ContactEmail)
-            .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactEmail))
-            .WithMessage("Invalid email format.");
-
-        RuleFor(x => x.ContactPhone)
-            .Matches(@"^\+?[0-9\s\-]{10,15}$")
-            .When(x => !string.IsNullOrWhiteSpace(x.ContactPhone))
-            .WithMessage("Invalid phone number format.");
-
-        RuleFor(x => x.WebsiteUrl)
-            .Matches(@"^(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$")
-            .When(x => !string.IsNullOrWhiteSpace(x.WebsiteUrl))
-            .WithMessage("Invalid website URL format.");
+        Include(new VendorContactFieldsValidator());
     }
 }
 
-public class UpdateVendorPriceDtoValidator : AbstractValidator<UpdateVendorPriceDto>
+public class VendorBranchDtoValidator : AbstractValidator<VendorBranchDto>
 {
-    public UpdateVendorPriceDtoValidator()
+    public VendorBranchDtoValidator()
     {
-        RuleFor(x => x.CurrentGoldPrice)
-            .GreaterThan(0)
-            .WithMessage("Current gold price must be greater than zero.");
-    }
-}
-
-public class CreateVendorBranchDtoValidator : AbstractValidator<CreateVendorBranchDto>
-{
-    public CreateVendorBranchDtoValidator()
-    {
-        RuleFor(x => x.AddressId)
+        RuleFor(dto => dto.AddressId)
+            .NotNull()
+            .WithMessage("Address ID is required.")
             .GreaterThan(0)
             .WithMessage("Address ID must be greater than zero.");
 
-        RuleFor(x => x.Quantity)
+        RuleFor(dto => dto.Quantity)
+            .NotNull()
+            .WithMessage("Branch quantity is required.")
             .GreaterThanOrEqualTo(0)
             .WithMessage("Branch quantity cannot be negative.");
     }
 }
 
-public class UpdateBranchStockDtoValidator : AbstractValidator<UpdateBranchStockDto>
+public class VendorContactFieldsValidator : AbstractValidator<VendorDto>
 {
-    public UpdateBranchStockDtoValidator()
+    public VendorContactFieldsValidator()
     {
-        RuleFor(x => x.Quantity)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Branch quantity cannot be negative.");
+        RuleFor(dto => dto.ContactEmail)
+            .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+            .When(dto => !string.IsNullOrWhiteSpace(dto.ContactEmail))
+            .WithMessage("Invalid email format.");
+
+        RuleFor(dto => dto.ContactPhone)
+            .Matches(@"^\+?[0-9\s\-]{10,15}$")
+            .When(dto => !string.IsNullOrWhiteSpace(dto.ContactPhone))
+            .WithMessage("Invalid phone number format.");
+
+        RuleFor(dto => dto.WebsiteUrl)
+            .Matches(@"^(https?:\/\/)?([\w\-]+\.)+[\w\-]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$")
+            .When(dto => !string.IsNullOrWhiteSpace(dto.WebsiteUrl))
+            .WithMessage("Invalid website URL format.");
     }
 }

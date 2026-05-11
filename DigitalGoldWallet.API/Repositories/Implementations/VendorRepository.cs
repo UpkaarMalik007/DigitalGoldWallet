@@ -18,16 +18,17 @@ public class VendorRepository : IVendorRepository
     {
         return await _context.Vendors
             .AsNoTracking()
-            .OrderBy(v => v.VendorName)
+            .OrderBy(vendor => vendor.VendorName)
             .ToListAsync();
     }
 
     public async Task<Vendor?> GetVendorByIdAsync(int vendorId)
     {
+        // Eager loading is necessary here because vendor details need branches and address data.
         return await _context.Vendors
-            .Include(v => v.VendorBranches)
-                .ThenInclude(vb => vb.Address)
-            .FirstOrDefaultAsync(v => v.VendorId == vendorId);
+            .Include(vendor => vendor.VendorBranches)
+                .ThenInclude(branch => branch.Address)
+            .FirstOrDefaultAsync(vendor => vendor.VendorId == vendorId);
     }
 
     public async Task<Vendor?> GetVendorByEmailAsync(string email)
@@ -35,9 +36,9 @@ public class VendorRepository : IVendorRepository
         string normalizedEmail = email.Trim().ToLower();
 
         return await _context.Vendors
-            .FirstOrDefaultAsync(v =>
-                v.ContactEmail != null &&
-                v.ContactEmail.ToLower() == normalizedEmail);
+            .FirstOrDefaultAsync(vendor =>
+                vendor.ContactEmail != null &&
+                vendor.ContactEmail.ToLower() == normalizedEmail);
     }
 
     public async Task<bool> VendorEmailExistsAsync(string email)
@@ -45,9 +46,9 @@ public class VendorRepository : IVendorRepository
         string normalizedEmail = email.Trim().ToLower();
 
         return await _context.Vendors
-            .AnyAsync(v =>
-                v.ContactEmail != null &&
-                v.ContactEmail.ToLower() == normalizedEmail);
+            .AnyAsync(vendor =>
+                vendor.ContactEmail != null &&
+                vendor.ContactEmail.ToLower() == normalizedEmail);
     }
 
     public async Task<List<Vendor>> SearchVendorsByNameAsync(string name)
@@ -56,15 +57,15 @@ public class VendorRepository : IVendorRepository
 
         return await _context.Vendors
             .AsNoTracking()
-            .Where(v => v.VendorName.ToLower().Contains(searchName))
-            .OrderBy(v => v.VendorName)
+            .Where(vendor => vendor.VendorName.ToLower().Contains(searchName))
+            .OrderBy(vendor => vendor.VendorName)
             .ToListAsync();
     }
 
     public async Task<bool> VendorExistsAsync(int vendorId)
     {
         return await _context.Vendors
-            .AnyAsync(v => v.VendorId == vendorId);
+            .AnyAsync(vendor => vendor.VendorId == vendorId);
     }
 
     public async Task AddVendorAsync(Vendor vendor)
@@ -79,20 +80,31 @@ public class VendorRepository : IVendorRepository
 
     public async Task<List<VendorBranch>> GetBranchesByVendorIdAsync(int vendorId)
     {
-        return await _context.VendorBranches
-            .AsNoTracking()
-            .Include(vb => vb.Address)
-            .Where(vb => vb.VendorId == vendorId)
-            .OrderByDescending(vb => vb.CreatedAt)
+        // LINQ left join with Addresses. Avoids Include and loads only required relational data.
+        return await (
+            from branch in _context.VendorBranches.AsNoTracking()
+            join address in _context.Addresses.AsNoTracking()
+                on branch.AddressId equals address.AddressId into addressGroup
+            from address in addressGroup.DefaultIfEmpty()
+            where branch.VendorId == vendorId
+            orderby branch.CreatedAt descending
+            select new VendorBranch
+            {
+                BranchId = branch.BranchId,
+                VendorId = branch.VendorId,
+                AddressId = branch.AddressId,
+                Quantity = branch.Quantity,
+                CreatedAt = branch.CreatedAt,
+                Address = address
+            })
             .ToListAsync();
     }
 
     public async Task<VendorBranch?> GetBranchByIdAsync(int branchId)
     {
+        // No eager loading here because stock update only needs branch data and VendorId.
         return await _context.VendorBranches
-            .Include(vb => vb.Vendor)
-            .Include(vb => vb.Address)
-            .FirstOrDefaultAsync(vb => vb.BranchId == branchId);
+            .FirstOrDefaultAsync(branch => branch.BranchId == branchId);
     }
 
     public async Task AddVendorBranchAsync(VendorBranch branch)
@@ -108,25 +120,28 @@ public class VendorRepository : IVendorRepository
     public async Task<bool> AddressExistsAsync(int addressId)
     {
         return await _context.Addresses
-            .AnyAsync(a => a.AddressId == addressId);
+            .AnyAsync(address => address.AddressId == addressId);
     }
 
     public async Task<decimal> GetTotalBranchQuantityByVendorIdAsync(int vendorId)
     {
         decimal? totalQuantity = await _context.VendorBranches
-            .Where(vb => vb.VendorId == vendorId)
-            .SumAsync(vb => (decimal?)vb.Quantity);
+            .Where(branch => branch.VendorId == vendorId)
+            .SumAsync(branch => (decimal?)branch.Quantity);
 
         return totalQuantity ?? 0;
     }
 
     public async Task<List<TransactionHistory>> GetTransactionsByVendorIdAsync(int vendorId)
     {
-        return await _context.TransactionHistories
-            .AsNoTracking()
-            .Include(th => th.Branch)
-            .Where(th => th.Branch != null && th.Branch.VendorId == vendorId)
-            .OrderByDescending(th => th.CreatedAt)
+        // LINQ join with VendorBranches. No Include needed.
+        return await (
+            from transaction in _context.TransactionHistories.AsNoTracking()
+            join branch in _context.VendorBranches.AsNoTracking()
+                on transaction.BranchId equals branch.BranchId
+            where branch.VendorId == vendorId
+            orderby transaction.CreatedAt descending
+            select transaction)
             .ToListAsync();
     }
 
