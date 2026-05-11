@@ -2,16 +2,15 @@ using System;
 
 namespace DigitalGoldWallet.API.DTOs.Gold
 {
-    // ...existing code...
-    // GOLD ACTION REQUEST DTO (for buy, sell, convert)
+
     public class GoldActionRequestDto
     {
         public int UserId { get; set; }
         public int? BranchId { get; set; }
-        public decimal? Amount { get; set; } // For buy
-        public decimal? Quantity { get; set; } // For sell/convert
-        public int? DeliveryAddressId { get; set; } // For convert
-        public GoldActionType ActionType { get; set; } // Buy, Sell, Convert
+        public decimal? Amount { get; set; } 
+        public decimal? Quantity { get; set; } 
+        public int? DeliveryAddressId { get; set; }
+        public GoldActionType ActionType { get; set; } 
     }
 
     public enum GoldActionType
@@ -21,7 +20,6 @@ namespace DigitalGoldWallet.API.DTOs.Gold
         Convert
     }
 
-    // GOLD TRANSACTION DTO (for all transaction/history)
     public class GoldTransactionDto
     {
         public int TransactionId { get; set; }
@@ -36,7 +34,6 @@ namespace DigitalGoldWallet.API.DTOs.Gold
     }
 
 
-    // GOLD PORTFOLIO DTO (includes holdings and price)
     public class GoldPortfolioDto
     {
         public int UserId { get; set; }
@@ -48,7 +45,6 @@ namespace DigitalGoldWallet.API.DTOs.Gold
         public decimal ProfitLoss { get; set; }
     }
 
-    // VENDOR STOCK DTO
     public class VendorStockDto
     {
         public int BranchId { get; set; }
@@ -57,7 +53,6 @@ namespace DigitalGoldWallet.API.DTOs.Gold
         public DateTime CreatedAt { get; set; }
     }
 
-    // GOLD CALCULATION DTO
     public class GoldCalculationDto
     {
         public decimal Amount { get; set; }

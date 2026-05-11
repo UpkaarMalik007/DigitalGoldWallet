@@ -19,8 +19,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             _mapper = mapper;
         }
 
-        // BUY GOLD
-
         public async Task BuyGold(GoldActionRequestDto dto)
         {
             var user = await _goldRepository
@@ -56,11 +54,9 @@ namespace DigitalGoldWallet.API.Services.Implementations
             decimal quantity =
                 dto.Amount.Value / goldPrice;
 
-            // Deduct wallet balance
 
             user.Balance -= dto.Amount.Value;
 
-            // Get holding
 
             var holding = await _goldRepository
                 .GetHolding(dto.UserId);
@@ -83,8 +79,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 holding.Quantity += quantity;
             }
 
-            // Add transaction
-
             var transaction =
                 new TransactionHistory
                 {
@@ -104,8 +98,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             await _goldRepository
                 .SaveChanges();
         }
-
-        // SELL GOLD
         public async Task SellGold(GoldActionRequestDto dto)
         {
             var user = await _goldRepository
@@ -136,15 +128,9 @@ namespace DigitalGoldWallet.API.Services.Implementations
             decimal amount =
                 dto.Quantity.Value * goldPrice;
 
-            // Reduce holding
-
             holding.Quantity -= dto.Quantity.Value;
 
-            // Add wallet balance
-
             user.Balance += amount;
-
-            // Add transaction
 
             var transaction =
                 new TransactionHistory
@@ -166,8 +152,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 .SaveChanges();
         }
 
-        // GET HOLDINGS
-
         public async Task<GoldPortfolioDto> GetHoldings(int userId)
         {
             var holding = await _goldRepository
@@ -180,12 +164,10 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 CurrentGoldPrice = await _goldRepository.GetCurrentGoldPrice(),
                 GoldPriceUpdatedAt = DateTime.Now,
                 CurrentValue = (holding?.Quantity ?? 0) * await _goldRepository.GetCurrentGoldPrice(),
-                TotalInvestment = 0, // Set as needed
-                ProfitLoss = 0 // Set as needed
+                TotalInvestment = 0, 
+                ProfitLoss = 0
             };
         }
-
-        // GET CURRENT PRICE
 
         public async Task<GoldPortfolioDto> GetCurrentPrice()
         {
@@ -200,8 +182,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             };
         }
 
-        // CONVERT TO PHYSICAL
-
         public async Task ConvertToPhysical(GoldActionRequestDto dto)
         {
             var holding = await _goldRepository
@@ -214,11 +194,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                     "Insufficient gold quantity");
             }
 
-            // Reduce holdings
-
             holding.Quantity -= dto.Quantity.Value;
-
-            // Add physical transaction
 
             var transaction =
                 new PhysicalGoldTransaction
@@ -238,7 +214,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 .SaveChanges();
         }
 
-        // GET PHYSICAL HISTORY
 
         public async Task<List<GoldTransactionDto>> GetPhysicalHistory(int userId)
         {
@@ -248,7 +223,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             return _mapper.Map<List<GoldTransactionDto>>(data);
         }
 
-        // GET TRANSACTIONS
 
         public async Task<List<GoldTransactionDto>>
             GetTransactions(int userId)
@@ -258,8 +232,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             return _mapper.Map<List<GoldTransactionDto>>(data);
         }
-
-        // GET VENDOR STOCK
 
         public async Task<VendorStockDto>
             GetVendorStock(int branchId)
@@ -274,8 +246,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             return _mapper.Map<VendorStockDto>(branch);
         }
-
-        // CALCULATE GOLD
 
         public async Task<GoldCalculationDto>
             CalculateGold(decimal amount)
@@ -296,8 +266,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 Quantity = quantity
             };
         }
-
-        // GET PORTFOLIO
 
         public async Task<GoldPortfolioDto>
             GetPortfolio(int userId)

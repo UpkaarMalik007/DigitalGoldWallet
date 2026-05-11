@@ -7,24 +7,45 @@ namespace DigitalGoldWallet.Tests.Helpers
 {
     public static class TestDataFactory
     {
-        public static BuyGoldDto GetValidBuyGoldDto()
+        public static GoldActionRequestDto GetValidBuyGoldDto()
         {
-            return new BuyGoldDto { UserId = 1, BranchId = 1, Amount = 1000 };
+            return new GoldActionRequestDto {
+                UserId = 1,
+                BranchId = 1,
+                Amount = 1000,
+                ActionType = GoldActionType.Buy
+            };
         }
 
-        public static SellGoldDto GetValidSellGoldDto()
+        public static GoldActionRequestDto GetValidSellGoldDto()
         {
-            return new SellGoldDto { UserId = 1, Quantity = 2 };
+            return new GoldActionRequestDto {
+                UserId = 1,
+                Quantity = 2,
+                ActionType = GoldActionType.Sell
+            };
         }
 
-        public static GoldHoldingDto GetValidGoldHoldingDto()
+        public static GoldPortfolioDto GetValidGoldHoldingDto()
         {
-            return new GoldHoldingDto { UserId = 1, TotalGoldQuantity = 5 };
+            return new GoldPortfolioDto {
+                UserId = 1,
+                TotalGold = 5,
+                CurrentGoldPrice = 5000,
+                GoldPriceUpdatedAt = DateTime.Now,
+                CurrentValue = 25000,
+                TotalInvestment = 20000,
+                ProfitLoss = 5000
+            };
         }
 
-        public static GoldPriceDto GetValidGoldPriceDto()
+        public static GoldPortfolioDto GetValidGoldPriceDto()
         {
-            return new GoldPriceDto { CurrentGoldPrice = 5000, UpdatedAt = DateTime.Now };
+            return new GoldPortfolioDto {
+                UserId = 1,
+                CurrentGoldPrice = 5000,
+                GoldPriceUpdatedAt = DateTime.Now
+            };
         }
     }
 }

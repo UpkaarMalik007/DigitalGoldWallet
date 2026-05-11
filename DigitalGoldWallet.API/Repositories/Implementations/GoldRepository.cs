@@ -15,7 +15,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
             _context = context;
         }
 
-        // GET USER
 
         public async Task<User?>
             GetUserById(int userId)
@@ -25,7 +24,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                     x => x.UserId == userId);
         }
 
-        // GET BRANCH
 
         public async Task<VendorBranch?>
             GetBranchById(int branchId)
@@ -36,7 +34,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                     x => x.BranchId == branchId);
         }
 
-        // GET HOLDING
 
         public async Task<VirtualGoldHolding?>
             GetHolding(int userId)
@@ -46,7 +43,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                     x => x.UserId == userId);
         }
 
-        // ADD HOLDING
 
         public async Task AddHolding(
             VirtualGoldHolding holding)
@@ -55,7 +51,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .AddAsync(holding);
         }
 
-        // ADD TRANSACTION
 
         public async Task AddTransactionHistory(
             TransactionHistory transaction)
@@ -64,7 +59,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .AddAsync(transaction);
         }
 
-        // GET TRANSACTIONS
 
         public async Task<List<TransactionHistory>>
             GetTransactions(int userId)
@@ -76,7 +70,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .ToListAsync();
         }
 
-        // ADD PHYSICAL TRANSACTION
 
         public async Task AddPhysicalTransaction(
             PhysicalGoldTransaction transaction)
@@ -85,7 +78,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .AddAsync(transaction);
         }
 
-        // GET PHYSICAL TRANSACTIONS
 
         public async Task<List<PhysicalGoldTransaction>>
             GetPhysicalTransactions(int userId)
@@ -98,7 +90,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .ToListAsync();
         }
 
-        // GET CURRENT GOLD PRICE
 
         public async Task<decimal>
             GetCurrentGoldPrice()
@@ -115,7 +106,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
             return vendor.CurrentGoldPrice;
         }
 
-        // GET VENDOR STOCK
 
         public async Task<VendorBranch?>
             GetVendorStock(int branchId)
@@ -125,7 +115,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                     x => x.BranchId == branchId);
         }
 
-        // GET PORTFOLIO
 
         public async Task<List<VirtualGoldHolding>>
             GetPortfolio(int userId)
@@ -135,7 +124,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .ToListAsync();
         }
 
-        // SAVE CHANGES
 
         public async Task SaveChanges()
         {
