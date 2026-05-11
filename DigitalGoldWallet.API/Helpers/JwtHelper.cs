@@ -1,62 +1,48 @@
+using DigitalGoldWallet.API.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DigitalGoldWallet.API.Models;
-using Microsoft.IdentityModel.Tokens;
 
-namespace DigitalGoldWallet.API.Helpers;
-
-public class JwtHelper
+namespace DigitalGoldWallet.API.Helpers
 {
-    private readonly IConfiguration _configuration;
-
-    public JwtHelper(IConfiguration configuration)
+    public class JwtHelper
     {
-        _configuration = configuration;
-    }
+        private readonly JwtSettings _jwtSettings;
 
-    public string GenerateToken(User user)
-    {
-        var claims = new[]
+        public JwtHelper(IOptions<JwtSettings> jwtSettings)
         {
-            new Claim(
-                ClaimTypes.NameIdentifier,
-                user.UserId.ToString()),
+            _jwtSettings = jwtSettings.Value;
+        }
 
-            new Claim(
-                ClaimTypes.Name,
-                user.Name),
+        public string GenerateToken(int id, string name, string role)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(ClaimTypes.Name, name),
+                new Claim(ClaimTypes.Role, role)
+            };
 
-            new Claim(
-                ClaimTypes.Email,
-                user.Email),
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_jwtSettings.Key)
+            );
 
-            new Claim(
-                ClaimTypes.Role,
-                user.Role.RoleName)
-        };
+            var creds = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256
+            );
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(
-                _configuration["Jwt:Key"]!));
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(_jwtSettings.ExpiryMinutes),
+                signingCredentials: creds
+            );
 
-        var credentials = new SigningCredentials(
-            key,
-            SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-
-            audience:
-                _configuration["Jwt:Audience"],
-
-            claims: claims,
-
-            expires: DateTime.UtcNow.AddDays(1),
-
-            signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler()
-            .WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }

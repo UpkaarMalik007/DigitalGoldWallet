@@ -1,7 +1,10 @@
-﻿public class UnauthorizedException : Exception
+﻿namespace DigitalGoldWallet.API.Exceptions
 {
+    public class UnauthorizedException : Exception
+    {
     public UnauthorizedException(string message)
         : base(message)
-    {
+        {
+        }
     }
 }
