@@ -1,4 +1,5 @@
 using DigitalGoldWallet.API.DTOs;
+using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,11 @@ public class VendorController : ControllerBase
     public async Task<IActionResult> GetAllVendors()
     {
         List<VendorDto> vendors = await _vendorService.GetAllVendorsAsync();
+
+        if (!vendors.Any())
+        {
+            throw new NotFoundException("No vendors found.");
+        }
 
         return Ok(new
         {
@@ -51,14 +57,9 @@ public class VendorController : ControllerBase
     {
         List<VendorDto> vendors = await _vendorService.SearchVendorsByNameAsync(name);
 
-        if (vendors.Count == 0)
+        if (!vendors.Any())
         {
-            return Ok(new
-            {
-                statusCode = StatusCodes.Status200OK,
-                message = "Search executed successfully. No matching vendors found.",
-                data = vendors
-            });
+            throw new NotFoundException("No matching vendors found.");
         }
 
         return Ok(new
@@ -74,6 +75,11 @@ public class VendorController : ControllerBase
     public async Task<IActionResult> GetVendorBranches(int id)
     {
         List<VendorBranchDto> branches = await _vendorService.GetBranchesByVendorIdAsync(id);
+
+        if (!branches.Any())
+        {
+            throw new NotFoundException("No branches found for this vendor.");
+        }
 
         return Ok(new
         {
@@ -191,6 +197,11 @@ public class VendorController : ControllerBase
     {
         VendorDto inventory = await _vendorService.GetVendorInventoryAsync(id, User);
 
+        if (inventory.Branches == null || !inventory.Branches.Any())
+        {
+            throw new NotFoundException("No inventory found for this vendor.");
+        }
+
         return Ok(new
         {
             statusCode = StatusCodes.Status200OK,
@@ -203,7 +214,13 @@ public class VendorController : ControllerBase
     [Authorize(Roles = "Admin,Vendor")]
     public async Task<IActionResult> GetVendorTransactions(int id)
     {
-        List<VendorTransactionDto> transactions = await _vendorService.GetVendorTransactionsAsync(id, User);
+        List<VendorTransactionDto> transactions =
+            await _vendorService.GetVendorTransactionsAsync(id, User);
+
+        if (!transactions.Any())
+        {
+            throw new NotFoundException("No vendor transactions found.");
+        }
 
         return Ok(new
         {
