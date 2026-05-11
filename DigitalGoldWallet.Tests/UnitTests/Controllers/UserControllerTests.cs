@@ -41,7 +41,7 @@ public class UsersControllerTests
         };
     }
 
-    // 1. GET USER - POSITIVE
+    //1. Get User: Positive
     [Fact]
     public async Task GetUserById_ShouldReturn200_WhenSameUserRequests()
     {
@@ -70,19 +70,21 @@ public class UsersControllerTests
 
         okResult.StatusCode.Should().Be(200);
     }
-
-    // 1. GET USER - NEGATIVE
+    //2. Get User: Negative
     [Fact]
-    public async Task GetUserById_ShouldReturn403_WhenDifferentUserRequests()
+    public async Task GetUserById_ShouldThrowForbiddenException_WhenDifferentUserRequests()
     {
         SetUserClaims(1, "User");
 
-        var result = await _controller.GetUserById(2);
+        var action = async () =>
+            await _controller.GetUserById(2);
 
-        result.Should().BeOfType<ForbidResult>();
+        await action.Should()
+            .ThrowAsync<ForbiddenException>()
+            .WithMessage("Access denied");
     }
 
-    // 2. UPDATE USER - POSITIVE
+    //3. Update User: Positive
     [Fact]
     public async Task UpdateUser_ShouldReturn200_WhenSameUserUpdates()
     {
@@ -90,7 +92,7 @@ public class UsersControllerTests
 
         SetUserClaims(userId, "User");
 
-        var request = new UpdateUserDto
+        var request = new UserDto
         {
             Name = "Updated User",
             Email = "updated@gmail.com"
@@ -118,23 +120,26 @@ public class UsersControllerTests
         okResult.StatusCode.Should().Be(200);
     }
 
-    // 2. UPDATE USER - NEGATIVE
+    //4. Update User: Negative
     [Fact]
-    public async Task UpdateUser_ShouldReturn403_WhenDifferentUserUpdates()
+    public async Task UpdateUser_ShouldThrowForbiddenException_WhenDifferentUserUpdates()
     {
         SetUserClaims(1, "User");
 
-        var request = new UpdateUserDto
+        var request = new UserDto
         {
             Name = "Wrong User"
         };
 
-        var result = await _controller.UpdateUser(2, request);
+        var action = async () =>
+            await _controller.UpdateUser(2, request);
 
-        result.Should().BeOfType<ForbidResult>();
+        await action.Should()
+            .ThrowAsync<ForbiddenException>()
+            .WithMessage("Access denied");
     }
 
-    // 3. DASHBOARD - POSITIVE
+    //5. Get Dashboard: Positive
     [Fact]
     public async Task GetDashboard_ShouldReturn200_WhenSameUserRequests()
     {
@@ -145,7 +150,8 @@ public class UsersControllerTests
         var response = new DashboardDto
         {
             WalletBalance = 1000,
-            TotalGoldHoldings = 5
+            TotalGoldHoldings = 5,
+            CurrentGoldPrice = 6500
         };
 
         _mockService
@@ -161,18 +167,21 @@ public class UsersControllerTests
         okResult.StatusCode.Should().Be(200);
     }
 
-    // 3. DASHBOARD - NEGATIVE
+    //6. Get Dashboard: Negative
     [Fact]
-    public async Task GetDashboard_ShouldReturn403_WhenDifferentUserRequests()
+    public async Task GetDashboard_ShouldThrowForbiddenException_WhenDifferentUserRequests()
     {
         SetUserClaims(1, "User");
 
-        var result = await _controller.GetDashboard(2);
+        var action = async () =>
+            await _controller.GetDashboard(2);
 
-        result.Should().BeOfType<ForbidResult>();
+        await action.Should()
+            .ThrowAsync<ForbiddenException>()
+            .WithMessage("Access denied");
     }
 
-    // 4. WALLET BALANCE - POSITIVE
+    //7. Get Wallet Balance: Positive
     [Fact]
     public async Task GetWalletBalance_ShouldReturn200_WhenSameUserRequests()
     {
@@ -180,10 +189,7 @@ public class UsersControllerTests
 
         SetUserClaims(userId, "User");
 
-        var response = new WalletBalanceDto
-        {
-            Balance = 1000
-        };
+        decimal response = 1000;
 
         _mockService
             .Setup(x => x.GetWalletBalanceAsync(userId))
@@ -198,14 +204,17 @@ public class UsersControllerTests
         okResult.StatusCode.Should().Be(200);
     }
 
-    // 4. WALLET BALANCE - NEGATIVE
+    //8. Get Wallet Balance: Negative
     [Fact]
-    public async Task GetWalletBalance_ShouldReturn403_WhenDifferentUserRequests()
+    public async Task GetWalletBalance_ShouldThrowForbiddenException_WhenDifferentUserRequests()
     {
         SetUserClaims(1, "User");
 
-        var result = await _controller.GetWalletBalance(2);
+        var action = async () =>
+            await _controller.GetWalletBalance(2);
 
-        result.Should().BeOfType<ForbidResult>();
+        await action.Should()
+            .ThrowAsync<ForbiddenException>()
+            .WithMessage("Access denied");
     }
 }

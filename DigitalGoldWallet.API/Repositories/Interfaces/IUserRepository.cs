@@ -14,7 +14,7 @@ public interface IUserRepository
 
     Task UpdateUserAsync(User user);
 
-    Task<Address?> GetAddressByIdAsync(int userId);
+    Task<Address?> GetAddressByUserIdAsync(int userId);
 
     Task UpdateAddressAsync(Address address);
 
