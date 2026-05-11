@@ -1,8 +1,8 @@
 namespace DigitalGoldWallet.API.Exceptions
 {
-    public class NotFoundException : Exception
+    public class UnauthorizedException : Exception
     {
-        public NotFoundException(string message)
+        public UnauthorizedException(string message)
             : base(message)
         {
         }
