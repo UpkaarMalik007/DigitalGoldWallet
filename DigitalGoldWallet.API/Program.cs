@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using DigitalGoldWallet.API.Mappings;
 
 namespace DigitalGoldWallet.API
 {
@@ -36,7 +37,7 @@ namespace DigitalGoldWallet.API
 
             builder.Services.AddFluentValidationAutoValidation()
                             .AddFluentValidationClientsideAdapters();
-            builder.Services.AddValidatorsFromAssemblyContaining<BuyGoldDtoValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<GoldActionRequestDtoValidator>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -86,7 +87,7 @@ namespace DigitalGoldWallet.API
                 };
             });
 
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.AddAutoMapper(typeof(GoldProfile));
 
             var app = builder.Build();
 

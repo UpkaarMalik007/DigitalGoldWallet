@@ -21,7 +21,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
         // BUY GOLD
 
-        public async Task BuyGold(BuyGoldDto dto)
+        public async Task BuyGold(GoldActionRequestDto dto)
         {
             var user = await _goldRepository
                 .GetUserById(dto.UserId);
@@ -38,7 +38,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
             }
 
             var branch = await _goldRepository
-                .GetBranchById(dto.BranchId);
+                .GetBranchById(dto.BranchId.Value);
 
             if (branch == null)
             {
@@ -54,11 +54,11 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 branch.Vendor.CurrentGoldPrice;
 
             decimal quantity =
-                dto.Amount / goldPrice;
+                dto.Amount.Value / goldPrice;
 
             // Deduct wallet balance
 
-            user.Balance -= dto.Amount;
+            user.Balance -= dto.Amount.Value;
 
             // Get holding
 
@@ -70,7 +70,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 holding = new VirtualGoldHolding
                 {
                     UserId = dto.UserId,
-                    BranchId = dto.BranchId,
+                    BranchId = dto.BranchId.Value,
                     Quantity = quantity,
                     CreatedAt = DateTime.Now
                 };
@@ -89,11 +89,11 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 new TransactionHistory
                 {
                     UserId = dto.UserId,
-                    BranchId = dto.BranchId,
+                    BranchId = dto.BranchId.Value,
                     TransactionType = "Buy",
                     TransactionStatus = "Success",
                     Quantity = quantity,
-                    Amount = dto.Amount,
+                    Amount = dto.Amount.Value,
                     CreatedAt = DateTime.Now
                 };
 
@@ -106,8 +106,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
         }
 
         // SELL GOLD
-        public async Task SellGold(
-            SellGoldDto dto)
+        public async Task SellGold(GoldActionRequestDto dto)
         {
             var user = await _goldRepository
                 .GetUserById(dto.UserId);
@@ -121,7 +120,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 .GetHolding(dto.UserId);
 
             if (holding == null ||
-                holding.Quantity < dto.Quantity)
+                holding.Quantity < dto.Quantity.Value)
             {
                 throw new Exception(
                     "Insufficient gold quantity");
@@ -135,11 +134,11 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 branch?.Vendor?.CurrentGoldPrice ?? 0;
 
             decimal amount =
-                dto.Quantity * goldPrice;
+                dto.Quantity.Value * goldPrice;
 
             // Reduce holding
 
-            holding.Quantity -= dto.Quantity;
+            holding.Quantity -= dto.Quantity.Value;
 
             // Add wallet balance
 
@@ -154,7 +153,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                     BranchId = holding.BranchId,
                     TransactionType = "Sell",
                     TransactionStatus = "Success",
-                    Quantity = dto.Quantity,
+                    Quantity = dto.Quantity.Value,
                     Amount = amount,
                     CreatedAt = DateTime.Now
                 };
@@ -169,48 +168,47 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
         // GET HOLDINGS
 
-        public async Task<GoldHoldingDto>
-            GetHoldings(int userId)
+        public async Task<GoldPortfolioDto> GetHoldings(int userId)
         {
             var holding = await _goldRepository
                 .GetHolding(userId);
 
-            return new GoldHoldingDto
+            return new GoldPortfolioDto
             {
                 UserId = userId,
-
-                TotalGoldQuantity =
-                    holding?.Quantity ?? 0
+                TotalGold = holding?.Quantity ?? 0,
+                CurrentGoldPrice = await _goldRepository.GetCurrentGoldPrice(),
+                GoldPriceUpdatedAt = DateTime.Now,
+                CurrentValue = (holding?.Quantity ?? 0) * await _goldRepository.GetCurrentGoldPrice(),
+                TotalInvestment = 0, // Set as needed
+                ProfitLoss = 0 // Set as needed
             };
         }
 
         // GET CURRENT PRICE
 
-        public async Task<GoldPriceDto>
-            GetCurrentPrice()
+        public async Task<GoldPortfolioDto> GetCurrentPrice()
         {
             decimal price =
                 await _goldRepository
                     .GetCurrentGoldPrice();
 
-            return new GoldPriceDto
+            return new GoldPortfolioDto
             {
                 CurrentGoldPrice = price,
-
-                UpdatedAt = DateTime.Now
+                GoldPriceUpdatedAt = DateTime.Now
             };
         }
 
         // CONVERT TO PHYSICAL
 
-        public async Task ConvertToPhysical(
-            ConvertToPhysicalDto dto)
+        public async Task ConvertToPhysical(GoldActionRequestDto dto)
         {
             var holding = await _goldRepository
                 .GetHolding(dto.UserId);
 
             if (holding == null ||
-                holding.Quantity < dto.Quantity)
+                holding.Quantity < dto.Quantity.Value)
             {
                 throw new Exception(
                     "Insufficient gold quantity");
@@ -218,7 +216,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             // Reduce holdings
 
-            holding.Quantity -= dto.Quantity;
+            holding.Quantity -= dto.Quantity.Value;
 
             // Add physical transaction
 
@@ -226,10 +224,9 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 new PhysicalGoldTransaction
                 {
                     UserId = dto.UserId,
-                    BranchId = dto.BranchId,
-                    Quantity = dto.Quantity,
-                    DeliveryAddressId =
-                        dto.DeliveryAddressId,
+                    BranchId = dto.BranchId.Value,
+                    Quantity = dto.Quantity.Value,
+                    DeliveryAddressId = dto.DeliveryAddressId.Value,
                     CreatedAt = DateTime.Now
                 };
 
@@ -243,13 +240,12 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
         // GET PHYSICAL HISTORY
 
-        public async Task<List<PhysicalGoldHistoryDto>>
-            GetPhysicalHistory(int userId)
+        public async Task<List<GoldTransactionDto>> GetPhysicalHistory(int userId)
         {
             var data = await _goldRepository
                 .GetPhysicalTransactions(userId);
 
-            return _mapper.Map<List<PhysicalGoldHistoryDto>>(data);
+            return _mapper.Map<List<GoldTransactionDto>>(data);
         }
 
         // GET TRANSACTIONS

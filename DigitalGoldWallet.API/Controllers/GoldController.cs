@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalGoldWallet.API.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [ApiController]
     [Route("api/gold")]
     public class GoldController : ControllerBase
@@ -24,10 +24,11 @@ namespace DigitalGoldWallet.API.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> BuyGold(BuyGoldDto dto)
-        {
-            await _goldService.BuyGold(dto);
 
+        public async Task<IActionResult> BuyGold(GoldActionRequestDto dto)
+        {
+            dto.ActionType = GoldActionType.Buy;
+            await _goldService.BuyGold(dto);
             return Ok("Gold purchased successfully");
         }
 
@@ -37,28 +38,25 @@ namespace DigitalGoldWallet.API.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> SellGold(SellGoldDto dto)
-        {
-            await _goldService.SellGold(dto);
 
+        public async Task<IActionResult> SellGold(GoldActionRequestDto dto)
+        {
+            dto.ActionType = GoldActionType.Sell;
+            await _goldService.SellGold(dto);
             return Ok("Gold sold successfully");
         }
 
         // GET HOLDINGS
 
         [HttpGet("holdings/{userId}")]
-        [ProducesResponseType(typeof(GoldHoldingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GoldPortfolioDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetHoldings(int userId)
         {
             var data = await _goldService.GetHoldings(userId);
-
             if (data == null)
-            {
                 return NotFound("Holdings not found for the user.");
-            }
-
             return Ok(data);
         }
 
@@ -66,11 +64,10 @@ namespace DigitalGoldWallet.API.Controllers
 
         [HttpGet("current-price")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(GoldPriceDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(GoldPortfolioDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCurrentPrice()
         {
             var data = await _goldService.GetCurrentPrice();
-
             return Ok(data);
         }
 
@@ -80,17 +77,17 @@ namespace DigitalGoldWallet.API.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> ConvertToPhysical(ConvertToPhysicalDto dto)
+        public async Task<IActionResult> ConvertToPhysical(GoldActionRequestDto dto)
         {
+            dto.ActionType = GoldActionType.Convert;
             await _goldService.ConvertToPhysical(dto);
-
             return Ok("Gold converted successfully");
         }
 
         // PHYSICAL HISTORY
 
         [HttpGet("physical-history/{userId}")]
-        [ProducesResponseType(typeof(List<PhysicalGoldHistoryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<GoldTransactionDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetPhysicalHistory(int userId)
@@ -98,7 +95,6 @@ namespace DigitalGoldWallet.API.Controllers
             var data = await _goldService.GetPhysicalHistory(userId);
             if (data == null || data.Count == 0)
                 return NotFound("No physical history found.");
-
             return Ok(data);
         }
 
