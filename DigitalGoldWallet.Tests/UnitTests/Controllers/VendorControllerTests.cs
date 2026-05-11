@@ -23,94 +23,38 @@ public class VendorControllerTests
         _vendorController = new VendorController(_vendorServiceMock.Object);
     }
 
-    // ─── POSITIVE TESTS ────────────
+    // =========================
+    // CASE 1: Get Vendor By ID
+    // =========================
 
     [Fact]
     public async Task GetVendorById_ShouldReturnOkResult_WhenVendorExists()
     {
-        var vendor = VendorTestDataFactory.VendorDetailsDto(); 
+        VendorDto vendor = VendorTestDataFactory.VendorDto();
+
         _vendorServiceMock
-            .Setup(s => s.GetVendorByIdAsync(1))
+            .Setup(service => service.GetVendorByIdAsync(1))
             .ReturnsAsync(vendor);
 
-        var result = await _vendorController.GetVendorById(1);
+        IActionResult result = await _vendorController.GetVendorById(1);
 
-        var okResult = result.Should()
-            .BeOfType<OkObjectResult>().Subject;
+        OkObjectResult okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
 
         okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
         okResult.Value.Should().NotBeNull();
 
-        _vendorServiceMock.Verify(s => s.GetVendorByIdAsync(1), Times.Once);
+        _vendorServiceMock.Verify(
+            service => service.GetVendorByIdAsync(1),
+            Times.Once);
     }
-
-    [Fact]
-    public async Task SearchVendors_ShouldReturnOkResult_WhenSearchNameIsValid()
-    {
-        var vendors = new List<VendorListDto>
-        {
-            VendorTestDataFactory.VendorListDto() 
-        };
-
-        _vendorServiceMock
-            .Setup(s => s.SearchVendorsByNameAsync("sona"))
-            .ReturnsAsync(vendors);
-
-        var result = await _vendorController.SearchVendors("sona");
-
-        var okResult = result.Should()
-            .BeOfType<OkObjectResult>().Subject;
-
-        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
-
-        _vendorServiceMock.Verify(s => s.SearchVendorsByNameAsync("sona"), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateVendor_ShouldReturnCreatedAtActionResult_WhenVendorIsCreated()
-    {
-        var createDto = VendorTestDataFactory.CreateVendorDto(); 
-        var createdVendor = VendorTestDataFactory.VendorDetailsDto(); 
-
-        _vendorServiceMock
-            .Setup(s => s.CreateVendorAsync(createDto))
-            .ReturnsAsync(createdVendor);
-
-        var result = await _vendorController.CreateVendor(createDto);
-
-        var createdResult = result.Should()
-            .BeOfType<CreatedAtActionResult>().Subject;
-
-        createdResult.StatusCode.Should().Be(StatusCodes.Status201Created);
-        createdResult.Value.Should().NotBeNull();
-
-        _vendorServiceMock.Verify(s => s.CreateVendorAsync(createDto), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetVendorPrice_ShouldReturnOkResult_WhenVendorExists()
-    {
-        _vendorServiceMock
-            .Setup(s => s.GetVendorPriceAsync(1))
-            .ReturnsAsync(6500);
-
-        var result = await _vendorController.GetVendorPrice(1);
-
-        var okResult = result.Should()
-            .BeOfType<OkObjectResult>().Subject;
-
-        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
-
-        _vendorServiceMock.Verify(s => s.GetVendorPriceAsync(1), Times.Once);
-    }
-
-   
 
     [Fact]
     public async Task GetVendorById_ShouldThrowNotFoundException_WhenVendorDoesNotExist()
     {
         _vendorServiceMock
-            .Setup(s => s.GetVendorByIdAsync(999))
+            .Setup(service => service.GetVendorByIdAsync(999))
             .ThrowsAsync(new NotFoundException("Vendor not found."));
 
         Func<Task> action = async () => await _vendorController.GetVendorById(999);
@@ -119,14 +63,46 @@ public class VendorControllerTests
             .ThrowAsync<NotFoundException>()
             .WithMessage("Vendor not found.");
 
-        _vendorServiceMock.Verify(s => s.GetVendorByIdAsync(999), Times.Once);
+        _vendorServiceMock.Verify(
+            service => service.GetVendorByIdAsync(999),
+            Times.Once);
+    }
+
+    // =========================
+    // CASE 2: Search Vendors
+    // =========================
+
+    [Fact]
+    public async Task SearchVendors_ShouldReturnOkResult_WhenSearchNameIsValid()
+    {
+        List<VendorDto> vendors =
+        [
+            VendorTestDataFactory.VendorDto()
+        ];
+
+        _vendorServiceMock
+            .Setup(service => service.SearchVendorsByNameAsync("sona"))
+            .ReturnsAsync(vendors);
+
+        IActionResult result = await _vendorController.SearchVendors("sona");
+
+        OkObjectResult okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
+
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+        okResult.Value.Should().NotBeNull();
+
+        _vendorServiceMock.Verify(
+            service => service.SearchVendorsByNameAsync("sona"),
+            Times.Once);
     }
 
     [Fact]
     public async Task SearchVendors_ShouldThrowBadRequestException_WhenSearchNameIsEmpty()
     {
         _vendorServiceMock
-            .Setup(s => s.SearchVendorsByNameAsync(""))
+            .Setup(service => service.SearchVendorsByNameAsync(""))
             .ThrowsAsync(new BadRequestException("Search name is required."));
 
         Func<Task> action = async () => await _vendorController.SearchVendors("");
@@ -135,13 +111,51 @@ public class VendorControllerTests
             .ThrowAsync<BadRequestException>()
             .WithMessage("Search name is required.");
 
-        _vendorServiceMock.Verify(s => s.SearchVendorsByNameAsync(""), Times.Once);
+        _vendorServiceMock.Verify(
+            service => service.SearchVendorsByNameAsync(""),
+            Times.Once);
+    }
+
+    // =========================
+    // CASE 3: Create Vendor
+    // =========================
+
+    [Fact]
+    public async Task CreateVendor_ShouldReturnCreatedAtActionResult_WhenVendorIsCreated()
+    {
+        VendorDto createDto = VendorTestDataFactory.CreateVendorDto();
+
+        VendorDto createdVendor = VendorTestDataFactory.VendorDto();
+        createdVendor.VendorId = 10;
+        createdVendor.VendorName = createDto.VendorName;
+        createdVendor.ContactEmail = createDto.ContactEmail;
+        createdVendor.CurrentGoldPrice = createDto.CurrentGoldPrice;
+        createdVendor.Password = null;
+
+        _vendorServiceMock
+            .Setup(service => service.CreateVendorAsync(createDto))
+            .ReturnsAsync(createdVendor);
+
+        IActionResult result = await _vendorController.CreateVendor(createDto);
+
+        CreatedAtActionResult createdResult = result.Should()
+            .BeOfType<CreatedAtActionResult>()
+            .Subject;
+
+        createdResult.StatusCode.Should().Be(StatusCodes.Status201Created);
+        createdResult.ActionName.Should().Be(nameof(VendorController.GetVendorById));
+        createdResult.RouteValues!["id"].Should().Be(10);
+        createdResult.Value.Should().NotBeNull();
+
+        _vendorServiceMock.Verify(
+            service => service.CreateVendorAsync(createDto),
+            Times.Once);
     }
 
     [Fact]
     public async Task CreateVendor_ShouldThrowValidationException_WhenDtoIsInvalid()
     {
-        var createDto = new CreateVendorDto
+        VendorDto createDto = new()
         {
             VendorName = "",
             CurrentGoldPrice = 0,
@@ -149,21 +163,49 @@ public class VendorControllerTests
         };
 
         _vendorServiceMock
-            .Setup(s => s.CreateVendorAsync(createDto))
+            .Setup(service => service.CreateVendorAsync(createDto))
             .ThrowsAsync(new ValidationException("Validation failed."));
 
         Func<Task> action = async () => await _vendorController.CreateVendor(createDto);
 
-        await action.Should().ThrowAsync<ValidationException>();
+        await action.Should()
+            .ThrowAsync<ValidationException>();
 
-        _vendorServiceMock.Verify(s => s.CreateVendorAsync(createDto), Times.Once);
+        _vendorServiceMock.Verify(
+            service => service.CreateVendorAsync(createDto),
+            Times.Once);
+    }
+
+    // =========================
+    // CASE 4: Get Vendor Price
+    // =========================
+
+    [Fact]
+    public async Task GetVendorPrice_ShouldReturnOkResult_WhenVendorExists()
+    {
+        _vendorServiceMock
+            .Setup(service => service.GetVendorPriceAsync(1))
+            .ReturnsAsync(6500);
+
+        IActionResult result = await _vendorController.GetVendorPrice(1);
+
+        OkObjectResult okResult = result.Should()
+            .BeOfType<OkObjectResult>()
+            .Subject;
+
+        okResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+        okResult.Value.Should().NotBeNull();
+
+        _vendorServiceMock.Verify(
+            service => service.GetVendorPriceAsync(1),
+            Times.Once);
     }
 
     [Fact]
     public async Task GetVendorPrice_ShouldThrowNotFoundException_WhenVendorDoesNotExist()
     {
         _vendorServiceMock
-            .Setup(s => s.GetVendorPriceAsync(999))
+            .Setup(service => service.GetVendorPriceAsync(999))
             .ThrowsAsync(new NotFoundException("Vendor not found."));
 
         Func<Task> action = async () => await _vendorController.GetVendorPrice(999);
@@ -172,6 +214,8 @@ public class VendorControllerTests
             .ThrowAsync<NotFoundException>()
             .WithMessage("Vendor not found.");
 
-        _vendorServiceMock.Verify(s => s.GetVendorPriceAsync(999), Times.Once);
+        _vendorServiceMock.Verify(
+            service => service.GetVendorPriceAsync(999),
+            Times.Once);
     }
 }
