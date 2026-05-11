@@ -2,6 +2,9 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+// Wallet - Himanshi 
+
+using Microsoft.EntityFrameworkCore;
 using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Helpers;
@@ -31,6 +34,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using DigitalGoldWallet.API.Repositories.Interfaces;
+using DigitalGoldWallet.API.Repositories.Implementations;
+using DigitalGoldWallet.API.Services.Interface;
+using DigitalGoldWallet.API.Services.Implementations;
+using DigitalGoldWallet.API.Middleware;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using DigitalGoldWallet.API.Validators;
+
 
 // Done By: Ekta
 
@@ -118,10 +130,20 @@ builder.Services.AddScoped<VendorValidator>();
             var builder = WebApplication.CreateBuilder(args);
             Console.WriteLine(
     builder.Configuration.GetConnectionString("DefaultConnection"));
+            Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+            // Add services to the container.
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddDbContext<DigitalGoldDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddControllers();
             builder.Services.AddAuthorization();
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<AddMoneyValidator>();
+
+            //Wallet - Himanshi
+            builder.Services.AddScoped<IWalletService, WalletService>();
+            builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 
 // Vendor FluentValidation validators
 builder.Services.AddScoped<IValidator<CreateVendorDto>, CreateVendorDtoValidator>();
@@ -315,6 +337,9 @@ app.UseAuthorization();
             app.UseAuthentication();
 
             app.UseMiddleware<JwtMiddleware>();
+            app.UseHttpsRedirection();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
+            app.UseAuthorization();
 
             app.UseAuthorization();
 
@@ -331,4 +356,4 @@ public partial class Program { }
 // Done By: Ekta
 
 
-
+// Wallet - Himanshi
