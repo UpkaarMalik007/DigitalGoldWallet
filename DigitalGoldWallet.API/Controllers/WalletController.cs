@@ -173,7 +173,6 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 8. Get Transaction Count
-        [HttpGet("transaction-count/{userId}")]
         [HttpGet("transaction-count/{userId:int}")]
         public async Task<IActionResult> GetTransactionCount(int userId)
         {
