@@ -24,7 +24,6 @@ public class VendorRepository : IVendorRepository
 
     public async Task<Vendor?> GetVendorByIdAsync(int vendorId)
     {
-        // Eager loading is necessary here because vendor details need branches and address data.
         return await _context.Vendors
             .Include(vendor => vendor.VendorBranches)
                 .ThenInclude(branch => branch.Address)
@@ -80,7 +79,6 @@ public class VendorRepository : IVendorRepository
 
     public async Task<List<VendorBranch>> GetBranchesByVendorIdAsync(int vendorId)
     {
-        // LINQ left join with Addresses. Avoids Include and loads only required relational data.
         return await (
             from branch in _context.VendorBranches.AsNoTracking()
             join address in _context.Addresses.AsNoTracking()
@@ -102,7 +100,6 @@ public class VendorRepository : IVendorRepository
 
     public async Task<VendorBranch?> GetBranchByIdAsync(int branchId)
     {
-        // No eager loading here because stock update only needs branch data and VendorId.
         return await _context.VendorBranches
             .FirstOrDefaultAsync(branch => branch.BranchId == branchId);
     }
@@ -134,7 +131,6 @@ public class VendorRepository : IVendorRepository
 
     public async Task<List<TransactionHistory>> GetTransactionsByVendorIdAsync(int vendorId)
     {
-        // LINQ join with VendorBranches. No Include needed.
         return await (
             from transaction in _context.TransactionHistories.AsNoTracking()
             join branch in _context.VendorBranches.AsNoTracking()
