@@ -33,4 +33,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DigitalGoldWallet.API\DigitalGoldWallet.API.csproj" />
+  </ItemGroup>
+
 </Project>
