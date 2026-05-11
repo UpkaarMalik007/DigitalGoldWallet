@@ -2,42 +2,17 @@
 
 namespace DigitalGoldWallet.Tests.Helpers;
 
-public static class TestClaimsPrincipalFactory
+public static class TransactionClaimsPrincipalFactory
 {
-    public static ClaimsPrincipal CreateVendorUser(int vendorId)
+    public static ClaimsPrincipal CreateUser(int userId = 1, string role = "User")
     {
-        List<Claim> claims =
-        [
-            new Claim(ClaimTypes.Role, "Vendor"),
-            new Claim("vendorId", vendorId.ToString())
-        ];
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Role, role)
+        };
 
-        ClaimsIdentity identity = new(claims, "TestAuth");
-
-        return new ClaimsPrincipal(identity);
-    }
-
-    public static ClaimsPrincipal CreateAdminUser()
-    {
-        List<Claim> claims =
-        [
-            new Claim(ClaimTypes.Role, "Admin")
-        ];
-
-        ClaimsIdentity identity = new(claims, "TestAuth");
-
-        return new ClaimsPrincipal(identity);
-    }
-
-    public static ClaimsPrincipal CreateNormalUser()
-    {
-        List<Claim> claims =
-        [
-            new Claim(ClaimTypes.Role, "User")
-        ];
-
-        ClaimsIdentity identity = new(claims, "TestAuth");
-
+        var identity = new ClaimsIdentity(claims, "TestAuth");
         return new ClaimsPrincipal(identity);
     }
 }

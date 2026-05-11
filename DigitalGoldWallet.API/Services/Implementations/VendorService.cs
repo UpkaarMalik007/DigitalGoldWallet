@@ -15,7 +15,6 @@ public class VendorService : IVendorService
 
     private readonly IVendorRepository _vendorRepository;
     private readonly VendorValidator _vendorValidator;
-
     private readonly IValidator<CreateVendorDto> _createVendorValidator;
     private readonly IValidator<UpdateVendorDto> _updateVendorValidator;
     private readonly IValidator<UpdateVendorContactDto> _updateVendorContactValidator;
@@ -45,31 +44,22 @@ public class VendorService : IVendorService
 
     public async Task<List<VendorListDto>> GetAllVendorsAsync()
     {
-        List<Vendor> vendors = await _vendorRepository.GetAllVendorsAsync();
-
-        return vendors
-            .Select(MapToVendorListDto)
-            .ToList();
+        var vendors = await _vendorRepository.GetAllVendorsAsync();
+        return vendors.Select(MapToVendorListDto).ToList();
     }
 
     public async Task<VendorDetailsDto> GetVendorByIdAsync(int vendorId)
     {
         _vendorValidator.ValidateVendorId(vendorId);
-
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
-
+        var vendor = await GetVendorOrThrowAsync(vendorId);
         return MapToVendorDetailsDto(vendor);
     }
 
     public async Task<List<VendorListDto>> SearchVendorsByNameAsync(string name)
     {
         _vendorValidator.ValidateSearchName(name);
-
-        List<Vendor> vendors = await _vendorRepository.SearchVendorsByNameAsync(name);
-
-        return vendors
-            .Select(MapToVendorListDto)
-            .ToList();
+        var vendors = await _vendorRepository.SearchVendorsByNameAsync(name);
+        return vendors.Select(MapToVendorListDto).ToList();
     }
 
     public async Task<List<VendorBranchDto>> GetBranchesByVendorIdAsync(int vendorId)
@@ -79,23 +69,16 @@ public class VendorService : IVendorService
         bool vendorExists = await _vendorRepository.VendorExistsAsync(vendorId);
 
         if (!vendorExists)
-        {
             throw new NotFoundException("Vendor not found.");
-        }
 
-        List<VendorBranch> branches = await _vendorRepository.GetBranchesByVendorIdAsync(vendorId);
-
-        return branches
-            .Select(MapToVendorBranchDto)
-            .ToList();
+        var branches = await _vendorRepository.GetBranchesByVendorIdAsync(vendorId);
+        return branches.Select(MapToVendorBranchDto).ToList();
     }
 
     public async Task<decimal> GetVendorPriceAsync(int vendorId)
     {
         _vendorValidator.ValidateVendorId(vendorId);
-
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
-
+        var vendor = await GetVendorOrThrowAsync(vendorId);
         return vendor.CurrentGoldPrice;
     }
 
@@ -103,9 +86,7 @@ public class VendorService : IVendorService
     {
         await _createVendorValidator.ValidateAndThrowAsync(dto);
 
-        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-
-        Vendor vendor = new()
+        var vendor = new Vendor
         {
             VendorName = dto.VendorName.Trim(),
             Description = dto.Description?.Trim(),
@@ -115,7 +96,7 @@ public class VendorService : IVendorService
             WebsiteUrl = dto.WebsiteUrl?.Trim(),
             CurrentGoldPrice = dto.CurrentGoldPrice,
             TotalGoldQuantity = 0,
-            Password = hashedPassword,
+            Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             RoleId = VendorRoleId,
             CreatedAt = DateTime.UtcNow
         };
@@ -136,7 +117,7 @@ public class VendorService : IVendorService
 
         EnsureVendorOwnsResource(vendorId, user);
 
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
+        var vendor = await GetVendorOrThrowAsync(vendorId);
 
         vendor.VendorName = dto.VendorName.Trim();
         vendor.Description = dto.Description?.Trim();
@@ -161,27 +142,19 @@ public class VendorService : IVendorService
 
         EnsureVendorOwnsResource(vendorId, user);
 
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
+        var vendor = await GetVendorOrThrowAsync(vendorId);
 
         if (!string.IsNullOrWhiteSpace(dto.ContactPersonName))
-        {
             vendor.ContactPersonName = dto.ContactPersonName.Trim();
-        }
 
         if (!string.IsNullOrWhiteSpace(dto.ContactEmail))
-        {
             vendor.ContactEmail = dto.ContactEmail.Trim();
-        }
 
         if (!string.IsNullOrWhiteSpace(dto.ContactPhone))
-        {
             vendor.ContactPhone = dto.ContactPhone.Trim();
-        }
 
         if (!string.IsNullOrWhiteSpace(dto.WebsiteUrl))
-        {
             vendor.WebsiteUrl = dto.WebsiteUrl.Trim();
-        }
 
         _vendorRepository.UpdateVendor(vendor);
         await _vendorRepository.SaveChangesAsync();
@@ -197,7 +170,7 @@ public class VendorService : IVendorService
 
         EnsureVendorOwnsResource(vendorId, user);
 
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
+        var vendor = await GetVendorOrThrowAsync(vendorId);
 
         vendor.CurrentGoldPrice = dto.CurrentGoldPrice;
 
@@ -215,16 +188,14 @@ public class VendorService : IVendorService
 
         EnsureVendorOwnsResource(vendorId, user);
 
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
+        var vendor = await GetVendorOrThrowAsync(vendorId);
 
         bool addressExists = await _vendorRepository.AddressExistsAsync(dto.AddressId);
 
         if (!addressExists)
-        {
             throw new NotFoundException("Address not found.");
-        }
 
-        VendorBranch branch = new()
+        var branch = new VendorBranch
         {
             VendorId = vendorId,
             AddressId = dto.AddressId,
@@ -248,12 +219,10 @@ public class VendorService : IVendorService
         _vendorValidator.ValidateBranchId(branchId);
         await _updateBranchStockValidator.ValidateAndThrowAsync(dto);
 
-        VendorBranch branch = await GetBranchOrThrowAsync(branchId);
+        var branch = await GetBranchOrThrowAsync(branchId);
 
         if (branch.VendorId is null)
-        {
             throw new BadRequestException("Branch is not assigned to any vendor.");
-        }
 
         EnsureVendorOwnsResource(branch.VendorId.Value, user);
 
@@ -262,8 +231,7 @@ public class VendorService : IVendorService
         _vendorRepository.UpdateVendorBranch(branch);
         await _vendorRepository.SaveChangesAsync();
 
-        Vendor vendor = await GetVendorOrThrowAsync(branch.VendorId.Value);
-
+        var vendor = await GetVendorOrThrowAsync(branch.VendorId.Value);
         await RecalculateVendorTotalGoldQuantityAsync(vendor);
     }
 
@@ -275,9 +243,8 @@ public class VendorService : IVendorService
 
         EnsureVendorOrAdminReadAccess(vendorId, user);
 
-        Vendor vendor = await GetVendorOrThrowAsync(vendorId);
-
-        List<VendorBranch> branches = await _vendorRepository.GetBranchesByVendorIdAsync(vendorId);
+        var vendor = await GetVendorOrThrowAsync(vendorId);
+        var branches = await _vendorRepository.GetBranchesByVendorIdAsync(vendorId);
 
         decimal branchTotalQuantity = branches.Sum(branch => branch.Quantity);
 
@@ -288,9 +255,7 @@ public class VendorService : IVendorService
             TotalGoldQuantity = vendor.TotalGoldQuantity,
             CurrentGoldPrice = vendor.CurrentGoldPrice,
             BranchTotalQuantity = branchTotalQuantity,
-            Branches = branches
-                .Select(MapToVendorBranchDto)
-                .ToList()
+            Branches = branches.Select(MapToVendorBranchDto).ToList()
         };
     }
 
@@ -305,38 +270,29 @@ public class VendorService : IVendorService
         bool vendorExists = await _vendorRepository.VendorExistsAsync(vendorId);
 
         if (!vendorExists)
-        {
             throw new NotFoundException("Vendor not found.");
-        }
 
-        List<TransactionHistory> transactions =
-            await _vendorRepository.GetTransactionsByVendorIdAsync(vendorId);
+        var transactions = await _vendorRepository.GetTransactionsByVendorIdAsync(vendorId);
 
-        return transactions
-            .Select(MapToVendorTransactionDto)
-            .ToList();
+        return transactions.Select(MapToVendorTransactionDto).ToList();
     }
 
     private async Task<Vendor> GetVendorOrThrowAsync(int vendorId)
     {
-        Vendor? vendor = await _vendorRepository.GetVendorByIdAsync(vendorId);
+        var vendor = await _vendorRepository.GetVendorByIdAsync(vendorId);
 
         if (vendor is null)
-        {
             throw new NotFoundException("Vendor not found.");
-        }
 
         return vendor;
     }
 
     private async Task<VendorBranch> GetBranchOrThrowAsync(int branchId)
     {
-        VendorBranch? branch = await _vendorRepository.GetBranchByIdAsync(branchId);
+        var branch = await _vendorRepository.GetBranchByIdAsync(branchId);
 
         if (branch is null)
-        {
             throw new NotFoundException("Vendor branch not found.");
-        }
 
         return branch;
     }
@@ -357,41 +313,30 @@ public class VendorService : IVendorService
         int loggedInVendorId = GetLoggedInVendorId(user);
 
         if (loggedInVendorId != vendorId)
-        {
             throw new ForbiddenException("You can manage only your own vendor account.");
-        }
     }
 
     private static void EnsureVendorOrAdminReadAccess(int vendorId, ClaimsPrincipal user)
     {
         if (user.IsInRole("Admin"))
-        {
             return;
-        }
 
         if (!user.IsInRole("Vendor"))
-        {
             throw new ForbiddenException("You are not allowed to access vendor data.");
-        }
 
         int loggedInVendorId = GetLoggedInVendorId(user);
 
         if (loggedInVendorId != vendorId)
-        {
             throw new ForbiddenException("You can access only your own vendor data.");
-        }
     }
 
     private static int GetLoggedInVendorId(ClaimsPrincipal user)
     {
         string? vendorIdClaim =
-            user.FindFirst("vendorId")?.Value
-            ?? user.FindFirst("VendorId")?.Value;
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (!int.TryParse(vendorIdClaim, out int vendorId))
-        {
             throw new ForbiddenException("Vendor ID is missing from token.");
-        }
 
         return vendorId;
     }

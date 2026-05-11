@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace DigitalGoldWallet.Tests.Controllers;
+namespace DigitalGoldWallet.Tests.UnitTests.Controllers;
 
 public class UsersControllerTests
 {

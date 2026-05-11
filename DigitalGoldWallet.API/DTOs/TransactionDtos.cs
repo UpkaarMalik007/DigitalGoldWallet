@@ -1,6 +1,5 @@
 namespace DigitalGoldWallet.API.DTOs
 {
-    // Done By: Navta
     public class TransactionHistoryDto
     {
         public int TransactionId { get; set; }
@@ -42,18 +41,6 @@ namespace DigitalGoldWallet.API.DTOs
         public decimal Quantity { get; set; }
     }
 
-    public class VendorTransactionDto
-    {
-        public int TransactionId { get; set; }
-        public int? UserId { get; set; }
-        public int? BranchId { get; set; }
-        public string TransactionType { get; set; } = string.Empty;
-        public string TransactionStatus { get; set; } = string.Empty;
-        public decimal Quantity { get; set; }
-        public decimal Amount { get; set; }
-        public DateTime CreatedAt { get; set; }
-    }
-
     public class VendorTransactionSummaryDto
     {
         public int TotalTransactions { get; set; }
@@ -63,6 +50,4 @@ namespace DigitalGoldWallet.API.DTOs
         public decimal TotalSellAmount { get; set; }
         public decimal TotalRevenue { get; set; }
     }
-
-    
 }
