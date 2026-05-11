@@ -4,42 +4,54 @@ namespace DigitalGoldWallet.Tests.Helpers;
 
 public static class VendorTestDataFactory
 {
-    public static CreateVendorDto CreateVendorDto() => new()
+    public static VendorDto CreateVendorDto()
     {
-        VendorName = "Sona Jewellers",
-        Description = "Trusted gold vendor",
-        ContactPersonName = "Rohit Verma",
-        ContactEmail = "rohit@example.com",
-        ContactPhone = "+91 9876543210",
-        WebsiteUrl = "https://www.sonajewellers.com",
-        CurrentGoldPrice = 6400,
-        Password = "Vendor@123"
-    };
+        return new VendorDto
+        {
+            VendorName = "Sona Jewellers",
+            Description = "Trusted gold vendor",
+            ContactPersonName = "Rohit Verma",
+            ContactEmail = "rohit@example.com",
+            ContactPhone = "+91 9876543210",
+            WebsiteUrl = "https://www.sonajewellers.com",
+            CurrentGoldPrice = 6400,
+            Password = "Vendor@123"
+        };
+    }
 
-    public static VendorListDto VendorListDto() => new()
+    public static VendorDto VendorDto()
     {
-        VendorId = 1,
-        VendorName = "Sona Jewellers",
-        Description = "Trusted gold vendor",
-        ContactEmail = "rohit@example.com",
-        ContactPhone = "+91 9876543210",
-        WebsiteUrl = "https://www.sonajewellers.com",
-        TotalGoldQuantity = 1000,
-        CurrentGoldPrice = 6400
-    };
+        return new VendorDto
+        {
+            VendorId = 1,
+            VendorName = "Sona Jewellers",
+            Description = "Trusted gold vendor",
+            ContactPersonName = "Rohit Verma",
+            ContactEmail = "rohit@example.com",
+            ContactPhone = "+91 9876543210",
+            WebsiteUrl = "https://www.sonajewellers.com",
+            TotalGoldQuantity = 1000,
+            CurrentGoldPrice = 6400,
+            BranchTotalQuantity = 1000,
+            CreatedAt = DateTime.UtcNow,
+            Branches = new List<VendorBranchDto>()
+        };
+    }
 
-    public static VendorDetailsDto VendorDetailsDto() => new()
+    public static VendorBranchDto VendorBranchDto()
     {
-        VendorId = 1,
-        VendorName = "Sona Jewellers",
-        Description = "Trusted gold vendor",
-        ContactPersonName = "Rohit Verma",
-        ContactEmail = "rohit@example.com",
-        ContactPhone = "+91 9876543210",
-        WebsiteUrl = "https://www.sonajewellers.com",
-        TotalGoldQuantity = 1000,
-        CurrentGoldPrice = 6400,
-        CreatedAt = DateTime.UtcNow,
-        Branches = new List<VendorBranchDto>()
-    };
+        return new VendorBranchDto
+        {
+            BranchId = 1,
+            VendorId = 1,
+            AddressId = 1,
+            Quantity = 100,
+            CreatedAt = DateTime.UtcNow,
+            Street = "123 Main Street",
+            City = "Mumbai",
+            State = "Maharashtra",
+            PostalCode = "400001",
+            Country = "India"
+        };
+    }
 }
