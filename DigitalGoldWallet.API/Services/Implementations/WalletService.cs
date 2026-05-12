@@ -4,16 +4,23 @@ using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interface;
 using DigitalGoldWallet.API.Exceptions;
+using AutoMapper;
 
 namespace DigitalGoldWallet.API.Services.Implementations
 {
     public class WalletService : IWalletService
     {
         private readonly IWalletRepository _walletRepository;
+        private readonly IMapper _mapper;
 
-        public WalletService(IWalletRepository walletRepository)
+        // public WalletService(IWalletRepository walletRepository)
+        // {
+        //     _walletRepository = walletRepository;
+        // }
+        public WalletService(IWalletRepository walletRepository, IMapper mapper)
         {
             _walletRepository = walletRepository;
+            _mapper = mapper;
         }
 
         public async Task<decimal> GetWalletBalance(int userId)
@@ -22,33 +29,37 @@ namespace DigitalGoldWallet.API.Services.Implementations
             return user?.Balance ?? 0;
         }
 
-        public async Task<string> AddMoney(AddMoneyDTO dto)
+        public async Task<string> AddMoney(WalletAmountDTO dto)
         {
             var user = await _walletRepository.GetUserById(dto.UserId);
             if (user == null)
             {
-                throw new NotFoundException("User Not Found");
+                throw new NotFoundException();
             }
             user.Balance += dto.Amount;
+            var payment = _mapper.Map<Payment>(dto);
             await _walletRepository.UpdateUser(user);
+            await _walletRepository.AddPayment(payment);
             await _walletRepository.SaveChanges();
-            return "Money Added Successfully";
+            return "Success";
         }
 
-        public async Task<string> DeductMoney(DeductMoneyDTO dto)
+        public async Task<string> DeductMoney(WalletAmountDTO dto)
         {
             var user = await _walletRepository.GetUserById(dto.UserId);
             if (user == null)
             {
-                throw new NotFoundException("User Not Found");
+                throw new NotFoundException();
             }
             if (user.Balance < dto.Amount)
             {
-                throw new BadRequestException("Insufficient Balance");
+                throw new BadRequestException();
             }
             
             user.Balance -= dto.Amount;
+            var payment = _mapper.Map<Payment>(dto);
             await _walletRepository.UpdateUser(user);
+            await _walletRepository.AddPayment(payment);
             await _walletRepository.SaveChanges();
             return "Money Deducted Successfully";
         }
@@ -65,19 +76,20 @@ namespace DigitalGoldWallet.API.Services.Implementations
             var receiver = await _walletRepository.GetUserById(dto.ReceiverId);
             if(sender == null || receiver == null)
             {
-                throw new NotFoundException("User Not Found");
+                throw new NotFoundException();
             }
             if(sender.Balance < dto.Amount)
             {
-                throw new BadRequestException("Insufficient Balance");
+                throw new BadRequestException();
             }
             
             sender.Balance -= dto.Amount;
             receiver.Balance += dto.Amount;
 
+            var payment = _mapper.Map<Payment>(dto);
             await _walletRepository.UpdateUser(sender);
             await _walletRepository.UpdateUser(receiver);
-
+            await _walletRepository.AddPayment(payment);
             await _walletRepository.SaveChanges();
 
             return "Transfer Money Successfully";
@@ -89,7 +101,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 .GetLastTransaction(userId);
             if (transaction == null)
             {
-                return "No transaction found";
+                throw new NotFoundException();
             }
             return transaction;
         }

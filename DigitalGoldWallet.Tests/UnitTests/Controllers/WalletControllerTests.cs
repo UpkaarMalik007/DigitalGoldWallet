@@ -21,8 +21,7 @@ namespace DigitalGoldWallet.Tests.UnitTests
             _walletController = new WalletController(_mockWalletService.Object);
         }
 
-      
-
+    
         [Fact]
         public async Task GetWalletBalance_ReturnsOk_WithBalance()
         {
