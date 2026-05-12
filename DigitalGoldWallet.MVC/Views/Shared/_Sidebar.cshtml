@@ -2,11 +2,17 @@
     string loggedInName = Context.Session.GetString("UserName") ?? "User";
     string loggedInRole = Context.Session.GetString("UserRole") ?? "User";
     string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    bool isVendor = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
+
+    string vendorNavClass(string action) => currentController.Equals("Vendor", StringComparison.OrdinalIgnoreCase)
+        && currentAction.Equals(action, StringComparison.OrdinalIgnoreCase)
+            ? "bg-gold text-[#554300] shadow-sm"
+            : "text-[#4d4635] hover:bg-[#eae1d4]";
+
     string navClass(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
         ? "bg-gold text-[#554300] shadow-sm"
         : "text-[#4d4635] hover:bg-[#eae1d4]";
-
-    bool isVendor = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
 }
 <aside class="fixed left-0 top-0 h-full w-72 bg-cream-2 border-r border-line flex flex-col px-5 py-7 z-50">
     <a asp-controller="Vendor" asp-action="Dashboard" class="text-[22px] font-extrabold text-gold-dark mb-12 px-2 tracking-tight">Digital Gold Wallet</a>
@@ -14,8 +20,14 @@
     <nav class="space-y-3">
         @if (isVendor)
         {
-            <a asp-controller="Vendor" asp-action="Dashboard" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Vendor")">
+            <a asp-controller="Vendor" asp-action="Dashboard" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @vendorNavClass("Dashboard")">
                 <span class="material-symbols-outlined text-[28px]">dashboard</span><span>Dashboard</span>
+            </a>
+            <a asp-controller="Vendor" asp-action="Branches" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @vendorNavClass("Branches")">
+                <span class="material-symbols-outlined text-[28px]">store</span><span>Vendor Branches</span>
+            </a>
+            <a asp-controller="Vendor" asp-action="Transactions" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @vendorNavClass("Transactions")">
+                <span class="material-symbols-outlined text-[28px]">receipt_long</span><span>Transactions</span>
             </a>
         }
         else
@@ -23,27 +35,18 @@
             <a asp-controller="Home" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Home")">
                 <span class="material-symbols-outlined text-[28px]">dashboard</span><span>Dashboard</span>
             </a>
-        }
-        <a asp-controller="Wallet" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Wallet")">
-            <span class="material-symbols-outlined text-[28px]">account_balance_wallet</span><span>Wallet</span>
-        </a>
-        <a asp-controller="Gold" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Gold")">
-            <span class="material-symbols-outlined text-[28px]">payments</span><span>Gold</span>
-        </a>
-        <a asp-controller="Transaction" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Transaction")">
-            <span class="material-symbols-outlined text-[28px]">receipt_long</span><span>Transactions</span>
-        </a>
-        <a asp-controller="User" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("User")">
-            <span class="material-symbols-outlined text-[28px]">group</span><span>Users</span>
-        </a>
-        @if (isVendor)
-        {
-            <a asp-controller="Vendor" asp-action="Dashboard" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Vendor")">
-                <span class="material-symbols-outlined text-[28px]">store</span><span>Vendors</span>
+            <a asp-controller="Wallet" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Wallet")">
+                <span class="material-symbols-outlined text-[28px]">account_balance_wallet</span><span>Wallet</span>
             </a>
-        }
-        else
-        {
+            <a asp-controller="Gold" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Gold")">
+                <span class="material-symbols-outlined text-[28px]">payments</span><span>Gold</span>
+            </a>
+            <a asp-controller="Transaction" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Transaction")">
+                <span class="material-symbols-outlined text-[28px]">receipt_long</span><span>Transactions</span>
+            </a>
+            <a asp-controller="User" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("User")">
+                <span class="material-symbols-outlined text-[28px]">group</span><span>Users</span>
+            </a>
             <a asp-controller="Vendor" asp-action="Index" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @navClass("Vendor")">
                 <span class="material-symbols-outlined text-[28px]">store</span><span>Vendors</span>
             </a>
@@ -60,8 +63,6 @@
                 <p class="text-sm text-muted truncate">@loggedInRole</p>
             </div>
         </div>
-
-        <a asp-controller="Gold" asp-action="BuyGold" class="block text-center bg-gold text-[#554300] rounded-xl py-3 font-extrabold hover:opacity-90">Buy Gold Now</a>
 
         <a asp-controller="Account" asp-action="Logout" class="flex items-center gap-4 text-[#4d4635] px-4 py-3 rounded-xl hover:bg-[#eae1d4]">
             <span class="material-symbols-outlined text-[28px]">logout</span><span>Logout</span>

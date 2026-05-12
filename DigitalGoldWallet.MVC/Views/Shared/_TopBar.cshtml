@@ -7,13 +7,15 @@
 <header class="sticky top-0 z-40 h-16 bg-cream border-b border-line flex items-center justify-between px-8">
     <h1 class="text-xl font-extrabold text-gold-dark">@pageTitle</h1>
     <div class="flex items-center gap-7 text-sm font-bold">
-        @if (!isVendor)
+        @if (isVendor)
         {
-            <a asp-controller="Vendor" asp-action="Index" class="hover:text-gold-dark">Vendor Directory</a>
+            <a asp-controller="Vendor" asp-action="Dashboard" class="hover:text-gold-dark">Dashboard</a>
+            <a asp-controller="Vendor" asp-action="Branches" class="hover:text-gold-dark">Branches</a>
+            <a asp-controller="Vendor" asp-action="Transactions" class="hover:text-gold-dark">Transactions</a>
         }
         else
         {
-            <a asp-controller="Vendor" asp-action="Dashboard" class="hover:text-gold-dark">Vendor Dashboard</a>
+            <a asp-controller="Vendor" asp-action="Index" class="hover:text-gold-dark">Vendor Directory</a>
         }
         <span>@loggedInName</span>
         <a asp-controller="Account" asp-action="Logout" class="hover:text-gold-dark">Logout</a>

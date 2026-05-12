@@ -9,6 +9,8 @@
     decimal averageRate = Model.Any(v => (v.CurrentGoldPrice ?? 0) > 0)
         ? Model.Where(v => (v.CurrentGoldPrice ?? 0) > 0).Average(v => v.CurrentGoldPrice ?? 0)
         : 0;
+    string role = Context.Session.GetString("UserRole") ?? Context.Session.GetString("Role") ?? string.Empty;
+    bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="space-y-8">
@@ -26,10 +28,13 @@
                     <option value="12" selected="@(pageSize == 12)">12 per page</option>
                 </select>
             </form>
-            <a asp-controller="Vendor" asp-action="Create" class="inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-4 font-extrabold text-[#554300] shadow-soft hover:opacity-90">
-                <span class="material-symbols-outlined text-[26px]">add</span>
-                Add Vendor
-            </a>
+            @if (isAdmin)
+            {
+                <a asp-controller="Vendor" asp-action="Create" class="inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-4 font-extrabold text-[#554300] shadow-soft hover:opacity-90">
+                    <span class="material-symbols-outlined text-[26px]">add</span>
+                    Add Vendor
+                </a>
+            }
         </div>
     </div>
 
@@ -83,13 +88,16 @@
                 </a>
             }
 
-            <a asp-controller="Vendor" asp-action="Create" class="min-h-[290px] rounded-2xl border-2 border-dashed border-line bg-cream-2 p-7 flex flex-col items-center justify-center text-center hover:bg-cream-3">
-                <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-soft">
-                    <span class="material-symbols-outlined text-[42px] text-gold-dark">add_business</span>
-                </div>
-                <h3 class="text-2xl font-extrabold">Onboard New Partner</h3>
-                <p class="mt-2 max-w-xs text-muted">Expand the digital gold ecosystem with trusted vendors.</p>
-            </a>
+            @if (isAdmin)
+            {
+                <a asp-controller="Vendor" asp-action="Create" class="min-h-[290px] rounded-2xl border-2 border-dashed border-line bg-cream-2 p-7 flex flex-col items-center justify-center text-center hover:bg-cream-3">
+                    <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-soft">
+                        <span class="material-symbols-outlined text-[42px] text-gold-dark">add_business</span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold">Onboard New Partner</h3>
+                    <p class="mt-2 max-w-xs text-muted">Only Admin can create a new vendor.</p>
+                </a>
+            }
         </div>
 
         @if (totalPages > 1)
@@ -119,30 +127,27 @@
             {
                 <p class="mt-2 text-sm font-semibold text-red-700">@ViewBag.ApiErrorMessage</p>
             }
-            <a asp-controller="Vendor" asp-action="Create" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-3 font-extrabold text-[#554300]">
-                <span class="material-symbols-outlined">add</span>Add Vendor
-            </a>
+            @if (isAdmin)
+            {
+                <a asp-controller="Vendor" asp-action="Create" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-3 font-extrabold text-[#554300]">
+                    <span class="material-symbols-outlined">add</span>Add Vendor
+                </a>
+            }
         </div>
     }
 
-    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden grid grid-cols-1 xl:grid-cols-3">
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden grid grid-cols-1 md:grid-cols-3">
         <div class="bg-cream-2 p-8">
-            <h4 class="text-2xl font-extrabold text-gold-dark">Market Insights</h4>
-            <p class="mt-3 text-muted">Today's average gold rate across all vendors is currently stabilizing after morning volatility.</p>
-            <div class="mt-6 flex items-end gap-2">
-                <span class="text-4xl font-extrabold">₹@averageRate.ToString("N2")</span>
-                <span class="pb-1 text-sm font-extrabold text-green-600">Avg.</span>
-            </div>
+            <h4 class="text-2xl font-extrabold text-gold-dark">Vendor Summary</h4>
+            <p class="mt-3 text-muted">Summary calculated only from vendor API response data.</p>
         </div>
-        <div class="xl:col-span-2 min-h-[230px] relative flex items-center justify-center overflow-hidden">
-            <svg class="absolute inset-0 h-full w-full opacity-20" preserveAspectRatio="none" viewBox="0 0 700 220">
-                <polyline points="0,160 80,150 160,170 240,120 320,135 400,80 480,95 560,45 700,65" fill="none" stroke="#d4af37" stroke-width="6" />
-            </svg>
-            <div class="relative text-center">
-                <p class="text-xl font-extrabold">Aggregated Gold Price Index</p>
-                <p class="mt-2 text-muted">Real-time sync active across vendor data nodes</p>
-                <button class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-gold-dark">View Full Analytics <span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
-            </div>
+        <div class="p-8 border-t md:border-t-0 md:border-l border-line">
+            <p class="text-sm font-bold text-muted">Total Vendors</p>
+            <p class="mt-2 text-4xl font-extrabold">@totalRecords</p>
+        </div>
+        <div class="p-8 border-t md:border-t-0 md:border-l border-line">
+            <p class="text-sm font-bold text-muted">Average Gold Rate</p>
+            <p class="mt-2 text-4xl font-extrabold">₹@averageRate.ToString("N2")</p>
         </div>
     </section>
 </div>

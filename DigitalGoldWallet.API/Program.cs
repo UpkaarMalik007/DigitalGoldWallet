@@ -1,5 +1,3 @@
-// Wallet - Himanshi
-
 using System.Text;
 using DigitalGoldWallet.API.Configuration;
 using DigitalGoldWallet.API.Data;
@@ -22,7 +20,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using DigitalGoldWallet.API.Mappings; 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -32,8 +29,14 @@ builder.Services.AddControllers();
 // Database
 builder.Services.AddDbContext<DigitalGoldDbContext>(options =>
 {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"));
+    string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing in appsettings.json.");
+    }
+
+    options.UseSqlServer(connectionString);
 });
 
 // JWT Settings
@@ -52,8 +55,10 @@ if (string.IsNullOrWhiteSpace(jwtSettings.Key))
 // Helpers
 builder.Services.AddScoped<JwtHelper>();
 
+// AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // Auth
-builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -71,7 +76,6 @@ builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 
 // Transaction
-builder.Services.AddAutoMapper(typeof(TransactionProfile));
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<TransactionValidator>();
@@ -83,10 +87,10 @@ builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddMoneyValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BuyGoldDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateVendorDtoValidator>();
 
-// AutoMapper
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// Keep this only if this class exists in your project.
+// If you renamed it, replace CreateVendorDtoValidator with your actual vendor validator class name.
+builder.Services.AddValidatorsFromAssemblyContaining<CreateVendorDtoValidator>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -208,6 +212,3 @@ app.MapControllers();
 app.Run();
 
 public partial class Program { }
-
-
-// Wallet - Himanshi

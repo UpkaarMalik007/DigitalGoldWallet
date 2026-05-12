@@ -1,4 +1,4 @@
-﻿@model DigitalGoldWallet.MVC.Models.LoginViewModel
+@model DigitalGoldWallet.MVC.Models.LoginViewModel
 
 @{
     Layout = "_AuthLayout";
@@ -202,6 +202,13 @@
             {
                 <div class="alert alert-success">
                     @TempData["Success"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
                 </div>
             }
 

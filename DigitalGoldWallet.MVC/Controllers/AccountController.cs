@@ -6,22 +6,19 @@ public class AccountController : Controller
 {
     public IActionResult Login()
     {
-        if (!string.IsNullOrWhiteSpace(HttpContext.Session.GetString("Token")))
-        {
-            return RedirectAfterLogin();
-        }
-
-        return View();
+        return RedirectToAction("Login", "Auth");
     }
 
-    public IActionResult Register() => View();
+    public IActionResult Register()
+    {
+        return RedirectToAction("Register", "Auth");
+    }
 
-    // Your team member can redirect here after successful login.
-    // Required session keys for vendor login:
-    // Token, UserName, UserRole = "Vendor", VendorId
     public IActionResult RedirectAfterLogin()
     {
-        string role = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        string role = HttpContext.Session.GetString("UserRole")
+            ?? HttpContext.Session.GetString("Role")
+            ?? string.Empty;
 
         if (role.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
         {
@@ -33,21 +30,25 @@ public class AccountController : Controller
             }
 
             TempData["ErrorMessage"] = "Vendor login session is missing VendorId.";
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Login", "Auth");
         }
 
-        if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
-            role.Equals("User", StringComparison.OrdinalIgnoreCase))
+        if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
         {
             return RedirectToAction("Index", "Vendor");
         }
 
-        return RedirectToAction("Index", "Vendor");
+        if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        return RedirectToAction("Login", "Auth");
     }
 
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
-        return RedirectToAction("Login", "Account");
+        return RedirectToAction("Login", "Auth");
     }
 }
