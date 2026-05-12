@@ -1,9 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace DigitalGoldWallet.MVC.Controllers;
-
+namespace DigitalGoldWallet.MVC.Controllers
+{
 public class TransactionController : Controller
 {
-    public IActionResult Index() => View("History");
-    public IActionResult History() => View();
+        public IActionResult Index()
+        {
+            return View();
+        }
+    }
 }

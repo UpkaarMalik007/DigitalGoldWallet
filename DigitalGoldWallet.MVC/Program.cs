@@ -1,38 +1,50 @@
 using DigitalGoldWallet.MVC.Services;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddHttpClient("DigitalGoldWalletApi", client =>
+namespace DigitalGoldWallet.MVC
 {
-    string baseUrl = builder.Configuration["ApiSettings:BaseUrl"]
-        ?? throw new InvalidOperationException("ApiSettings:BaseUrl is missing in appsettings.json.");
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-    client.BaseAddress = new Uri(baseUrl);
-});
+            // Add services to the container.
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpClient<ApiService>(client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiSettings:BaseUrl"]!);
+            });
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
-builder.Services.AddScoped<IVendorApiService, VendorApiService>();
+            var app = builder.Build();
+            // Configure the HTTP request pipeline.
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
 
-WebApplication app = builder.Build();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+            app.UseRouting();
+            app.UseSession();
+            app.UseAuthorization();
+
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Auth}/{action=Login}/{id?}");
+
+            app.Run();
+        }
+    }
+
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-app.UseSession();
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Vendor}/{action=Dashboard}/{id?}");
-
-app.Run();
