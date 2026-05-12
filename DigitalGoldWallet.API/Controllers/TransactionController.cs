@@ -1,26 +1,24 @@
 using DigitalGoldWallet.API.DTOs;
-using DigitalGoldWallet.API.Exceptions; 
-using DigitalGoldWallet.API.Repositories.Interfaces;
+using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Razorpay.Api;
 using System.Security.Claims;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DigitalGoldWallet.API.Controllers
 {
-    [Route("api/transactions")] //all endpoints start with this url
-    [ApiController] // tells .net that this is an API controller
-    public class TransactionController : ControllerBase  // base class for api controller 
+    [Route("api/transactions")]
+    [ApiController]
+    public class TransactionController : ControllerBase
     {
-        private readonly ITransactionService _transactionService; //injects the transaction service to handle business logic and controller talks to service, not directly to repository
+        private readonly ITransactionService _transactionService;
 
         public TransactionController(ITransactionService transactionService)
         {
             _transactionService = transactionService;
         }
 
+        // USER: Get own transaction history
         [Authorize(Roles = "User")]
         [HttpGet("payment-history")]
         public async Task<IActionResult> GetHistory()
@@ -29,36 +27,37 @@ namespace DigitalGoldWallet.API.Controllers
 
             var result = await _transactionService.GetHistoryAsync(userId);
 
-            if (!result.Any()) //list can never be null, but can be empty, so we check if it has any items. If not, we throw not found exception
-                throw new NotFoundException("Transaction not found");
+            if (!result.Any())
+                throw new NotFoundException("No transactions found.");
 
             return Ok(new
             {
                 StatusCode = 200,
-                Message = "Payment history retrieved successfully",
+                Message = "Payment history retrieved successfully.",
                 Data = result
             });
         }
 
+        // USER: Get own transaction by id
         [Authorize(Roles = "User")]
         [HttpGet("{transactionId}")]
         public async Task<IActionResult> GetTransactionById(int transactionId)
         {
             int userId = GetLoggedInUserIdFromToken();
 
-            var result = await _transactionService.GetTransactionByIdAsync(userId, transactionId);
-
-            if (result == null)
-                throw new NotFoundException("Transaction not found");
+            var result = await _transactionService.GetTransactionByIdAsync(
+                userId,
+                transactionId);
 
             return Ok(new
             {
                 StatusCode = 200,
-                Message = "Transaction retrieved successfully",
+                Message = "Transaction retrieved successfully.",
                 Data = result
             });
         }
 
+        // USER: Filter own transactions
         [Authorize(Roles = "User")]
         [HttpPost("filter")]
         public async Task<IActionResult> Filter(FilterTransactionsDto dto)
@@ -68,167 +67,124 @@ namespace DigitalGoldWallet.API.Controllers
             var result = await _transactionService.GetFilteredAsync(userId, dto);
 
             if (!result.Any())
-                throw new NotFoundException("Transaction not found");
+                throw new NotFoundException("No matching transactions found.");
 
             return Ok(new
             {
                 StatusCode = 200,
-                Message = "Filtered transactions retrieved successfully",
-                Data = result   
+                Message = "Filtered transactions retrieved successfully.",
+                Data = result
             });
         }
 
-
-
+        // USER: Create Razorpay order
         [Authorize(Roles = "User")]
-        [HttpGet("recent-activity")]
-        public async Task<IActionResult> GetRecentActivity()
+        [HttpPost("create-order")]
+        public async Task<IActionResult> CreateOrder(
+            [FromQuery] int branchId,
+            [FromQuery] decimal quantity)
         {
-            int userId = GetLoggedInUserIdFromToken();
+            GetLoggedInUserIdFromToken();
 
-            var result = await _transactionService.GetRecentActivityAsync(userId);
+            var result = await _transactionService.CreateOrderAsync(
+                branchId,
+                quantity);
 
-            if (!result.Any())
-                throw new NotFoundException("No Recent Activity found");
-
-            return Ok(new
+            return StatusCode(201, new
             {
-                StatusCode = 200,   
-                Message = "Recent activity retrieved successfully",
+                StatusCode = 201,
+                Message = "Order created successfully.",
                 Data = result
             });
         }
 
-        [Authorize(Roles = "User")]
-        [HttpGet("status/{transactionId}")]
-        public async Task<IActionResult> GetTransactionStatus(int transactionId)
-        {
-            int userId = GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.GetTransactionStatusAsync(userId, transactionId);
-
-            if (result == null)
-                throw new ForbiddenException("You do not have access to this transaction.");
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Message = "Transaction status retrieved successfully",
-                Data = result
-            });
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet("/api/admin/transactions/all")] // "/" at the start of route — this overrides the base route
-        //So URL becomes api/admin/transactions/all instead of api/transactions/...
-        public async Task<IActionResult> GetAllTransactions()
-        {
-            int adminId = GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.GetAllTransactionsAsync();
-
-            if (!result.Any())
-                throw new NotFoundException("Transaction not found");
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Message = "All transactions retrieved successfully",
-                Data = result
-            });
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet("/api/admin/transactions/monthly-report")]
-        public async Task<IActionResult> GetMonthlyReport(int month, int year)
-        {
-            int adminId = GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.GetMonthlyReportAsync(month, year);
-
-            if (!result.Any())
-                throw new NotFoundException("No Monthly-Report found");
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Message = "Monthly report retrieved successfully",
-                Data = result
-            });
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpGet("/api/admin/transactions/financial-log")]
-        public async Task<IActionResult> GetFinancialLog()
-        {
-            int adminId = GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.GetFinancialLogAsync();
-
-            if (!result.Any())
-                throw new NotFoundException("No financial log found");
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Message = "Financial log retrieved successfully",
-                Data = result
-            });
-
-
-        }
-
-        [Authorize(Roles = "Admin,Vendor")]
-        [HttpPatch("update-status/{transactionId}")] //Patch -> used for partial updates
-        public async Task<IActionResult> UpdateTransactionStatus(int transactionId, UpdateTransactionStatusDto dto)
-        {
-            int userId = GetLoggedInUserIdFromToken();
-
-            var updated = await _transactionService.UpdateTransactionStatusAsync(
-                transactionId,
-                dto.TransactionStatus);
-
-            if (!updated)
-                throw new NotFoundException("Transaction not found");
-
-            return Ok(new 
-                { 
-                    Status = 200,
-                    Message = "Transaction status updated successfully",
-                    Data = updated
-            }); // it will return true otherwise 
-        }
-
+        // USER: Create transaction
         [Authorize(Roles = "User")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction(CreateTransactionDto dto)
         {
-
             int userId = GetLoggedInUserIdFromToken();
+
+            dto.UserId = userId;
 
             var result = await _transactionService.CreateTransactionAsync(dto);
 
-            if (result == null)
-                throw new BadRequestException("Transaction creation failed");
-
-            return StatusCode(201, result); // 201 status code means resource created successfully, and we return the created transaction in response body
+            return StatusCode(201, new
+            {
+                StatusCode = 201,
+                Message = "Transaction created successfully.",
+                Data = result
+            });
         }
 
-        [Authorize(Roles = "User")]
-        [HttpPost("create-order")]
-        public async Task<IActionResult> CreateOrder(CreateGoldOrderRequestDto request)
+        
+
+        // ADMIN: Get all transactions
+        [Authorize(Roles = "Admin")]
+        [HttpGet("/api/admin/transactions/all")]
+        public async Task<IActionResult> GetAllTransactions(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
         {
-            int userId = GetLoggedInUserIdFromToken();
+            var result = await _transactionService.GetAllTransactionsAsync(
+                pageNumber,
+                pageSize);
 
-            var result = await _transactionService.CreateOrderAsync(request);
+            if (!result.Any())
+                throw new NotFoundException("No transactions found.");
 
-            if (result == null)
-                throw new BadRequestException("Order creation failed");
-
-            return StatusCode(201, result);
-
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "All transactions retrieved successfully.",
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Data = result
+            });
         }
 
+        // ADMIN: Monthly report
+        [Authorize(Roles = "Admin")]
+        [HttpGet("/api/admin/transactions/monthly-report")]
+        public async Task<IActionResult> GetMonthlyReport(
+            [FromQuery] int month,
+            [FromQuery] int year)
+        {
+            var result = await _transactionService.GetMonthlyReportAsync(
+                month,
+                year);
+
+            if (!result.Any())
+                throw new NotFoundException("No monthly report found.");
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Monthly report retrieved successfully.",
+                Data = result
+            });
+        }
+
+        // ADMIN / VENDOR: Update only transaction status
+        [Authorize(Roles = "Admin,Vendor")]
+        [HttpPatch("update-status/{transactionId}")]
+        public async Task<IActionResult> UpdateTransactionStatus(
+            int transactionId,
+            [FromQuery] string transactionStatus)
+        {
+            var updated = await _transactionService.UpdateTransactionStatusAsync(
+                transactionId,
+                transactionStatus);
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Transaction status updated successfully.",
+                Data = updated
+            });
+        }
+
+        // VENDOR: Get own vendor transactions
         [Authorize(Roles = "Vendor")]
         [HttpGet("vendor/transactions")]
         public async Task<IActionResult> GetVendorTransactions()
@@ -237,12 +193,18 @@ namespace DigitalGoldWallet.API.Controllers
 
             var result = await _transactionService.GetVendorTransactionsAsync(vendorId);
 
-            if (result == null || !result.Any())
-                throw new NotFoundException("No vendor transactions found");
+            if (!result.Any())
+                throw new NotFoundException("No vendor transactions found.");
 
-            return Ok(result);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Vendor transactions retrieved successfully.",
+                Data = result
+            });
         }
 
+        // VENDOR: Get vendor transaction summary
         [Authorize(Roles = "Vendor")]
         [HttpGet("vendor/summary")]
         public async Task<IActionResult> GetVendorTransactionSummary()
@@ -251,35 +213,25 @@ namespace DigitalGoldWallet.API.Controllers
 
             var result = await _transactionService.GetVendorTransactionSummaryAsync(vendorId);
 
-            if (result == null)
-                throw new NotFoundException("Vendor transaction summary not found");
-
-            return Ok(result);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Vendor transaction summary retrieved successfully.",
+                Data = result
+            });
         }
-
-        [Authorize(Roles = "Vendor")]
-        [HttpGet("vendor/successful-transactions")]
-        public async Task<IActionResult> GetVendorSuccessfulTransactions()
-        {
-            int vendorId = GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.GetVendorSuccessfulTransactionsAsync(vendorId);
-            if (result == null || !result.Any())
-                throw new NotFoundException("No successful transactions found");
-            return Ok(result);
-        }
-
 
         private int GetLoggedInUserIdFromToken()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;  // read userId from Jwt token //?.Value → safely gets value, returns null if claim not found
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userIdClaim)) // if userId is not found in token, throw unauthorized exception
-                throw new UnauthorizedException("Invalid token");
+            if (string.IsNullOrWhiteSpace(userIdClaim))
+                throw new UnauthorizedException("Invalid token.");
 
-            return int.Parse(userIdClaim); // convert userId from string to int
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new UnauthorizedException("Invalid user id in token.");
+
+            return userId;
         }
-
-        
     }
 }

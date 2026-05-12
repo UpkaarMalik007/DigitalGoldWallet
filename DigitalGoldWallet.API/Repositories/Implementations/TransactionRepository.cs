@@ -2,7 +2,6 @@ using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace DigitalGoldWallet.API.Repositories.Implementations
 {
@@ -19,6 +18,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         {
             _context.TransactionHistories.Add(transaction);
             await _context.SaveChangesAsync();
+
             return transaction;
         }
 
@@ -29,7 +29,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
-        
+
         public async Task<TransactionHistory?> GetByIdAsync(int transactionId)
         {
             return await _context.TransactionHistories
@@ -37,11 +37,11 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         }
 
         public async Task<List<TransactionHistory>> GetFilteredAsync(
-                int userId,
-                string? transactionType,
-                string? transactionStatus,
-                DateTime? fromDate,
-                DateTime? toDate)
+            int userId,
+            string? transactionType,
+            string? transactionStatus,
+            DateTime? fromDate,
+            DateTime? toDate)
         {
             var query = _context.TransactionHistories
                 .Where(t => t.UserId == userId)
@@ -52,7 +52,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 query = query.Where(t => t.TransactionType == transactionType);
             }
 
-            if(!string.IsNullOrWhiteSpace(transactionStatus))
+            if (!string.IsNullOrWhiteSpace(transactionStatus))
             {
                 query = query.Where(t => t.TransactionStatus == transactionStatus);
             }
@@ -72,75 +72,55 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
                 .ToListAsync();
         }
 
-
-        public async Task<List<TransactionHistory>> GetRecentActivityAsync(int userId)
-        {
-            return await _context.TransactionHistories
-                .Where(t => t.UserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
-                .Take(5)
-                .ToListAsync();
-        }
-
-        public async Task<List<TransactionHistory>> GetAllAsync()
+        public async Task<List<TransactionHistory>> GetAllAsync(
+     int pageNumber,
+     int pageSize)
         {
             return await _context.TransactionHistories
                 .OrderByDescending(t => t.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
 
-        public async Task<List<TransactionHistory>> GetMonthlyReportAsync(int month, int year)
+        public async Task<List<TransactionHistory>> GetMonthlyReportAsync(
+            int month,
+            int year)
         {
             return await _context.TransactionHistories
-                .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year)
+                .Where(t => t.CreatedAt.Month == month &&
+                            t.CreatedAt.Year == year)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
 
-        public async Task<List<TransactionHistory>> GetFinancialLogAsync()
-        {
-            return await _context.TransactionHistories
-                .Where(t => t.TransactionStatus == "Success")
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<bool> UpdateTransactionStatusAsync(int transactionId, string transactionStatus)
+        public async Task<bool> UpdateTransactionStatusAsync(
+            int transactionId,
+            string transactionStatus)
         {
             var transaction = await _context.TransactionHistories
-                            .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
+                .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
+
             if (transaction == null)
             {
                 return false;
             }
 
             transaction.TransactionStatus = transactionStatus;
-            await _context.SaveChangesAsync();
-            return true;
 
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<TransactionHistory>> GetVendorTransactionsAsync(int vendorId)
         {
             return await _context.TransactionHistories
                 .Include(t => t.Branch)
-                .Where(t => t.Branch != null && t.Branch.VendorId == vendorId)
+                .Where(t => t.Branch != null &&
+                            t.Branch.VendorId == vendorId)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
-
-        public async Task<List<TransactionHistory>> GetVendorSuccessfulTransactionsAsync(int vendorId)
-        {
-            return await _context.TransactionHistories
-                .Include(t => t.Branch)
-                .Where(t => t.Branch != null
-                            && t.Branch.VendorId == vendorId
-                            && t.TransactionStatus == "Success")
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync();
-        }
-
-
-
     }
 }
