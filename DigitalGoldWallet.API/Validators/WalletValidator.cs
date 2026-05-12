@@ -4,7 +4,7 @@ using FluentValidation;
 namespace DigitalGoldWallet.API.Validators
 {
     // Add Money Validation
-    public class AddMoneyValidator : AbstractValidator<AddMoneyDTO>
+    public class AddMoneyValidator : AbstractValidator<WalletAmountDTO>
     {
         public AddMoneyValidator()
         {
@@ -20,7 +20,7 @@ namespace DigitalGoldWallet.API.Validators
 
     // Deduct Money Validation
     public class DeductMoneyValidator
-        : AbstractValidator<DeductMoneyDTO>
+        : AbstractValidator<WalletAmountDTO>
     {
         public DeductMoneyValidator()
         {

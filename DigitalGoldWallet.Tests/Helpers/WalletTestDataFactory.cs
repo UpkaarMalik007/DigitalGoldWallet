@@ -14,18 +14,18 @@ namespace DigitalGoldWallet.Tests.Helpers
             };
         }
 
-        public static AddMoneyDTO CreateAddMoneyDTO(int userId = 1, decimal amount = 500)
+        public static WalletAmountDTO CreateAddMoneyDTO(int userId = 1, decimal amount = 500)
         {
-            return new AddMoneyDTO
+            return new WalletAmountDTO
             {
                 UserId = userId,
                 Amount = amount
             };
         }
 
-        public static DeductMoneyDTO CreateDeductMoneyDTO(int userId = 1, decimal amount = 200)
+        public static WalletAmountDTO CreateDeductMoneyDTO(int userId = 1, decimal amount = 200)
         {
-            return new DeductMoneyDTO
+            return new WalletAmountDTO
             {
                 UserId = userId,
                 Amount = amount

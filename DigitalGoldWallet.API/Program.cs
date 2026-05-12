@@ -1,5 +1,6 @@
-//NAVTA
+// Wallet - Himanshi
 
+using System.Text;
 using DigitalGoldWallet.API.Configuration;
 using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Helpers;
@@ -21,7 +22,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
+using DigitalGoldWallet.API.Mappings; 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -206,4 +207,7 @@ app.MapControllers();
 
 app.Run();
 
-//NAVTA
+public partial class Program { }
+
+
+// Wallet - Himanshi

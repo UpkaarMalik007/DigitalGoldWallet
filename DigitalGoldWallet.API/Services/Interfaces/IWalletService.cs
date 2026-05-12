@@ -5,8 +5,8 @@ namespace DigitalGoldWallet.API.Services.Interface
     public interface IWalletService
     {
         Task<decimal> GetWalletBalance(int userId);
-        Task<string> AddMoney(AddMoneyDTO dto);
-        Task<string> DeductMoney(DeductMoneyDTO dto);
+        Task<string> AddMoney(WalletAmountDTO dto);
+        Task<string> DeductMoney(WalletAmountDTO dto);
         Task<List<object>> GetWalletHistory(int userId);
         Task<string> TransferMoney(TransferMoneyDTO dto);
         Task<object> GetLastTransaction(int userId);

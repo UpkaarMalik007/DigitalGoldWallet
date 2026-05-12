@@ -37,10 +37,10 @@ public class CreateUserDtoValidator
     }
 }
 
-public class UpdateUserDtoValidator
-    : AbstractValidator<UpdateUserDto>
+public class UserDtoValidator
+    : AbstractValidator<UserDto>
 {
-    public UpdateUserDtoValidator()
+    public UserDtoValidator()
     {
         RuleFor(x => x.Name)
             .MaximumLength(100)
@@ -66,10 +66,10 @@ public class UpdateUserDtoValidator
     }
 }
 
-public class UpdateAddressDtoValidator
-    : AbstractValidator<UpdateAddressDto>
+public class AddressDtoValidator
+    : AbstractValidator<AddressDto>
 {
-    public UpdateAddressDtoValidator()
+    public AddressDtoValidator()
     {
         RuleFor(x => x.Street)
             .MaximumLength(255)
