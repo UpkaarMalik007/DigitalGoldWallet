@@ -1,9 +1,11 @@
+using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Models;
 
 namespace DigitalGoldWallet.API.Repositories.Interfaces;
 
 public interface IUserRepository
 {
+    Task<AdminDashboardDto> GetDashboardDataAsync();
     Task<User?> GetUserByEmailAsync(string email);
 
     Task<IEnumerable<User>> GetAllUsersAsync();

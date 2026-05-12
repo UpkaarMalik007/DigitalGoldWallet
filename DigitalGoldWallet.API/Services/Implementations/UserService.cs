@@ -20,6 +20,56 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
+    public async Task<AdminDashboardDto> GetDashboardDataAsync()
+    {
+        var dashboard =
+            await _repository.GetDashboardDataAsync();
+
+        if (dashboard == null)
+        {
+            throw new NotFoundException(
+                "Admin dashboard data not found");
+        }
+
+        if (dashboard.TotalUsers < 0)
+        {
+            throw new Exception(
+                "Invalid total users count");
+        }
+
+        if (dashboard.TotalVendors < 0)
+        {
+            throw new Exception(
+                "Invalid total vendors count");
+        }
+
+        if (dashboard.TotalPayments < 0)
+        {
+            throw new Exception(
+                "Invalid total payments count");
+        }
+
+        if (dashboard.SuccessfulPayments < 0)
+        {
+            throw new Exception(
+                "Invalid successful payments count");
+        }
+
+        if (dashboard.FailedPayments < 0)
+        {
+            throw new Exception(
+                "Invalid failed payments count");
+        }
+
+        if (dashboard.TotalGoldTransactions < 0)
+        {
+            throw new Exception(
+                "Invalid gold transactions count");
+        }
+
+        return dashboard;
+    }
+
     public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
     {
         var users = await _repository.GetAllUsersAsync();
