@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalGoldWallet.API.Controllers
 {
-    // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/gold")]
     public class GoldController : ControllerBase
@@ -19,7 +19,7 @@ namespace DigitalGoldWallet.API.Controllers
 
 
         [HttpPost("buy")]
-
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> BuyGold(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Buy;
@@ -28,6 +28,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpPost("sell")]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> SellGold(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Sell;
@@ -36,6 +37,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("holdings/{userId}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetHoldings(int userId)
         {
             var data = await _goldService.GetHoldings(userId);
@@ -53,6 +55,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpPost("convert-to-physical")]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> ConvertToPhysical(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Convert;
@@ -61,6 +64,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("physical-history/{userId}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetPhysicalHistory(int userId)
         {
             var data = await _goldService.GetPhysicalHistory(userId);
@@ -70,6 +74,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("transactions/{userId}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetTransactions(int userId)
         {
             var data = await _goldService.GetTransactions(userId);
@@ -79,6 +84,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("vendor-stock/{branchId}")]
+        [Authorize(Roles = "Vendor,Admin")]
         public async Task<IActionResult> GetVendorStock(int branchId)
         {
             var data = await _goldService.GetVendorStock(branchId);
@@ -98,6 +104,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("portfolio/{userId}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetPortfolio(int userId)
         {
             var data = await _goldService.GetPortfolio(userId);
