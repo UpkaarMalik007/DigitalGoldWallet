@@ -1,4 +1,5 @@
 using DigitalGoldWallet.API.Data;
+using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,27 @@ public class UserRepository : IUserRepository
     public UserRepository(DigitalGoldDbContext context)
     {
         _context = context;
+    }
+
+    public async Task<AdminDashboardDto> GetDashboardDataAsync()
+    {
+        return new AdminDashboardDto
+        {
+            TotalUsers = await _context.Users.CountAsync(),
+
+            TotalVendors = await _context.Vendors.CountAsync(),
+
+            TotalPayments = await _context.Payments.CountAsync(),
+
+            SuccessfulPayments = await _context.Payments
+                .CountAsync(p => p.PaymentStatus == "Success"),
+
+            FailedPayments = await _context.Payments
+                .CountAsync(p => p.PaymentStatus == "Failed"),
+
+            TotalGoldTransactions = await _context.TransactionHistories
+                .CountAsync()
+        };
     }
 
     public async Task<User?> GetUserByEmailAsync(string email)

@@ -183,8 +183,29 @@ public class UsersController : ControllerBase
         });
     }
 
+    [HttpGet("dashboard")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAdminDashboard()
+    {
+        var result =
+            await _service.GetDashboardDataAsync();
+
+        if (result == null)
+        {
+            throw new InvalidOperationException(
+                "Controller failed to receive admin dashboard data");
+        }
+
+        return Ok(new
+        {
+            StatusCode = 200,
+            Message = "Admin dashboard fetched successfully",
+            Data = result
+        });
+    }
+
     [HttpGet("dashboard/{userId}")]
-    [Authorize(Roles = "User,Admin")]
+    [Authorize(Roles = "User")]
     public async Task<IActionResult> GetDashboard(
         int userId)
     {
