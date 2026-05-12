@@ -1,15 +1,26 @@
-var builder = WebApplication.CreateBuilder(args);
+using DigitalGoldWallet.MVC.Services;
 
-// Add services to the container.
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
 
-var app = builder.Build();
+builder.Services.AddHttpClient("DigitalGoldWalletApi", client =>
+{
+    string baseUrl = builder.Configuration["ApiSettings:BaseUrl"]
+        ?? throw new InvalidOperationException("ApiSettings:BaseUrl is missing in appsettings.json.");
 
-// Configure the HTTP request pipeline.
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddScoped<IVendorApiService, VendorApiService>();
+
+WebApplication app = builder.Build();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -17,11 +28,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Vendor}/{action=Dashboard}/{id?}");
 
 app.Run();

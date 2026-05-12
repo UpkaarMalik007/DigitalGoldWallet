@@ -1,0 +1,21 @@
+@{
+    string pageTitle = ViewData["PageHeader"]?.ToString() ?? ViewData["Title"]?.ToString() ?? "Digital Gold Wallet";
+    string loggedInName = Context.Session.GetString("UserName") ?? "User";
+    string loggedInRole = Context.Session.GetString("UserRole") ?? "User";
+    bool isVendor = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
+}
+<header class="sticky top-0 z-40 h-16 bg-cream border-b border-line flex items-center justify-between px-8">
+    <h1 class="text-xl font-extrabold text-gold-dark">@pageTitle</h1>
+    <div class="flex items-center gap-7 text-sm font-bold">
+        @if (!isVendor)
+        {
+            <a asp-controller="Vendor" asp-action="Index" class="hover:text-gold-dark">Vendor Directory</a>
+        }
+        else
+        {
+            <a asp-controller="Vendor" asp-action="Dashboard" class="hover:text-gold-dark">Vendor Dashboard</a>
+        }
+        <span>@loggedInName</span>
+        <a asp-controller="Account" asp-action="Logout" class="hover:text-gold-dark">Logout</a>
+    </div>
+</header>
