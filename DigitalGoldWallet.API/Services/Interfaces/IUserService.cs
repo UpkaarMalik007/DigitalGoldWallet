@@ -4,6 +4,7 @@ namespace DigitalGoldWallet.API.Services.Interfaces;
 
 public interface IUserService
 {
+    Task<AdminDashboardDto> GetDashboardDataAsync();
     Task<IEnumerable<UserDto>> GetAllUsersAsync();
 
     Task<UserDto> GetUserByIdAsync(int id);
