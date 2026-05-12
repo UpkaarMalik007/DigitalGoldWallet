@@ -16,7 +16,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
 
         public async Task<User?> GetUserById(int userId)
         {
-            return await _context.Users.FirstOrDefaultAsync(x => x.UserId == userId);
+            return await _context.Users
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.UserId == userId);
         }
 
         public async Task UpdateUser(User user)
@@ -37,6 +39,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<Payment>> GetWalletHistory(int userId)
         {
             return await _context.Payments
+                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
         }
@@ -49,6 +52,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<Payment?> GetLastTransaction(int userId)
         {
             return await _context.Payments
+                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync();
@@ -57,6 +61,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<Payment>> GetTransactionsByDate(int userId, DateTime startDate, DateTime endDate)
         {
             return await _context.Payments
+                .Include(x => x.User)
                 .Where(x =>
                     x.UserId == userId &&
                     x.CreatedAt >= startDate &&
@@ -70,6 +75,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         )
         {
             return await _context.Payments
+                .Include(x => x.User)
                 .Where(x =>
                     x.UserId == userId &&
                     x.PaymentStatus == status)
@@ -85,6 +91,7 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<Payment>> GetAllTransactions(int userId)
         {
             return await _context.Payments
+                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
         }

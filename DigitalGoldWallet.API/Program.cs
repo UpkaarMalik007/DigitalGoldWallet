@@ -1,3 +1,5 @@
+// Wallet - Himanshi
+
 using System.Text;
 using DigitalGoldWallet.API.Configuration;
 using DigitalGoldWallet.API.Data;
@@ -19,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using DigitalGoldWallet.API.Mappings; 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -201,3 +204,6 @@ app.MapControllers();
 app.Run();
 
 public partial class Program { }
+
+
+// Wallet - Himanshi
