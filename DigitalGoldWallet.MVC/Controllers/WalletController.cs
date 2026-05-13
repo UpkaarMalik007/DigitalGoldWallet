@@ -16,12 +16,21 @@ namespace DigitalGoldWallet.MVC.Controllers
 
         private int GetUserId()
         {
+            int? sessionUserId = HttpContext.Session.GetInt32("UserId");
+
+            if (sessionUserId.HasValue && sessionUserId.Value > 0)
+            {
+                return sessionUserId.Value;
+            }
+
             var userIdClaim = User.FindFirst("UserId")?.Value;
 
-            if (string.IsNullOrEmpty(userIdClaim))
-                return 1;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
 
-            return int.Parse(userIdClaim);
+            return 1;
         }
 
         // 1. Get wallet balance
@@ -30,7 +39,12 @@ namespace DigitalGoldWallet.MVC.Controllers
             int userId = GetUserId();
             var balanceData = await _apiService.GetWalletBalance(userId);
             var history = await _apiService.GetWalletHistory(userId);
-            // ViewBag.UserName = balanceData.Name;
+
+            if (!string.IsNullOrWhiteSpace(_apiService.LastErrorMessage))
+            {
+                ViewBag.ApiErrorMessage = _apiService.LastErrorMessage;
+            }
+
             var model = new WalletDashboardViewModel
             {
                 Balance = balanceData.Balance,

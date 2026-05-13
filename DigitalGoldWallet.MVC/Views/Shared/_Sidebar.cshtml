@@ -10,40 +10,34 @@
             ? "bg-gold text-[#554300] shadow-sm"
             : "text-[#4d4635] hover:bg-[#eae1d4]";
 
-    string navClass(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
+    string transactionNavClass = currentController.Equals("Transaction", StringComparison.OrdinalIgnoreCase)
         ? "bg-gold text-[#554300] shadow-sm"
         : "text-[#4d4635] hover:bg-[#eae1d4]";
 }
 <aside class="fixed left-0 top-0 h-full w-64 bg-cream-2 border-r border-line flex flex-col px-4 py-6 z-50">
-    <a asp-controller="Vendor" asp-action="Dashboard" class="text-[21px] leading-tight font-extrabold text-gold-dark mb-10 px-3 tracking-tight">
+    <a asp-controller="Vendor" asp-action="Dashboard" class="text-[21px] leading-tight font-extrabold text-gold-dark mb-10 px-3 tracking-tight no-underline">
         Digital Gold<br />Wallet
     </a>
 
     <nav class="space-y-2">
         @if (isVendor)
         {
-            <a asp-controller="Vendor" asp-action="Dashboard" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition @vendorNavClass("Dashboard")">
+            <a asp-controller="Vendor" asp-action="Dashboard" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition no-underline @vendorNavClass("Dashboard")">
                 <span class="material-symbols-outlined text-[26px]">dashboard</span>
                 <span>Dashboard</span>
             </a>
-            <a asp-controller="Vendor" asp-action="Branches" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition @vendorNavClass("Branches", "AddBranch")">
+            <a asp-controller="Vendor" asp-action="Branches" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition no-underline @vendorNavClass("Branches", "AddBranch")">
                 <span class="material-symbols-outlined text-[26px]">store</span>
                 <span>Vendor Branches</span>
             </a>
-            <a asp-controller="Transaction" asp-action="History" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition @navClass("Transaction")">
+            <a asp-controller="Transaction" asp-action="VendorTransactions" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition no-underline @transactionNavClass">
                 <span class="material-symbols-outlined text-[26px]">receipt_long</span>
                 <span>Transactions</span>
-            <a asp-controller="Transaction" asp-action="VendorTransactions" class="flex items-center gap-4 rounded-xl px-4 py-3 text-[16px] transition @vendorNavClass("Transactions")">
-                <span class="material-symbols-outlined text-[28px]">receipt_long</span><span>Transactions</span>
             </a>
         }
         else
         {
-            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition @navClass("Home")">
-                <span class="material-symbols-outlined text-[26px]">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a asp-controller="Vendor" asp-action="Index" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition @navClass("Vendor")">
+            <a asp-controller="Vendor" asp-action="Index" class="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition no-underline @vendorNavClass("Index", "Details")">
                 <span class="material-symbols-outlined text-[26px]">store</span>
                 <span>Vendors</span>
             </a>
@@ -61,7 +55,7 @@
             </div>
         </div>
 
-        <a asp-controller="Account" asp-action="Logout" class="flex items-center gap-3 text-[#4d4635] px-4 py-3 rounded-xl hover:bg-[#eae1d4] font-semibold">
+        <a asp-controller="Account" asp-action="Logout" class="flex items-center gap-3 text-[#4d4635] px-4 py-3 rounded-xl hover:bg-[#eae1d4] font-semibold no-underline">
             <span class="material-symbols-outlined text-[26px]">logout</span>
             <span>Logout</span>
         </a>

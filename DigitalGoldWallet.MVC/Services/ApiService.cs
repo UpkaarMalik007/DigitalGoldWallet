@@ -1,138 +1,241 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using DigitalGoldWallet.MVC.Models;
+using DigitalGoldWallet.MVC.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text;
-// Wallet - Himanshi
 
+namespace DigitalGoldWallet.MVC.Services;
 
-using DigitalGoldWallet.MVC.ViewModels;
-using DigitalGoldWallet.MVC.Models;
-namespace DigitalGoldWallet.MVC.Services
+public class ApiService
 {
-    public class ApiService
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly JsonSerializerOptions _jsonOptions = new()
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly HttpClient _httpClient;
+        PropertyNameCaseInsensitive = true
+    };
 
-        public ApiService(IHttpClientFactory httpClientFactory)
-        public ApiService(HttpClient httpClient)
+    public ApiService(
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        _httpClientFactory = httpClientFactory;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public string? LastErrorMessage { get; private set; }
+
+    private HttpClient CreateClient()
+    {
+        HttpClient client = _httpClientFactory.CreateClient("api");
+
+        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+            ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
+
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            _httpClientFactory = httpClientFactory;
-            _httpClient = httpClient;
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
         }
 
-        public string? LastErrorMessage { get; private set; }
+        return client;
+    }
 
-        private HttpClient CreateClient()
-        // Wallet Balance
-        public async Task<WalletBalanceViewModel> GetWalletBalance(int userId)
+    public async Task<JObject?> LoginUserAsync(LoginViewModel model)
+    {
+        return await PostAsync("api/Auth/login-user", model);
+    }
+
+    public async Task<JObject?> LoginVendorAsync(LoginViewModel model)
+    {
+        return await PostAsync("api/Auth/login-vendor", model);
+    }
+
+    public async Task<bool> RegisterUserAsync(RegisterViewModel model)
+    {
+        LastErrorMessage = null;
+
+        HttpClient client = CreateClient();
+        string json = JsonConvert.SerializeObject(model);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response = await client.PostAsync("api/Auth/register-user", content);
+
+        if (!response.IsSuccessStatusCode)
         {
-            return _httpClientFactory.CreateClient("api");
-        }
-            var response = await _httpClient.GetAsync($"api/wallet/balance/{userId}");
-            response.EnsureSuccessStatusCode();
-
-        // USER LOGIN
-            var result = await response.Content.ReadFromJsonAsync<WalletBalanceViewModel>();
-
-        public async Task<JObject?> LoginUserAsync(LoginViewModel model)
-        {
-            return await PostAsync("api/Auth/login-user", model);
-            return result ?? new WalletBalanceViewModel();
-        }
-
-        // VENDOR LOGIN
-
-        public async Task<JObject?> LoginVendorAsync(LoginViewModel model)
-        public async Task AddMoney(WalletAmountModel model)
-        {
-            return await PostAsync("api/Auth/login-vendor", model);
-            var response =await _httpClient.PostAsJsonAsync("api/wallet/add-money", model);
-            response.EnsureSuccessStatusCode();
-        }
-
-        // REGISTER USER
-        // public async Task TransferMoney(TransferMoneyModel model)
-        // {
-        //     var response = await _httpClient.PostAsJsonAsync("api/wallet/transfer", model);
-        //     response.EnsureSuccessStatusCode();
-        // }
-
-        public async Task<bool> RegisterUserAsync(RegisterViewModel model)
-        // public async Task<List<UserDropdownModel>> GetUsers()
-        // {
-        //     var response = await _httpClient.GetAsync("api/wallet/users");
-        //     response.EnsureSuccessStatusCode();
-        //     return await response.Content
-        //         .ReadFromJsonAsync
-        //         <List<UserDropdownModel>>()
-        //         ?? new List<UserDropdownModel>();
-        // }
-
-        public async Task<List<WalletHistoryViewModel>> GetWalletHistory(int userId)
-        {
-            var client = CreateClient();
-
-            string json = JsonConvert.SerializeObject(model);
-
-            var content = new StringContent(
-                json,
-                Encoding.UTF8,
-                "application/json");
-
-            var response = await client.PostAsync(
-                "api/Auth/register-user",
-                content);
-            var response = await _httpClient.GetAsync($"api/wallet/history/{userId}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content
-                .ReadFromJsonAsync <List<WalletHistoryViewModel>>() 
-                ?? new List<WalletHistoryViewModel>();
+            LastErrorMessage = await ReadErrorMessageAsync(response, "Registration failed.");
+            return false;
         }
 
-            if (!response.IsSuccessStatusCode)
-        public async Task<WalletSummaryModel> GetWalletSummary(int userId)
-            {
-                LastErrorMessage = "Registration failed.";
-                return false;
-            var response = await _httpClient.GetAsync($"api/wallet/summary/{userId}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content
-                .ReadFromJsonAsync<WalletSummaryModel>()
-                ?? new WalletSummaryModel();
-            }
+        return true;
+    }
 
-            return response.IsSuccessStatusCode;
+    public async Task<WalletBalanceViewModel> GetWalletBalance(int userId)
+    {
+        LastErrorMessage = null;
+
+        HttpResponseMessage response =
+            await CreateClient().GetAsync($"api/wallet/balance/{userId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            LastErrorMessage = await ReadErrorMessageAsync(
+                response,
+                "Unable to fetch wallet balance.");
+
+            return new WalletBalanceViewModel();
         }
 
-        // COMMON POST METHOD
+        return await ReadDataOrDirectAsync<WalletBalanceViewModel>(response)
+            ?? new WalletBalanceViewModel();
+    }
 
-        private async Task<JObject?> PostAsync(string url, object model)
+    public async Task AddMoney(WalletAmountModel model)
+    {
+        LastErrorMessage = null;
+
+        HttpResponseMessage response =
+            await CreateClient().PostAsJsonAsync("api/wallet/add-money", model);
+
+        if (!response.IsSuccessStatusCode)
         {
-            var client = CreateClient();
-
-            string json = JsonConvert.SerializeObject(model);
-
-            var content = new StringContent(
-                json,
-                Encoding.UTF8,
-                "application/json");
-
-            var response = await client.PostAsync(url, content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                LastErrorMessage = "Invalid credentials.";
-                return null;
-            }
-
-            string responseBody = await response.Content.ReadAsStringAsync();
-
-            if (string.IsNullOrWhiteSpace(responseBody))
-                return null;
-
-            return JObject.Parse(responseBody);
+            LastErrorMessage = await ReadErrorMessageAsync(
+                response,
+                "Unable to add money.");
         }
     }
+
+    public async Task<List<WalletHistoryViewModel>> GetWalletHistory(int userId)
+    {
+        LastErrorMessage = null;
+
+        HttpResponseMessage response =
+            await CreateClient().GetAsync($"api/wallet/history/{userId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            LastErrorMessage = await ReadErrorMessageAsync(
+                response,
+                "Unable to fetch wallet history.");
+
+            return new List<WalletHistoryViewModel>();
+        }
+
+        return await ReadDataOrDirectAsync<List<WalletHistoryViewModel>>(response)
+            ?? new List<WalletHistoryViewModel>();
+    }
+
+    public async Task<WalletSummaryModel> GetWalletSummary(int userId)
+    {
+        LastErrorMessage = null;
+
+        HttpResponseMessage response =
+            await CreateClient().GetAsync($"api/wallet/summary/{userId}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            LastErrorMessage = await ReadErrorMessageAsync(
+                response,
+                "Unable to fetch wallet summary.");
+
+            return new WalletSummaryModel();
+        }
+
+        return await ReadDataOrDirectAsync<WalletSummaryModel>(response)
+            ?? new WalletSummaryModel();
+    }
+
+    private async Task<JObject?> PostAsync(string url, object model)
+    {
+        LastErrorMessage = null;
+
+        HttpClient client = CreateClient();
+        string json = JsonConvert.SerializeObject(model);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response = await client.PostAsync(url, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            LastErrorMessage = await ReadErrorMessageAsync(
+                response,
+                "Invalid credentials.");
+
+            return null;
+        }
+
+        string responseBody = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            return null;
+        }
+
+        return JObject.Parse(responseBody);
+    }
+
+    private async Task<T?> ReadDataOrDirectAsync<T>(HttpResponseMessage response)
+    {
+        string json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return default;
+        }
+
+        try
+        {
+            ApiResponse<T>? wrapped =
+                System.Text.Json.JsonSerializer.Deserialize<ApiResponse<T>>(
+                    json,
+                    _jsonOptions);
+
+            if (wrapped is not null && wrapped.Data is not null)
+            {
+                return wrapped.Data;
+            }
+        }
+        catch
+        {
+            // Fall through and try direct deserialization.
+        }
+
+        return System.Text.Json.JsonSerializer.Deserialize<T>(
+            json,
+            _jsonOptions);
+    }
+
+    private async Task<string> ReadErrorMessageAsync(
+        HttpResponseMessage response,
+        string fallback)
+    {
+        string json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return fallback;
+        }
+
+        try
+        {
+            ApiResponse<object>? error =
+                System.Text.Json.JsonSerializer.Deserialize<ApiResponse<object>>(
+                    json,
+                    _jsonOptions);
+
+            if (!string.IsNullOrWhiteSpace(error?.Message))
+            {
+                return error.Message;
+            }
+        }
+        catch
+        {
+            // Ignore invalid JSON.
+        }
+
+        return json;
+    }
 }
-// Wallet - Himanshi

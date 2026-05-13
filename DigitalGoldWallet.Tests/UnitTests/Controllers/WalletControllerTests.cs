@@ -1,5 +1,6 @@
 using DigitalGoldWallet.API.Controllers;
 using DigitalGoldWallet.API.DTO;
+using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -21,11 +22,13 @@ namespace DigitalGoldWallet.Tests.UnitTests
             _walletController = new WalletController(_mockWalletService.Object);
         }
 
-    
+        // ─── POSITIVE TESTS ───────────────────────────────────────────
+
         [Fact]
         public async Task GetWalletBalance_ReturnsOk_WithBalance()
         {
-            var user = WalletTestDataFactory.CreateUser(1, 5000); 
+            var user = WalletTestDataFactory.CreateUser(1, 5000);
+
             _mockWalletService
                 .Setup(x => x.GetWalletBalance(user.UserId))
                 .ReturnsAsync(user.Balance);
@@ -39,7 +42,8 @@ namespace DigitalGoldWallet.Tests.UnitTests
         [Fact]
         public async Task AddMoney_ReturnsOk_WhenSuccessful()
         {
-            var dto = WalletTestDataFactory.CreateAddMoneyDTO(); 
+            WalletAmountDTO dto = WalletTestDataFactory.CreateAddMoneyDTO();
+
             _mockWalletService
                 .Setup(x => x.AddMoney(dto))
                 .ReturnsAsync("Money Added Successfully");
@@ -53,7 +57,8 @@ namespace DigitalGoldWallet.Tests.UnitTests
         [Fact]
         public async Task DeductMoney_ReturnsOk_WhenSuccessful()
         {
-            var dto = WalletTestDataFactory.CreateDeductMoneyDTO(); 
+            WalletAmountDTO dto = WalletTestDataFactory.CreateDeductMoneyDTO();
+
             _mockWalletService
                 .Setup(x => x.DeductMoney(dto))
                 .ReturnsAsync("Money Deducted Successfully");
@@ -65,67 +70,75 @@ namespace DigitalGoldWallet.Tests.UnitTests
         }
 
         [Fact]
-        public async Task TransferMoney_ReturnsOk_WhenSuccessful()
+        public async Task GetWalletHistory_ReturnsOk_WithHistory()
         {
-            var dto = WalletTestDataFactory.CreateTransferMoneyDTO(); 
-            _mockWalletService
-                .Setup(x => x.TransferMoney(dto))
-                .ReturnsAsync("Transfer Money Successfully");
+            List<object> history = new()
+            {
+                new { TransactionId = 1, Amount = 500m, TransactionType = "Credit" }
+            };
 
-            var result = await _walletController.TransferMoney(dto);
+            _mockWalletService
+                .Setup(x => x.GetWalletHistory(1))
+                .ReturnsAsync(history);
+
+            var result = await _walletController.GetWalletHistory(1);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Transfer Money Successfully", okResult.Value);
+            Assert.Equal(history, okResult.Value);
         }
 
         // ─── NEGATIVE TESTS ───────────────────────────────────────────
 
         [Fact]
-        public async Task GetWalletHistory_ReturnsOk_WhenEmpty()
+        public async Task GetWalletBalance_ReturnsNotFound_WhenUserDoesNotExist()
         {
             _mockWalletService
-                .Setup(x => x.GetWalletHistory(1))
-                .ReturnsAsync(new List<object>());
+                .Setup(x => x.GetWalletBalance(99))
+                .ThrowsAsync(new NotFoundException("User not found."));
 
-            var result = await _walletController.GetWalletHistory(1);
+            var result = await _walletController.GetWalletBalance(99);
 
-            Assert.IsType<OkObjectResult>(result); 
+            Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
-        public async Task AddMoney_ThrowsException_WhenAmountInvalid()
+        public async Task AddMoney_ReturnsBadRequest_WhenAmountInvalid()
         {
-            var dto = WalletTestDataFactory.CreateAddMoneyDTO(1, -100); 
+            WalletAmountDTO dto = WalletTestDataFactory.CreateAddMoneyDTO(1, -100);
+
             _mockWalletService
                 .Setup(x => x.AddMoney(dto))
-                .ThrowsAsync(new Exception("Invalid Amount"));
+                .ThrowsAsync(new BadRequestException("Invalid amount."));
 
-            await Assert.ThrowsAsync<Exception>(() =>
-                _walletController.AddMoney(dto));
+            var result = await _walletController.AddMoney(dto);
+
+            Assert.IsType<BadRequestResult>(result);
         }
 
         [Fact]
-        public async Task DeductMoney_ThrowsException_WhenBalanceLow()
+        public async Task DeductMoney_ReturnsBadRequest_WhenBalanceLow()
         {
-            var dto = WalletTestDataFactory.CreateDeductMoneyDTO(1, 5000); 
+            WalletAmountDTO dto = WalletTestDataFactory.CreateDeductMoneyDTO(1, 5000);
+
             _mockWalletService
                 .Setup(x => x.DeductMoney(dto))
-                .ThrowsAsync(new Exception("Insufficient Balance"));
+                .ThrowsAsync(new BadRequestException("Insufficient balance."));
 
-            await Assert.ThrowsAsync<Exception>(() =>
-                _walletController.DeductMoney(dto));
+            var result = await _walletController.DeductMoney(dto);
+
+            Assert.IsType<BadRequestResult>(result);
         }
 
         [Fact]
-        public async Task TransferMoney_ThrowsException_WhenUsersInvalid()
+        public async Task GetWalletHistory_ReturnsNotFound_WhenUserDoesNotExist()
         {
-            var dto = WalletTestDataFactory.CreateTransferMoneyDTO(1, 1, 100); 
             _mockWalletService
-                .Setup(x => x.TransferMoney(dto))
-                .ThrowsAsync(new Exception("Invalid Transfer"));
+                .Setup(x => x.GetWalletHistory(99))
+                .ThrowsAsync(new NotFoundException("User not found."));
 
-            await Assert.ThrowsAsync<Exception>(() =>
-                _walletController.TransferMoney(dto));
+            var result = await _walletController.GetWalletHistory(99);
+
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

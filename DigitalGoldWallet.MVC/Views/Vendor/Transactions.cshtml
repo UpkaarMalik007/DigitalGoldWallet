@@ -1,79 +1,11 @@
-@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorTransactionViewModel>
 @{
-    Layout = "_VendorLayout";
+    Layout = "~/Views/Shared/_VendorLayout.cshtml";
     ViewData["Title"] = "Vendor Transactions";
     ViewData["PageHeader"] = "Vendor Transactions";
 }
 
-<div class="space-y-8">
-    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-            <h2 class="text-4xl font-extrabold tracking-tight">Transactions</h2>
-            <p class="mt-2 text-muted text-lg">Transaction history fetched from the API for the logged-in vendor.</p>
-        </div>
-        <a asp-action="Dashboard" class="rounded-xl border border-line px-6 py-3 font-extrabold text-muted hover:bg-cream-2">Back to Dashboard</a>
-    </div>
-
-    @if (ViewBag.ApiErrorMessage != null)
-    {
-        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-medium flex items-start gap-3">
-            <span class="material-symbols-outlined">error</span>
-            <span>@ViewBag.ApiErrorMessage</span>
-        </div>
-    }
-
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-7">
-        <div class="rounded-2xl border border-line bg-white p-7 shadow-soft">
-            <p class="text-sm font-bold text-muted">Total Transactions</p>
-            <p class="mt-2 text-4xl font-extrabold">@Model.Count</p>
-        </div>
-        <div class="rounded-2xl border border-line bg-white p-7 shadow-soft">
-            <p class="text-sm font-bold text-muted">Total Quantity</p>
-            <p class="mt-2 text-4xl font-extrabold">@Model.Sum(tx => tx.Quantity).ToString("N2") gm</p>
-        </div>
-        <div class="rounded-2xl border border-line bg-white p-7 shadow-soft">
-            <p class="text-sm font-bold text-muted">Total Amount</p>
-            <p class="mt-2 text-4xl font-extrabold">₹@Model.Sum(tx => tx.Amount).ToString("N2")</p>
-        </div>
-    </section>
-
-    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
-        <div class="p-7 border-b border-line">
-            <h3 class="text-2xl font-extrabold">Transaction List</h3>
-            <p class="mt-1 text-muted">Only real API/database transaction data is shown.</p>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-cream-2 text-sm uppercase tracking-[0.12em] text-muted">
-                    <tr>
-                        <th class="px-7 py-4">Date</th>
-                        <th class="px-7 py-4">Type</th>
-                        <th class="px-7 py-4">Quantity</th>
-                        <th class="px-7 py-4">Amount</th>
-                        <th class="px-7 py-4 text-right">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-line">
-                    @if (Model.Any())
-                    {
-                        @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorTransactionViewModel tx in Model)
-                        {
-                            <tr class="hover:bg-cream-2/70">
-                                <td class="px-7 py-5">@tx.CreatedAt.ToString("dd MMM yyyy")</td>
-                                <td class="px-7 py-5">@tx.TransactionType</td>
-                                <td class="px-7 py-5 font-extrabold">@tx.Quantity.ToString("N2") gm</td>
-                                <td class="px-7 py-5 font-extrabold">₹@tx.Amount.ToString("N2")</td>
-                                <td class="px-7 py-5 text-right"><span class="rounded-lg bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">@tx.TransactionStatus</span></td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr><td class="px-7 py-8 text-center text-muted" colspan="5">No transactions available for this vendor.</td></tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </section>
+<div class="rounded-2xl border border-line bg-white p-10 shadow-soft">
+    <h2 class="text-3xl font-extrabold">Vendor Transactions</h2>
+    <p class="mt-3 text-muted">Transactions are handled by the transaction module.</p>
+    <a asp-controller="Transaction" asp-action="VendorTransactions" class="mt-6 inline-flex rounded-xl bg-gold px-6 py-3 font-extrabold text-[#554300] no-underline">Open Transactions</a>
 </div>

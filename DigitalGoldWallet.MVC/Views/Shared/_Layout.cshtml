@@ -1,86 +1,127 @@
 @{
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+
     string loggedInName = Context.Session.GetString("UserName")
         ?? Context.Session.GetString("Name")
         ?? "User";
 
-    string initials = string.Join("", loggedInName
-        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-        .Take(2)
-        .Select(part => part[0]))
-        .ToUpper();
+    string initial = string.IsNullOrWhiteSpace(loggedInName)
+        ? "U"
+        : loggedInName.Trim()[0].ToString().ToUpper();
 
-    if (string.IsNullOrWhiteSpace(initials))
-    {
-        initials = "U";
-    }
+    string activeClass = "bg-[#d4af37] text-[#554300] shadow-sm";
+    string inactiveClass = "text-[#4d4635] hover:bg-[#efe7da]";
 
-    string pageTitle = ViewData["Title"]?.ToString() ?? "Digital Gold Wallet";
+    bool isDashboardActive = currentController.Equals("User", StringComparison.OrdinalIgnoreCase)
+        && currentAction.Equals("Dashboard", StringComparison.OrdinalIgnoreCase);
+
+    bool isProfileActive = currentController.Equals("User", StringComparison.OrdinalIgnoreCase)
+        && currentAction.Equals("Profile", StringComparison.OrdinalIgnoreCase);
+
+    bool isWalletActive = currentController.Equals("Wallet", StringComparison.OrdinalIgnoreCase);
+    bool isGoldActive = currentController.Equals("Gold", StringComparison.OrdinalIgnoreCase);
+    bool isTransactionActive = currentController.Equals("Transaction", StringComparison.OrdinalIgnoreCase);
+    bool isVendorsActive = currentController.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@pageTitle - Digital Gold Wallet</title>
+    <title>@ViewData["Title"] - Digital Gold Wallet</title>
 
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "gold": "#d4af37",
-                        "gold-dark": "#735c00",
-                        "cream": "#fff8f0",
-                        "cream-2": "#fbf3e5",
-                        "cream-3": "#f5eddf",
-                        "line": "#d0c5af",
-                        "ink": "#1f1b13",
-                        "muted": "#5f5e5e"
-                    },
-                    boxShadow: {
-                        soft: "0 8px 26px rgba(31,27,19,0.08)"
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff8f0;
+            overflow-x: hidden;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24;
+        }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom py-3">
-        <div class="container">
-            <a class="navbar-brand text-gold-dark d-flex align-items-center" asp-controller="Gold" asp-action="Dashboard">
-                <i class="bi bi-safe2-fill me-2"></i>GOLD<span class="text-dark opacity-50">WALLET</span>
-            </a>
+<body class="bg-[#fff8f0] text-[#1f1b13] overflow-x-hidden">
+    <header class="sticky top-0 z-50 h-16 bg-white border-b border-[#e9ecef] flex items-center justify-between px-6 lg:px-10">
+        <a asp-controller="User" asp-action="Dashboard" class="inline-flex items-center gap-2 text-xl font-extrabold text-[#735c00] no-underline">
+            <span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
+            <span>Digital Gold Wallet</span>
+        </a>
 
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-gold-primary p-2 text-dark-brown fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 0.85rem;">
-                    @initials
-                </div>
-                <span class="fw-600 small text-dark-brown">@loggedInName</span>
-                <a asp-controller="Account" asp-action="Logout" class="small fw-bold text-gold-dark text-decoration-none">Logout</a>
+        <div class="flex items-center gap-3 min-w-0">
+            <span class="hidden sm:inline text-sm text-[#6c757d] whitespace-nowrap">Welcome,</span>
+            <span class="font-semibold text-[#735c00] truncate max-w-[240px]">@loggedInName</span>
+        </div>
+    </header>
+
+    <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#fbf3e5] border-r border-[#e9ecef] hidden md:flex flex-col px-4 py-6">
+        <div class="flex items-center gap-3 mb-8 min-w-0">
+            <div class="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                @initial
+            </div>
+            <div class="min-w-0">
+                <h4 class="font-semibold text-[#1f1b13] truncate">@loggedInName</h4>
+                <p class="text-sm text-[#6c757d]">Gold Investor</p>
             </div>
         </div>
-    </nav>
 
-    <main role="main">
-        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Gold"
-            && ViewContext.RouteData.Values["action"]?.ToString() != "Dashboard")
+        <nav class="flex flex-col gap-2 flex-1">
+            <a asp-controller="User" asp-action="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isDashboardActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+
+            <a asp-controller="Wallet" asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isWalletActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                Wallet
+            </a>
+
+            <a asp-controller="Gold" asp-action="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isGoldActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">payments</span>
+                Gold
+            </a>
+
+            <a asp-controller="Transaction" asp-action="UserTransactions" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isTransactionActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">receipt_long</span>
+                Transactions
+            </a>
+
+            <a asp-controller="Vendor" asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isVendorsActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">store</span>
+                Vendors
+            </a>
+
+            <a asp-controller="User" asp-action="Profile" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isProfileActive ? activeClass : inactiveClass) font-semibold transition no-underline">
+                <span class="material-symbols-outlined">person</span>
+                Profile
+            </a>
+        </nav>
+
+        <div class="pt-6 border-t border-[#e9ecef]">
+            <a asp-controller="Account" asp-action="Logout" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition no-underline">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="md:ml-64 min-h-[calc(100vh-4rem)] p-6 lg:p-10 overflow-x-hidden">
+        @if (currentController.Equals("Gold", StringComparison.OrdinalIgnoreCase)
+            && !currentAction.Equals("Dashboard", StringComparison.OrdinalIgnoreCase))
         {
-            <div class="container mt-3 mb-2">
-                <a asp-controller="Gold" asp-action="Dashboard" class="btn btn-link text-gold-dark p-0 text-decoration-none fw-bold small">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            <div class="mb-6">
+                <a asp-controller="Gold" asp-action="Dashboard" class="inline-flex items-center gap-2 text-[#735c00] font-bold hover:underline no-underline">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Back to Dashboard
                 </a>
             </div>
         }
@@ -96,147 +137,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-@* Wallet - Himanshi *@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
-
-    <title>Digital Gold Wallet</title>
-
-    <link rel="stylesheet"
-          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <style>
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #fbfbfb;
-            font-family: Arial, sans-serif;
-        }
-
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            background-color: #ffffff;
-            border-right: 1px solid #ddd;
-            padding-top: 20px;
-        }
-
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: #000000;
-            padding-left: 25px;
-            margin-bottom: 40px;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 15px 25px;
-            color: #333;
-            text-decoration: none;
-            font-size: 18px;
-            border-radius: 10px;
-            margin: 8px 15px;
-        }
-
-        .sidebar a:hover {
-            background-color: #d4af37;
-            color: white;
-        }
-
-        .sidebar .active {
-            background-color: #d4af37;
-            color: white;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-
-        .topbar {
-            background-color: white;
-            padding: 15px 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .profile-name {
-            font-weight: bold;
-        }
-
-    </style>
-</head>
-
-<body>
-
-    <!-- Sidebar -->
-
-    <div class="sidebar">
-
-        <div class="logo">
-            Digital Gold Wallet
-        </div>
-
-        <a href="/">Dashboard</a>
-
-        <a class="active"
-           href="/Wallet">
-            Wallet
-        </a>
-
-        <a href="#">Gold</a>
-
-        <a href="#">
-            Transactions
-        </a>
-
-        <a href="#">
-            Users
-        </a>
-
-        <a href="#">
-            Vendors
-        </a>
-
-    </div>
-
-
-    <!-- Main Content -->
-
-    <div class="main-content">
-
-        <!-- Topbar -->
-
-        <div class="topbar">
-
-            <h4>
-                Your Wallet
-            </h4>
-
-            <div class="profile-name">
-                @(User.Identity?.Name ?? "User")
-            </div>
-
-        </div>
-
-        @RenderBody()
-
-    </div>
-
-</body>
-</html>
-
-@* Wallet - Himanshi *@

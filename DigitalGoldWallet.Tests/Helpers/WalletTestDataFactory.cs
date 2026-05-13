@@ -1,4 +1,4 @@
-﻿using DigitalGoldWallet.API.Models;
+using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.DTO;
 
 namespace DigitalGoldWallet.Tests.Helpers
@@ -28,19 +28,6 @@ namespace DigitalGoldWallet.Tests.Helpers
             return new WalletAmountDTO
             {
                 UserId = userId,
-                Amount = amount
-            };
-        }
-
-        public static TransferMoneyDTO CreateTransferMoneyDTO(
-            int senderId = 1,
-            int receiverId = 2,
-            decimal amount = 300)
-        {
-            return new TransferMoneyDTO
-            {
-                SenderId = senderId,
-                ReceiverId = receiverId,
                 Amount = amount
             };
         }

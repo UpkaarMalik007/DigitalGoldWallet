@@ -20,12 +20,8 @@
         && currentAction.Equals("Profile", StringComparison.OrdinalIgnoreCase);
 
     bool isWalletActive = currentController.Equals("Wallet", StringComparison.OrdinalIgnoreCase);
-
     bool isGoldActive = currentController.Equals("Gold", StringComparison.OrdinalIgnoreCase);
-
     bool isTransactionActive = currentController.Equals("Transaction", StringComparison.OrdinalIgnoreCase);
-
-    // Keep Vendors logic separate because the vendor pages already switch layouts based on role.
     bool isVendorsActive = currentController.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
@@ -36,7 +32,7 @@
     <title>@ViewData["Title"] - Digital Gold Wallet</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
@@ -50,111 +46,80 @@
         }
 
         .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24;
         }
     </style>
 </head>
 <body class="bg-[#fff8f0] text-[#1f1b13] overflow-x-hidden">
-    <aside class="fixed left-0 top-0 h-full w-64 bg-[#fbf3e5] border-r border-[#e9ecef] hidden md:flex flex-col px-4 py-6">
-        <div class="mb-10">
-            <h2 class="text-2xl font-bold text-[#735c00] leading-tight">
-                Digital Gold Wallet
-            </h2>
-        </div>
+    <header class="sticky top-0 z-50 h-16 bg-white border-b border-[#e9ecef] flex items-center justify-between px-6 lg:px-10">
+        <a asp-controller="User" asp-action="Dashboard" class="inline-flex items-center gap-2 text-xl font-extrabold text-[#735c00] no-underline">
+            <span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
+            <span>Digital Gold Wallet</span>
+        </a>
 
+        <div class="flex items-center gap-3 min-w-0">
+            <span class="hidden sm:inline text-sm text-[#6c757d] whitespace-nowrap">Welcome,</span>
+            <span class="font-semibold text-[#735c00] truncate max-w-[240px]">@loggedInName</span>
+        </div>
+    </header>
+
+    <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#fbf3e5] border-r border-[#e9ecef] hidden md:flex flex-col px-4 py-6">
         <div class="flex items-center gap-3 mb-8 min-w-0">
             <div class="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 @initial
             </div>
             <div class="min-w-0">
-                <h4 class="font-semibold text-[#1f1b13] truncate">
-                    @loggedInName
-                </h4>
-                <p class="text-sm text-[#6c757d]">
-                    Gold Investor
-                </p>
+                <h4 class="font-semibold text-[#1f1b13] truncate">@loggedInName</h4>
+                <p class="text-sm text-[#6c757d]">Gold Investor</p>
             </div>
         </div>
 
         <nav class="flex flex-col gap-2 flex-1">
-            <a asp-controller="User"
-               asp-action="Dashboard"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isDashboardActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="User" asp-action="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isDashboardActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
 
-            <a asp-controller="Wallet"
-               asp-action="History"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isWalletActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="Wallet" asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isWalletActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">account_balance_wallet</span>
                 Wallet
             </a>
 
-            <a asp-controller="Gold"
-               asp-action="Dashboard"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isGoldActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="Gold" asp-action="Dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isGoldActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">payments</span>
                 Gold
             </a>
 
-            <a asp-controller="Transaction"
-               asp-action="History"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isTransactionActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="Transaction" asp-action="UserTransactions" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isTransactionActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">receipt_long</span>
                 Transactions
             </a>
 
-            <a asp-controller="Vendor"
-               asp-action="Index"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isVendorsActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="Vendor" asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isVendorsActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">store</span>
                 Vendors
             </a>
 
-            <a asp-controller="User"
-               asp-action="Profile"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl @(isProfileActive ? activeClass : inactiveClass) font-semibold transition">
+            <a asp-controller="User" asp-action="Profile" class="flex items-center gap-3 px-4 py-3 rounded-xl @(isProfileActive ? activeClass : inactiveClass) font-semibold transition no-underline">
                 <span class="material-symbols-outlined">person</span>
                 Profile
             </a>
         </nav>
 
         <div class="pt-6 border-t border-[#e9ecef]">
-            <a asp-controller="Account"
-               asp-action="Logout"
-               class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition">
+            <a asp-controller="Account" asp-action="Logout" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition no-underline">
                 <span class="material-symbols-outlined">logout</span>
                 Logout
             </a>
         </div>
     </aside>
 
-    <main class="md:ml-64 min-h-screen p-6 lg:p-10 overflow-x-hidden">
-        <header class="flex justify-between items-center gap-4 mb-10 min-w-0">
-            <div class="min-w-0">
-                <h1 class="text-3xl font-bold text-[#1f1b13] truncate">
-                    @ViewData["Title"]
-                </h1>
-            </div>
-
-            <div class="flex items-center gap-3 flex-shrink-0 max-w-[45%] pr-2">
-                <span class="text-sm text-[#6c757d] whitespace-nowrap">
-                    Welcome,
-                </span>
-                <span class="font-semibold text-[#735c00] truncate max-w-[220px]">
-                    @loggedInName
-                </span>
-            </div>
-        </header>
-
+    <main class="md:ml-64 min-h-[calc(100vh-4rem)] p-6 lg:p-10 overflow-x-hidden">
         @if (currentController.Equals("Gold", StringComparison.OrdinalIgnoreCase)
             && !currentAction.Equals("Dashboard", StringComparison.OrdinalIgnoreCase))
         {
             <div class="mb-6">
-                <a asp-controller="Gold"
-                   asp-action="Dashboard"
-                   class="inline-flex items-center gap-2 text-[#735c00] font-bold hover:underline">
+                <a asp-controller="Gold" asp-action="Dashboard" class="inline-flex items-center gap-2 text-[#735c00] font-bold hover:underline no-underline">
                     <span class="material-symbols-outlined text-base">arrow_back</span>
                     Back to Dashboard
                 </a>
