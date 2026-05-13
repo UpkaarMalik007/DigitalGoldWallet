@@ -1,10 +1,10 @@
-namespace DigitalGoldWallet.API.Exceptions
+namespace DigitalGoldWallet.API.Exceptions;
+
+public class NotFoundException : Exception
 {
-    public class NotFoundException : Exception
+    public NotFoundException(
+        string message = "Resource Not Found")
+        : base(message)
     {
-        public NotFoundException(string message)
-            : base(message)
-        {
-        }
     }
 }

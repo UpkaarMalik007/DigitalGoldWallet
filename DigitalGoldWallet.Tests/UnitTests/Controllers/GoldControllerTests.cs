@@ -4,7 +4,6 @@ using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,14 +36,13 @@ namespace DigitalGoldWallet.Tests.UnitTests
         [Fact]
         public async Task SellGold_ReturnsOk_WhenSuccessful()
         {
-            // Arrange
-            var dto = TestDataFactory.GetValidSellGoldDto();
-            _mockGoldService.Setup(s => s.SellGold(dto)).Returns(Task.CompletedTask);
+            var dto = GoldTestDataFactory.SellGoldDto(); 
+            _mockGoldService
+                .Setup(s => s.SellGold(dto))
+                .Returns(Task.CompletedTask);
 
-            // Act
             var result = await _goldController.SellGold(dto);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Gold sold successfully", okResult.Value);
         }

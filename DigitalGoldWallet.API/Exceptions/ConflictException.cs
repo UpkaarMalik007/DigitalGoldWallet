@@ -1,8 +1,9 @@
-namespace DigitalGoldWallet.API.Exceptions;
+﻿namespace DigitalGoldWallet.API.Exceptions;
 
 public class ConflictException : Exception
 {
-    public ConflictException(string message)
+    public ConflictException(
+        string message = "Conflict Occurred")
         : base(message)
     {
     }

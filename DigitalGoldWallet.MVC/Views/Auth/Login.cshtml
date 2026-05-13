@@ -1,0 +1,351 @@
+@model DigitalGoldWallet.MVC.Models.LoginViewModel
+
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Login";
+}
+
+<style>
+    body {
+        background: #f8f1e5;
+    }
+
+    .login-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 100vh;
+    }
+
+    .login-copy {
+        background: linear-gradient(135deg, #2b2112, #7a5a16);
+        color: white;
+        padding: 4rem;
+    }
+
+    .login-chip {
+        display: inline-block;
+        padding: 0.45rem 1rem;
+        border-radius: 50px;
+        background: rgba(255, 215, 90, 0.2);
+        color: #ffd966;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .login-copy h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.05;
+        margin-bottom: 1rem;
+    }
+
+    .login-copy p {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1.05rem;
+        max-width: 420px;
+    }
+
+    .login-form-wrap {
+        background: #fbf4ea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+    }
+
+    .login-form-card {
+        width: min(100%, 430px);
+        background: white;
+        padding: 2rem;
+        border-radius: 24px;
+        box-shadow: 0 18px 45px rgba(90, 65, 20, 0.16);
+        border: 1px solid #eadcc5;
+    }
+
+        .login-form-card h2 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #3b2d08;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-form-card p {
+            color: #8a7a61;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form-card label {
+            font-weight: 700;
+            color: #5c4a2d;
+            margin-bottom: 0.45rem;
+        }
+
+        .login-form-card .form-control {
+            min-height: 52px;
+            border-radius: 14px;
+            border: 1px solid #dfcfb6;
+            box-shadow: none;
+        }
+
+            .login-form-card .form-control:focus {
+                border-color: #d8b22f;
+                box-shadow: 0 0 0 0.2rem rgba(216, 178, 47, 0.18);
+            }
+
+    .login-btn {
+        min-height: 52px;
+        border: 0;
+        border-radius: 14px;
+        background: #d8b22f;
+        color: #3b2d08;
+        font-weight: 800;
+    }
+
+        .login-btn:hover {
+            background: #c79f22;
+            color: #2d2106;
+        }
+
+    .login-link {
+        color: #9b7313;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+    .login-toggle {
+        display: flex;
+        background: #f3ead9;
+        padding: 5px;
+        border-radius: 14px;
+        margin-bottom: 1.25rem;
+        border: 1px solid #eadcc5;
+    }
+
+        .login-toggle input {
+            display: none;
+        }
+
+        .login-toggle label {
+            flex: 1;
+            text-align: center;
+            padding: 0.7rem;
+            border-radius: 11px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #7b6334;
+            margin: 0;
+        }
+
+        .login-toggle input:checked + label {
+            background: #d8b22f;
+            color: #2f2307;
+        }
+
+    .text-danger {
+        font-size: 0.85rem;
+    }
+
+    @@media (max-width: 992px) {
+        .login-panel {
+            grid-template-columns: 1fr;
+        }
+
+        .login-copy {
+            padding: 2rem;
+        }
+
+            .login-copy h1 {
+                font-size: 2.5rem;
+            }
+    }
+</style>
+
+<section class="login-panel">
+
+    <!-- LEFT SIDE -->
+    <div class="login-copy d-flex align-items-center justify-content-center">
+        <div class="text-center px-4">
+
+            <span class="login-chip">
+                Digital Gold Wallet
+            </span>
+
+            <h1>
+                Secure Gold Access
+            </h1>
+
+            <p>
+                Login to manage your digital gold wallet securely.
+            </p>
+
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="login-form-wrap">
+
+        <div class="login-form-card">
+
+            <h2>Login</h2>
+
+            <p>
+                Enter your details to continue.
+            </p>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Success"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form method="post"
+                  asp-controller="Auth"
+                  asp-action="Login">
+
+                <!-- TOGGLE -->
+
+                <div class="login-toggle">
+
+                    <input type="radio"
+                           asp-for="LoginType"
+                           value="User"
+                           id="userLogin"
+                           checked />
+
+                    <label for="userLogin">
+                        User
+                    </label>
+
+                    <input type="radio"
+                           asp-for="LoginType"
+                           value="Vendor"
+                           id="vendorLogin" />
+
+                    <label for="vendorLogin">
+                        Vendor
+                    </label>
+
+                </div>
+
+                <!-- EMAIL -->
+
+                <div class="mb-3">
+
+                    <label asp-for="Email">
+                        Email
+                    </label>
+
+                    <input asp-for="Email"
+                           class="form-control"
+                           placeholder="Enter your email" />
+
+                    <span asp-validation-for="Email"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- PASSWORD -->
+
+                <div class="mb-4">
+
+                    <label asp-for="Password">
+                        Password
+                    </label>
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           placeholder="Enter your password" />
+
+                    <span asp-validation-for="Password"
+                          class="text-danger"></span>
+
+                </div>
+
+                <!-- LOGIN BUTTON -->
+
+                <button class="btn login-btn w-100"
+                        type="submit">
+                    Login
+                </button>
+
+                <!-- REGISTER -->
+
+                <div class="text-center mt-4"
+                     id="registerSection">
+
+                    <span style="color:#8a7a61;">
+                        Don't have an account?
+                    </span>
+
+                    <a asp-controller="Auth"
+                           asp-action="Register"
+                           class="login-link">
+                        Register here
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        function toggleRegister() {
+
+            const vendorSelected =
+                document.getElementById("vendorLogin").checked;
+
+            const registerSection =
+                document.getElementById("registerSection");
+
+            if (vendorSelected) {
+                registerSection.style.display = "none";
+            }
+            else {
+                registerSection.style.display = "block";
+            }
+        }
+
+        document
+            .getElementById("userLogin")
+            .addEventListener("change", toggleRegister);
+
+        document
+            .getElementById("vendorLogin")
+            .addEventListener("change", toggleRegister);
+
+        toggleRegister();
+
+    </script>
+}

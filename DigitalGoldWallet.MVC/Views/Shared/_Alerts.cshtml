@@ -1,0 +1,14 @@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="mb-5 rounded-xl border border-green-300 bg-green-50 px-5 py-4 text-green-800 font-medium flex items-start gap-3">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="mb-5 rounded-xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-medium flex items-start gap-3">
+        <span class="material-symbols-outlined">error</span>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
