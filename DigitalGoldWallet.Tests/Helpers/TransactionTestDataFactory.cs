@@ -42,15 +42,11 @@ public static class TransactionTestDataFactory
         Amount = 5000
     };
 
-    public static CreateGoldOrderRequestDto GoldOrderRequestDto() => new()
+    public static FilterTransactionsDto FilterTransactionsDto() => new()
     {
-        BranchId = 1,
-        Quantity = 2
-    };
-
-    public static CreateGoldOrderRequestDto InvalidGoldOrderRequestDto() => new()
-    {
-        BranchId = 0,
-        Quantity = 2
+        TransactionType = "Buy",
+        TransactionStatus = "Success",
+        FromDate = DateTime.UtcNow.AddMonths(-1),
+        ToDate = DateTime.UtcNow
     };
 }

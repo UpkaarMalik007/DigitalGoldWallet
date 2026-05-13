@@ -1,0 +1,85 @@
+@using System.Globalization
+@model DigitalGoldWallet.MVC.ViewModels.Gold.GoldValueCalculatorViewModel
+
+@{
+    ViewData["Title"] = "Gold Value Calculator";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="hero-section text-center mb-5">
+                <h1 class="h2">Smart <span class="text-gold-dark">Gold Calculator</span></h1>
+                <p class="text-secondary">Plan your investment by calculating gold quantity based on your budget.</p>
+            </div>
+
+            <div class="card p-5 border-gold shadow-lg">
+                <div class="text-center mb-5 p-4 bg-cream rounded-4">
+                    <small class="text-secondary text-uppercase ls-1 fw-bold">Live Market Price</small>
+                    <h3 class="mb-0 text-gold-dark mt-1">@Model.CurrentPricePerGram.ToString("C") <small class="fs-6 text-secondary">/ gm</small></h3>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label text-secondary fw-bold small">Enter Investment Amount (INR)</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-cream border-medium text-secondary">₹</span>
+                        <input type="number" id="calcAmount" class="form-control fw-bold" placeholder="e.g. 10000" />
+                    </div>
+                </div>
+
+                <div class="text-center p-5 rounded-4 bg-dark-brown shadow-inner mb-4">
+                    <small class="text-white opacity-50 text-uppercase ls-1 d-block mb-2">Estimated Gold You Get</small>
+                    <h1 class="display-4 mb-0 text-gold-primary fw-800" id="calcResult">0.000 <small class="fs-4">gm</small></h1>
+                </div>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-4">
+                        <button class="btn btn-outline-gold w-100 preset-amt" data-amount="5000">₹ 5,000</button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-outline-gold w-100 preset-amt" data-amount="10000">₹ 10,000</button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-outline-gold w-100 preset-amt" data-amount="50000">₹ 50,000</button>
+                    </div>
+                </div>
+
+                <div class="text-center border-top border-light pt-4">
+                    <a asp-action="Buy" class="btn btn-gold px-5 py-3 shadow">Proceed to Buy Gold</a>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="text-secondary small"><i class="bi bi-info-circle me-1"></i> Calculation is based on the current live market price excluding GST and making charges.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var price = @Html.Raw(Model.CurrentPricePerGram.ToString(CultureInfo.InvariantCulture));
+            
+            function calculate(amt) {
+                if (amt > 0) {
+                    var qty = amt / price;
+                    $('#calcResult').html(qty.toFixed(3) + ' <small class="fs-4">gm</small>');
+                } else {
+                    $('#calcResult').html('0.000 <small class="fs-4">gm</small>');
+                }
+            }
+
+            $('#calcAmount').on('input', function() {
+                calculate($(this).val());
+            });
+
+            $('.preset-amt').on('click', function() {
+                var amt = $(this).data('amount');
+                $('#calcAmount').val(amt);
+                calculate(amt);
+            });
+        });
+    </script>
+}

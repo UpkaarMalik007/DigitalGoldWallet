@@ -1,0 +1,130 @@
+@model DigitalGoldWallet.MVC.ViewModels.Gold.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Executive Dashboard";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center">
+            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+            <div>@TempData["SuccessMessage"]</div>
+            <button type="button" class="btn-close ms-auto shadow-none" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Hero Section -->
+    <div class="hero-section mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 mb-2">GOLD <span class="text-gold-dark">(सोना)</span></h1>
+                <p class="text-secondary lead">Real-time valuation of your physical gold assets stored digitally.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="p-3 bg-cream rounded-4 d-inline-block border border-light">
+                    <small class="text-secondary text-uppercase ls-1 fw-bold d-block mb-1">Current Gold Price</small>
+                    <h3 class="mb-0 text-gold-dark">@Model.CurrentGoldPrice.ToString("C") <small class="fs-6 text-secondary">/ gm</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 p-4">
+                <small class="text-secondary fw-600 mb-2 d-block">Gold Holdings</small>
+                <h2 class="mb-0">@Model.TotalGoldBalance.ToString("N3") <small class="fs-6 text-secondary">gm</small></h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 p-4 border-gold">
+                <small class="text-secondary fw-600 mb-2 d-block">Current Value</small>
+                <h2 class="mb-0">@Model.PortfolioValue.ToString("C0")</h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 p-4">
+                <small class="text-secondary fw-600 mb-2 d-block">Total Investment</small>
+                <h2 class="mb-0">@Model.TotalInvestment.ToString("C0")</h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 p-4">
+                <small class="text-secondary fw-600 mb-2 d-block">Total Profit/Loss</small>
+                <h2 class="mb-0 @(Model.ProfitLoss >= 0 ? "text-success" : "text-danger")">
+                    @Model.ProfitLoss.ToString("C0")
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <h5 class="mb-3 text-dark-brown opacity-75 small text-uppercase ls-1 fw-bold">Quick Actions</h5>
+            <div class="row g-2">
+                <div class="col">
+                    <a asp-action="Buy" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-plus-circle fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">Buy Gold</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="Sell" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-dash-circle fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">Sell Gold</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="/Gold/ConvertToPhysical" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-box-seam fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">Physical</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="Transactions" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-receipt-cutoff fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">History</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="Calculator" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-calculator fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">Calculator</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a asp-action="VendorStock" class="btn btn-outline-gold w-100 py-2 d-flex flex-column align-items-center">
+                        <i class="bi bi-shop fs-5 mb-1"></i>
+                        <span class="smaller fw-bold text-nowrap">Inventory</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row mt-5 mb-5">
+        <div class="col-12">
+            <div class="card p-0 overflow-hidden">
+                <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Latest Transactions</h4>
+                    <a asp-action="Transactions" class="text-gold-dark fw-bold text-decoration-none small">View Full Statement <i class="bi bi-chevron-right"></i></a>
+                </div>
+                <div id="recentTransactionsContainer">
+                    <partial name="_RecentTransactions" model="Model.RecentTransactions" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ls-1 { letter-spacing: 1px; }
+    .fw-600 { font-weight: 600; }
+</style>

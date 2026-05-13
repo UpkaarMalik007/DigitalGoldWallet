@@ -1,4 +1,4 @@
-﻿using DigitalGoldWallet.API.DTOs;
+using DigitalGoldWallet.API.DTOs;
 using FluentValidation;
 
 namespace DigitalGoldWallet.API.Validators;
@@ -37,10 +37,10 @@ public class CreateUserDtoValidator
     }
 }
 
-public class UpdateUserDtoValidator
-    : AbstractValidator<UpdateUserDto>
+public class UserDtoValidator
+    : AbstractValidator<UserDto>
 {
-    public UpdateUserDtoValidator()
+    public UserDtoValidator()
     {
         RuleFor(x => x.Name)
             .MaximumLength(100)
@@ -66,10 +66,10 @@ public class UpdateUserDtoValidator
     }
 }
 
-public class UpdateAddressDtoValidator
-    : AbstractValidator<UpdateAddressDto>
+public class AddressDtoValidator
+    : AbstractValidator<AddressDto>
 {
-    public UpdateAddressDtoValidator()
+    public AddressDtoValidator()
     {
         RuleFor(x => x.Street)
             .MaximumLength(255)
@@ -95,5 +95,49 @@ public class UpdateAddressDtoValidator
             .MaximumLength(100)
             .When(x => !string.IsNullOrWhiteSpace(x.Country))
             .WithMessage("Country cannot exceed 100 characters");
+    }
+}
+public class CreateAddressDtoValidator
+    : AbstractValidator<CreateAddressDto>
+{
+    public CreateAddressDtoValidator()
+    {
+        RuleFor(x => x.Street)
+            .NotEmpty()
+            .WithMessage("Street is required")
+            .MaximumLength(255)
+            .WithMessage("Street cannot exceed 255 characters");
+
+        RuleFor(x => x.City)
+            .NotEmpty()
+            .WithMessage("City is required")
+            .MaximumLength(100)
+            .WithMessage("City cannot exceed 100 characters")
+            .Matches(@"^[a-zA-Z\s]+$")
+            .WithMessage("City should contain only alphabets");
+
+        RuleFor(x => x.State)
+            .NotEmpty()
+            .WithMessage("State is required")
+            .MaximumLength(100)
+            .WithMessage("State cannot exceed 100 characters")
+            .Matches(@"^[a-zA-Z\s]+$")
+            .WithMessage("State should contain only alphabets");
+
+        RuleFor(x => x.PostalCode)
+            .MaximumLength(20)
+            .When(x => !string.IsNullOrWhiteSpace(x.PostalCode))
+            .WithMessage("Postal code cannot exceed 20 characters")
+            .Matches(@"^[a-zA-Z0-9\s-]+$")
+            .When(x => !string.IsNullOrWhiteSpace(x.PostalCode))
+            .WithMessage("Postal code format is invalid");
+
+        RuleFor(x => x.Country)
+            .NotEmpty()
+            .WithMessage("Country is required")
+            .MaximumLength(100)
+            .WithMessage("Country cannot exceed 100 characters")
+            .Matches(@"^[a-zA-Z\s]+$")
+            .WithMessage("Country should contain only alphabets");
     }
 }

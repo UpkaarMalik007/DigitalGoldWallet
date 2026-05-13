@@ -1,0 +1,58 @@
+﻿@model DigitalGoldWallet.MVC.ViewModels.Transaction.TransactionListPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_PaymentLayout.cshtml";
+    ViewData["Title"] = "All Transactions";
+}
+
+<div class="space-y-8">
+
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold tracking-tight">All Transactions</h2>
+            <p class="mt-2 text-muted text-lg">Monitor all user gold transactions.</p>
+        </div>
+
+        <a asp-controller="Transaction"
+               asp-action="MonthlyReport"
+               class="rounded-xl bg-yellow-400 px-6 py-3 font-extrabold text-[#554300]">
+            Monthly Report
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-bold">
+            @TempData["Error"]
+        </div>
+    }
+
+    <partial name="_TransactionSummaryCards" model="Model.Summary" />
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <div class="p-7 border-b border-line">
+            <h3 class="text-2xl font-extrabold">Transaction Records</h3>
+            <p class="mt-1 text-muted">Page @Model.PageNumber, Size @Model.PageSize</p>
+        </div>
+
+        <partial name="_AdminTransactionTable" model="Model.Transactions" />
+    </section>
+
+    <div class="flex justify-between items-center">
+        <a asp-controller="Transaction"
+               asp-action="AdminTransactions"
+               asp-route-pageNumber="@(Model.PageNumber - 1)"
+               asp-route-pageSize="@Model.PageSize"
+               class="rounded-lg border border-line px-5 py-2 font-bold @(Model.PageNumber <= 1 ? "pointer-events-none opacity-50" : "")">
+            Previous
+        </a>
+
+        <a asp-controller="Transaction"
+               asp-action="AdminTransactions"
+               asp-route-pageNumber="@(Model.PageNumber + 1)"
+               asp-route-pageSize="@Model.PageSize"
+               class="rounded-lg border border-line px-5 py-2 font-bold">
+            Next
+        </a>
+    </div>
+</div>

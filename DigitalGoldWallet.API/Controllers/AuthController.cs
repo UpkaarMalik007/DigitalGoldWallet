@@ -20,10 +20,12 @@ namespace DigitalGoldWallet.API.Controllers
         {
             var result = await _authService.LoginUserAsync(dto);
 
-            if (result == null)
-                return Unauthorized("Invalid credentials");
-
-            return Ok(result);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "User login successful",
+                Data = result
+            });
         }
 
         [HttpPost("login-vendor")]
@@ -31,21 +33,24 @@ namespace DigitalGoldWallet.API.Controllers
         {
             var result = await _authService.LoginVendorAsync(dto);
 
-            if (result == null)
-                return Unauthorized("Invalid credentials");
-
-            return Ok(result);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Vendor login successful",
+                Data = result
+            });
         }
 
         [HttpPost("register-user")]
         public async Task<IActionResult> RegisterUser(RegisterDto dto)
         {
-            var result = await _authService.RegisterUserAsync(dto);
+            await _authService.RegisterUserAsync(dto);
 
-            if (result == "Email already exists")
-                return BadRequest(result);
-
-            return Ok(result);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "User registered successfully"
+            });
         }
     }
 }

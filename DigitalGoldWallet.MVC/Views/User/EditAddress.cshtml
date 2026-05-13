@@ -1,0 +1,120 @@
+@model DigitalGoldWallet.MVC.ViewModels.User.AddressViewModel
+
+@{
+    ViewData["Title"] = "Edit Address";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="max-w-4xl mx-auto">
+
+    <section class="mb-10">
+        <h1 class="text-4xl font-bold text-[#1f1b13] mb-2">
+            Edit Address Details
+        </h1>
+
+        <p class="text-[#5f5e5e] text-lg">
+            Update your delivery and billing address information.
+        </p>
+    </section>
+
+    <div class="bg-white rounded-2xl border border-[#e9ecef] shadow-sm p-8">
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form asp-action="EditAddress" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="AddressId" />
+
+            <div class="space-y-6">
+
+                <div>
+                    <label asp-for="Street" class="block text-sm uppercase tracking-wider text-[#6c757d] mb-2 font-semibold">
+                        Street Address
+                    </label>
+
+                    <input asp-for="Street"
+                           class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-4 py-3 text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition"
+                           placeholder="123 Gold Street" />
+
+                    <span asp-validation-for="Street" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                        <label asp-for="City" class="block text-sm uppercase tracking-wider text-[#6c757d] mb-2 font-semibold">
+                            City
+                        </label>
+
+                        <input asp-for="City"
+                               class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-4 py-3 text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition"
+                               placeholder="City" />
+
+                        <span asp-validation-for="City" class="text-red-500 text-xs mt-1"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="State" class="block text-sm uppercase tracking-wider text-[#6c757d] mb-2 font-semibold">
+                            State
+                        </label>
+
+                        <input asp-for="State"
+                               class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-4 py-3 text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition"
+                               placeholder="State" />
+
+                        <span asp-validation-for="State" class="text-red-500 text-xs mt-1"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="PostalCode" class="block text-sm uppercase tracking-wider text-[#6c757d] mb-2 font-semibold">
+                            Postal Code
+                        </label>
+
+                        <input asp-for="PostalCode"
+                               class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-4 py-3 text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition"
+                               placeholder="123456" />
+
+                        <span asp-validation-for="PostalCode" class="text-red-500 text-xs mt-1"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Country" class="block text-sm uppercase tracking-wider text-[#6c757d] mb-2 font-semibold">
+                            Country
+                        </label>
+
+                        <input asp-for="Country"
+                               class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-xl px-4 py-3 text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition"
+                               placeholder="India" />
+
+                        <span asp-validation-for="Country" class="text-red-500 text-xs mt-1"></span>
+                    </div>
+
+                </div>
+
+                <div class="pt-4 flex gap-4">
+                    <button type="submit"
+                            class="bg-[#d4af37] text-[#554300] px-8 py-3 rounded-xl font-bold shadow-sm hover:scale-105 transition">
+                        Save Address
+                    </button>
+
+                    <a asp-action="Profile"
+                       class="border border-[#e9ecef] text-[#5f5e5e] px-8 py-3 rounded-xl font-bold hover:bg-[#f8f9fa] transition">
+                        Cancel
+                    </a>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

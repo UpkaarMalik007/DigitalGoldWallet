@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Sell Gold";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="max-w-4xl mx-auto">
+    <section class="mb-10">
+        <h1 class="text-4xl font-bold text-[#1f1b13] mb-2">
+            Sell Digital Gold
+        </h1>
+        <p class="text-[#5f5e5e] text-lg">
+            Convert your gold holdings into instant wallet balance.
+        </p>
+    </section>
+
+    <div class="bg-white rounded-2xl border border-[#e9ecef] shadow-sm p-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div class="p-6 bg-[#f8f9fa] rounded-2xl border border-[#e9ecef]">
+                <span class="text-xs uppercase tracking-wider text-[#6c757d] font-bold">Your Balance</span>
+                <div class="text-2xl font-bold text-[#1f1b13] mt-1">0.00 g</div>
+            </div>
+            <div class="p-6 bg-[#fbf3e5] rounded-2xl border border-[#d4af37]/30">
+                <span class="text-xs uppercase tracking-wider text-[#735c00] font-bold">Selling Rate</span>
+                <div class="text-2xl font-bold text-[#735c00] mt-1">₹ 7,180.00 / g</div>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div>
+                <label class="block text-sm uppercase tracking-wider text-[#6c757d] mb-3 font-semibold">Quantity to Sell (g)</label>
+                <div class="relative">
+                    <input type="number" class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-2xl px-6 py-5 text-2xl font-bold text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition" placeholder="0.00" />
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#6c757d]">grams</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#6c757d]">payments</span>
+            </div>
+
+            <div>
+                <label class="block text-sm uppercase tracking-wider text-[#6c757d] mb-3 font-semibold">You will receive (₹)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-[#1f1b13]">₹</span>
+                    <input type="number" readonly class="w-full bg-[#f1f3f5] border border-[#e9ecef] rounded-2xl pl-12 pr-6 py-5 text-2xl font-bold text-[#6c757d] cursor-not-allowed" placeholder="0.00" />
+                </div>
+            </div>
+
+            <button class="w-full bg-[#1f1b13] text-white py-5 rounded-2xl text-xl font-bold shadow-soft hover:bg-[#343027] active:scale-[0.98] transition mt-6">
+                Confirm Sale
+            </button>
+        </div>
+    </div>
+</div>

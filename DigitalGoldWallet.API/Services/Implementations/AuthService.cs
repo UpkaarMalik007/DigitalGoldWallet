@@ -1,8 +1,11 @@
+using AutoMapper;
 using DigitalGoldWallet.API.Dtos.AuthDto;
+using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Helpers;
 using DigitalGoldWallet.API.Models;
-using DigitalGoldWallet.API.Repos.Interfaces;
+using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
+using FluentValidation;
 
 namespace DigitalGoldWallet.API.Services.Implementations
 {
@@ -10,28 +13,49 @@ namespace DigitalGoldWallet.API.Services.Implementations
     {
         private readonly IAuthRepository _authRepository;
         private readonly JwtHelper _jwtHelper;
+        private readonly IValidator<LoginDto> _loginValidator;
+        private readonly IValidator<RegisterDto> _registerValidator;
+        private readonly IMapper _mapper;
 
-        public AuthService(IAuthRepository authRepository, JwtHelper jwtHelper)
+        public AuthService(
+            IAuthRepository authRepository,
+            JwtHelper jwtHelper,
+            IValidator<LoginDto> loginValidator,
+            IValidator<RegisterDto> registerValidator,
+            IMapper mapper)
         {
             _authRepository = authRepository;
             _jwtHelper = jwtHelper;
+            _loginValidator = loginValidator;
+            _registerValidator = registerValidator;
+            _mapper = mapper;
         }
 
-        public async Task<AuthResponseDto?> LoginUserAsync(LoginDto dto)
+        public async Task<AuthResponseDto> LoginUserAsync(LoginDto dto)
         {
+            var validationResult = await _loginValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
             var user = await _authRepository.GetUserByEmailAsync(dto.Email);
 
             if (user == null || string.IsNullOrEmpty(user.Password))
-                return null;
+                throw new UnauthorizedException("Invalid email or password.");
 
-            var isPasswordValid = PasswordHelper.VerifyPassword(dto.Password, user.Password);
+            bool isPasswordValid = PasswordHelper.VerifyPassword(
+                dto.Password,
+                user.Password);
 
             if (!isPasswordValid)
-                return null;
+                throw new UnauthorizedException("Invalid email or password.");
 
             string role = user.RoleId == 1 ? "Admin" : "User";
 
-            var token = _jwtHelper.GenerateToken(user.UserId, user.Name, role);
+            string token = _jwtHelper.GenerateToken(
+                user.UserId,
+                user.Name,
+                role);
 
             return new AuthResponseDto
             {
@@ -43,26 +67,29 @@ namespace DigitalGoldWallet.API.Services.Implementations
             };
         }
 
-        public async Task<AuthResponseDto?> LoginVendorAsync(LoginDto dto)
+        public async Task<AuthResponseDto> LoginVendorAsync(LoginDto dto)
         {
+            var validationResult = await _loginValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
             var vendor = await _authRepository.GetVendorByEmailAsync(dto.Email);
 
-            if (vendor == null)
-                return null;
+            if (vendor == null || string.IsNullOrEmpty(vendor.Password))
+                throw new UnauthorizedException("Invalid email or password.");
 
-            if (string.IsNullOrEmpty(vendor.Password))
-                return null;
-
-            bool isPasswordValid = PasswordHelper.VerifyPassword(dto.Password, vendor.Password);
+            bool isPasswordValid = PasswordHelper.VerifyPassword(
+                dto.Password,
+                vendor.Password);
 
             if (!isPasswordValid)
-                return null;
+                throw new UnauthorizedException("Invalid email or password.");
 
-            var token = _jwtHelper.GenerateToken(
+            string token = _jwtHelper.GenerateToken(
                 vendor.VendorId,
                 vendor.VendorName,
-                "Vendor"
-            );
+                "Vendor");
 
             return new AuthResponseDto
             {
@@ -74,27 +101,28 @@ namespace DigitalGoldWallet.API.Services.Implementations
             };
         }
 
-        public async Task<string> RegisterUserAsync(RegisterDto dto)
+        public async Task RegisterUserAsync(RegisterDto dto)
         {
+            var validationResult = await _registerValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
             var existingUser = await _authRepository.GetUserByEmailAsync(dto.Email);
 
             if (existingUser != null)
-                return "Email already exists";
+                throw new ConflictException("Email already exists.");
 
-            var user = new User
-            {
-                Email = dto.Email,
-                Name = dto.Name,
-                AddressId = dto.AddressId,
-                Balance = 0,
-                CreatedAt = DateTime.Now,
-                Password = PasswordHelper.HashPassword(dto.Password),
-                RoleId = 2
-            };
+            var user = _mapper.Map<User>(dto);
+
+            user.Balance = 0;
+            user.CreatedAt = DateTime.Now;
+            user.Password = PasswordHelper.HashPassword(dto.Password);
+            user.RoleId = 2;
 
             await _authRepository.RegisterUserAsync(user);
 
-            return "User registered successfully";
+            return;
         }
     }
 }

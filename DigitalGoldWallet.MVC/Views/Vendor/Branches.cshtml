@@ -1,0 +1,133 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel>
+@{
+    Layout = "_VendorLayout";
+    ViewData["Title"] = "Vendor Branches";
+    ViewData["PageHeader"] = "Vendor Branch Management";
+    string vendorName = ViewBag.VendorName as string ?? "Vendor";
+    decimal currentGoldPrice = ViewBag.CurrentGoldPrice is decimal value ? value : 0;
+    decimal totalStock = ViewBag.TotalStock is decimal stock ? stock : Model.Sum(branch => branch.Quantity ?? 0);
+    int totalRecords = ViewBag.TotalRecords is int records ? records : Model.Count;
+    int currentPage = ViewBag.CurrentPage is int page ? page : 1;
+    int pageSize = ViewBag.PageSize is int size ? size : 6;
+    int totalPages = ViewBag.TotalPages is int pages ? pages : 0;
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold tracking-tight">Vendor Branches</h2>
+            <p class="mt-2 text-muted text-lg">Manage branch stock for @vendorName using API response data.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a asp-action="AddBranch" class="rounded-xl bg-gold px-6 py-3 font-extrabold text-[#554300] hover:opacity-90">Add Branch</a>
+            <a asp-action="Dashboard" class="rounded-xl border border-line px-6 py-3 font-extrabold text-muted hover:bg-cream-2">Back to Dashboard</a>
+        </div>
+    </div>
+
+    @if (ViewBag.ApiErrorMessage != null)
+    {
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-medium flex items-start gap-3">
+            <span class="material-symbols-outlined">error</span>
+            <span>@ViewBag.ApiErrorMessage</span>
+        </div>
+    }
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-7">
+        <div class="rounded-2xl border border-line bg-cream-2 p-7 shadow-soft">
+            <p class="text-sm font-extrabold uppercase tracking-[0.22em] text-muted">Vendor</p>
+            <h3 class="mt-3 text-3xl font-extrabold">@vendorName</h3>
+            <div class="mt-6 border-t border-line pt-5">
+                <p class="text-sm font-extrabold text-muted">Current Gold Price</p>
+                <p class="mt-2 text-4xl font-extrabold text-gold-dark">₹@currentGoldPrice.ToString("N2")<span class="text-base font-medium text-muted">/gm</span></p>
+            </div>
+        </div>
+
+        <div class="xl:col-span-2 rounded-2xl border border-line bg-white p-7 shadow-soft">
+            <p class="text-sm font-extrabold uppercase tracking-[0.22em] text-muted">Branch Summary</p>
+            <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl border border-line bg-cream-2 p-5">
+                    <p class="text-sm font-bold text-muted">Total Branches</p>
+                    <p class="mt-2 text-3xl font-extrabold">@totalRecords</p>
+                </div>
+                <div class="rounded-xl border border-line bg-cream-2 p-5">
+                    <p class="text-sm font-bold text-muted">Total Stock</p>
+                    <p class="mt-2 text-3xl font-extrabold">@totalStock.ToString("N2") gm</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <div class="p-7 border-b border-line flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h3 class="text-2xl font-extrabold">Branches</h3>
+                <p class="mt-1 text-muted">Only branch data returned by the API is displayed here.</p>
+            </div>
+            <form asp-action="Branches" method="get" class="flex items-center gap-3">
+                <label for="pageSize" class="text-sm font-bold text-muted">Rows</label>
+                <select id="pageSize" name="pageSize" class="rounded-lg border-line" onchange="this.form.submit()">
+                    <option value="6" selected="@(pageSize == 6)">6</option>
+                    <option value="9" selected="@(pageSize == 9)">9</option>
+                    <option value="12" selected="@(pageSize == 12)">12</option>
+                </select>
+            </form>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-cream-2 text-sm uppercase tracking-[0.12em] text-muted">
+                        <tr>
+                            <th class="px-7 py-4">Branch</th>
+                            <th class="px-7 py-4">Address</th>
+                            <th class="px-7 py-4">Current Quantity</th>
+                            <th class="px-7 py-4">Update Stock</th>
+                            <th class="px-7 py-4 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line">
+                        @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel branch in Model)
+                        {
+                            <tr class="hover:bg-cream-2/70 align-top">
+                                <td class="px-7 py-5 font-bold">Branch @branch.BranchId</td>
+                                <td class="px-7 py-5">@branch.FullAddress</td>
+                                <td class="px-7 py-5 font-extrabold">@((branch.Quantity ?? 0).ToString("N2")) gm</td>
+                                <td class="px-7 py-5">
+                                    <form asp-action="UpdateBranchStock" method="post" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="branchId" value="@branch.BranchId" />
+                                        <input name="quantity" type="number" min="0" step="0.01" value="@(branch.Quantity ?? 0)" class="w-36 rounded-lg border-line" />
+                                        <button type="submit" class="rounded-lg bg-gold px-4 py-2 font-extrabold text-[#554300]">Save</button>
+                                    </form>
+                                </td>
+                                <td class="px-7 py-5 text-right"><span class="rounded-lg bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">ACTIVE</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="border-t border-line px-7 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm text-muted">Page @currentPage of @totalPages (@totalRecords branches)</p>
+                    <div class="flex gap-2">
+                        @if (currentPage > 1)
+                        {
+                            <a asp-action="Branches" asp-route-page="@(currentPage - 1)" asp-route-pageSize="@pageSize" class="rounded-lg border border-line px-4 py-2 font-bold hover:bg-cream-2">Previous</a>
+                        }
+                        @if (currentPage < totalPages)
+                        {
+                            <a asp-action="Branches" asp-route-page="@(currentPage + 1)" asp-route-pageSize="@pageSize" class="rounded-lg border border-line px-4 py-2 font-bold hover:bg-cream-2">Next</a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="p-10 text-center text-muted">No branches available for this vendor.</div>
+        }
+    </section>
+</div>

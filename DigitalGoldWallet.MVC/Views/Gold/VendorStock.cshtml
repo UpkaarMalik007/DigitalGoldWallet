@@ -1,0 +1,71 @@
+@model DigitalGoldWallet.MVC.ViewModels.Gold.VendorStockViewModel
+
+@{
+    ViewData["Title"] = "Branch Inventory";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="container">
+    <div class="hero-section mb-5">
+        <h1 class="h2 mb-2">Branch <span class="text-gold-dark">Inventory</span></h1>
+        <p class="text-secondary mb-0">Real-time stock availability across all vendor branches.</p>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var branch in Model.Branches)
+        {
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 overflow-hidden border-light shadow-sm">
+                    <div class="card-header bg-cream border-0 p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark-brown">@branch.BranchName</h5>
+                        @{
+                            var statusClass = branch.StockStatus == "High" ? "bg-success" : 
+                                            branch.StockStatus == "Medium" ? "bg-warning" : "bg-danger";
+                        }
+                        <span class="badge @statusClass bg-opacity-10 @(branch.StockStatus == "High" ? "text-success" : branch.StockStatus == "Medium" ? "text-warning" : "text-danger") px-3 py-2 rounded-pill smaller">
+                            @branch.StockStatus Stock
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <small class="text-secondary text-uppercase ls-1 fw-bold d-block mb-1">Available 24K Gold</small>
+                            <h2 class="text-gold-dark mb-0">@branch.AvailableGold.ToString("N3") <small class="fs-6 text-secondary">gm</small></h2>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-light rounded-circle p-2 me-3">
+                                <i class="bi bi-geo-alt-fill text-gold-dark"></i>
+                            </div>
+                            <div>
+                                <small class="text-secondary d-block">Location</small>
+                                <span class="fw-bold small">@branch.Location</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-light rounded-circle p-2 me-3">
+                                <i class="bi bi-telephone-fill text-gold-dark"></i>
+                            </div>
+                            <div>
+                                <small class="text-secondary d-block">Contact</small>
+                                <span class="fw-bold small">@branch.ContactNumber</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 p-4 pt-0">
+                        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3">
+                            <small class="text-secondary">Last Verified</small>
+                            <small class="fw-bold text-dark-brown">@branch.LastUpdated.ToString("dd MMM, HH:mm")</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="mt-5 p-4 bg-dark-brown rounded-4 text-center">
+        <h5 class="text-white mb-2">Need a large quantity?</h5>
+        <p class="text-white opacity-50 mb-4">Contact our corporate desk for bulk physical redemptions above 5kg.</p>
+        <button class="btn btn-gold px-4 py-2">Contact Corporate</button>
+    </div>
+</div>

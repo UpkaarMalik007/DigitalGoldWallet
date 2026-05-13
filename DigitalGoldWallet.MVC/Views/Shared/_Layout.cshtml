@@ -1,3 +1,101 @@
+@{
+    string loggedInName = Context.Session.GetString("UserName")
+        ?? Context.Session.GetString("Name")
+        ?? "User";
+
+    string initials = string.Join("", loggedInName
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .Take(2)
+        .Select(part => part[0]))
+        .ToUpper();
+
+    if (string.IsNullOrWhiteSpace(initials))
+    {
+        initials = "U";
+    }
+
+    string pageTitle = ViewData["Title"]?.ToString() ?? "Digital Gold Wallet";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pageTitle - Digital Gold Wallet</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "gold": "#d4af37",
+                        "gold-dark": "#735c00",
+                        "cream": "#fff8f0",
+                        "cream-2": "#fbf3e5",
+                        "cream-3": "#f5eddf",
+                        "line": "#d0c5af",
+                        "ink": "#1f1b13",
+                        "muted": "#5f5e5e"
+                    },
+                    boxShadow: {
+                        soft: "0 8px 26px rgba(31,27,19,0.08)"
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom py-3">
+        <div class="container">
+            <a class="navbar-brand text-gold-dark d-flex align-items-center" asp-controller="Gold" asp-action="Dashboard">
+                <i class="bi bi-safe2-fill me-2"></i>GOLD<span class="text-dark opacity-50">WALLET</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-gold-primary p-2 text-dark-brown fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 0.85rem;">
+                    @initials
+                </div>
+                <span class="fw-600 small text-dark-brown">@loggedInName</span>
+                <a asp-controller="Account" asp-action="Logout" class="small fw-bold text-gold-dark text-decoration-none">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main role="main">
+        @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Gold"
+            && ViewContext.RouteData.Values["action"]?.ToString() != "Dashboard")
+        {
+            <div class="container mt-3 mb-2">
+                <a asp-controller="Gold" asp-action="Dashboard" class="btn btn-link text-gold-dark p-0 text-decoration-none fw-bold small">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
 @* Wallet - Himanshi *@
 
 <!DOCTYPE html>

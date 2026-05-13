@@ -1,0 +1,136 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel>
+@{
+    Layout = "_VendorLayout";
+    ViewData["Title"] = "Vendor Directory";
+    ViewData["PageHeader"] = "Vendor Directory";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 0;
+    int pageSize = ViewBag.PageSize ?? 6;
+    int totalRecords = ViewBag.TotalRecords ?? 0;
+    decimal averageRate = Model.Any(v => (v.CurrentGoldPrice ?? 0) > 0)
+        ? Model.Where(v => (v.CurrentGoldPrice ?? 0) > 0).Average(v => v.CurrentGoldPrice ?? 0)
+        : 0;
+    string role = Context.Session.GetString("UserRole") ?? Context.Session.GetString("Role") ?? string.Empty;
+    bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+    bool isUser = role.Equals("User", StringComparison.OrdinalIgnoreCase);
+
+    if (isUser)
+    {
+        Layout = "~/Views/Shared/_UserLayout.cshtml";
+    }
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold tracking-tight">Active Partners</h2>
+            <p class="mt-2 text-muted text-lg">Manage and monitor verified gold bullion vendors within the ecosystem.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <form asp-action="Index" method="get" class="flex items-center gap-2">
+                <label for="pageSize" class="text-sm font-bold text-muted">Cards</label>
+                <select id="pageSize" name="pageSize" class="rounded-xl border-line bg-white text-sm" onchange="this.form.submit()">
+                    <option value="6" selected="@(pageSize == 6)">6 per page</option>
+                    <option value="9" selected="@(pageSize == 9)">9 per page</option>
+                    <option value="12" selected="@(pageSize == 12)">12 per page</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    @if (ViewBag.ApiErrorMessage != null)
+    {
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-medium flex items-start gap-3">
+            <span class="material-symbols-outlined">error</span>
+            <span>@ViewBag.ApiErrorMessage</span>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+            @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel vendor in Model)
+            {
+                decimal price = vendor.CurrentGoldPrice ?? 0;
+                <a asp-controller="Vendor" asp-action="Details" asp-route-id="@vendor.VendorId" class="group rounded-2xl border border-line bg-white p-7 shadow-soft transition hover:-translate-y-1 hover:border-gold">
+                    <div class="mb-7 flex items-start justify-between">
+                        <div class="flex h-16 w-16 items-center justify-center rounded-xl border border-line bg-cream-3">
+                            <span class="material-symbols-outlined text-[34px] text-gold-dark">store</span>
+                        </div>
+                        <span class="rounded-full bg-green-100 px-5 py-1.5 text-sm font-extrabold text-green-700">Active</span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold group-hover:text-gold-dark">@(vendor.VendorName ?? "Unnamed Vendor")</h3>
+                    <p class="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-muted">Vendor</p>
+                    @if (!string.IsNullOrWhiteSpace(vendor.Description))
+                    {
+                        <p class="mt-3 line-clamp-2 text-sm text-muted min-h-[40px]">@vendor.Description</p>
+                    }
+                    else
+                    {
+                        <p class="mt-3 text-sm text-muted min-h-[40px]">Description not available.</p>
+                    }
+                    <div class="mt-7 border-t border-line pt-5 flex items-end justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-muted">Current Gold Rate</p>
+                            @if (price > 0)
+                            {
+                                <p class="mt-1 text-3xl font-extrabold text-gold-dark">₹@price.ToString("N2")<span class="text-base font-medium text-muted">/gm</span></p>
+                            }
+                            else
+                            {
+                                <p class="mt-1 text-3xl font-extrabold text-muted">--<span class="text-base font-medium">/gm</span></p>
+                            }
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-sm font-bold text-green-600">
+                            <span class="material-symbols-outlined text-[20px]">trending_up</span>Live
+                        </span>
+                    </div>
+                </a>
+            }
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-line bg-white px-5 py-4 shadow-soft">
+                <p class="text-sm font-semibold text-muted">Showing page @currentPage of @totalPages (@totalRecords vendors)</p>
+                <div class="flex items-center gap-2">
+                    <a asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-pageSize="@pageSize" class="rounded-lg border border-line px-4 py-2 text-sm font-bold @(currentPage <= 1 ? "pointer-events-none opacity-40" : "hover:bg-cream-2")">Previous</a>
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a asp-action="Index" asp-route-page="@i" asp-route-pageSize="@pageSize" class="rounded-lg px-4 py-2 text-sm font-bold @(i == currentPage ? "bg-gold text-[#554300]" : "border border-line hover:bg-cream-2")">@i</a>
+                    }
+                    <a asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-pageSize="@pageSize" class="rounded-lg border border-line px-4 py-2 text-sm font-bold @(currentPage >= totalPages ? "pointer-events-none opacity-40" : "hover:bg-cream-2")">Next</a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="rounded-2xl border border-line bg-white p-12 text-center shadow-soft max-w-4xl">
+            <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-cream-3">
+                <span class="material-symbols-outlined text-[42px] text-gold-dark">store</span>
+            </div>
+            <h3 class="text-2xl font-extrabold">No vendors found</h3>
+            <p class="mt-2 text-muted">There are no vendors available right now.</p>
+            @if (ViewBag.ApiErrorMessage != null)
+            {
+                <p class="mt-2 text-sm font-semibold text-red-700">@ViewBag.ApiErrorMessage</p>
+            }
+        </div>
+    }
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden grid grid-cols-1 md:grid-cols-3">
+        <div class="bg-cream-2 p-8">
+            <h4 class="text-2xl font-extrabold text-gold-dark">Vendor Summary</h4>
+            <p class="mt-3 text-muted">Summary calculated only from vendor API response data.</p>
+        </div>
+        <div class="p-8 border-t md:border-t-0 md:border-l border-line">
+            <p class="text-sm font-bold text-muted">Total Vendors</p>
+            <p class="mt-2 text-4xl font-extrabold">@totalRecords</p>
+        </div>
+        <div class="p-8 border-t md:border-t-0 md:border-l border-line">
+            <p class="text-sm font-bold text-muted">Average Gold Rate</p>
+            <p class="mt-2 text-4xl font-extrabold">₹@averageRate.ToString("N2")</p>
+        </div>
+    </section>
+</div>

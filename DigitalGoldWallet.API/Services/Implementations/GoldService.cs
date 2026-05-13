@@ -20,323 +20,208 @@ namespace DigitalGoldWallet.API.Services.Implementations
             _mapper = mapper;
         }
 
-        // BUY GOLD
-
-        public async Task BuyGold(BuyGoldDto dto)
+        public async Task BuyGold(GoldActionRequestDto dto)
         {
-            var user = await _goldRepository
-                .GetUserById(dto.UserId);
+            var user = await _goldRepository.GetUserById(dto.UserId);
+            if (user == null) throw new Exception("User not found");
 
-            if (user == null)
-            {
-                throw new NotFoundException("User not found");
-            }
+            var branch = await _goldRepository.GetBranchById(dto.BranchId.Value);
+            if (branch == null) throw new Exception("Branch not found");
+            if (branch.Vendor == null) throw new Exception("Vendor not found");
 
-            if (user.Balance < dto.Amount)
-            {
-                throw new Exception(
-                    "Insufficient wallet balance");
-            }
+            decimal goldPrice = branch.Vendor.CurrentGoldPrice;
+            decimal quantity = dto.Amount.Value / goldPrice;
 
-            var branch = await _goldRepository
-                .GetBranchById(dto.BranchId);
+            user.Balance -= dto.Amount.Value;
 
-            if (branch == null)
-            {
-                throw new NotFoundException("Branch not found");
-            }
-
-            if (branch.Vendor == null)
-            {
-                throw new NotFoundException("Vendor not found");
-            }
-
-            decimal goldPrice =
-                branch.Vendor.CurrentGoldPrice;
-
-            decimal quantity =
-                dto.Amount / goldPrice;
-
-            // Deduct wallet balance
-
-            user.Balance -= dto.Amount;
-
-            // Get holding
-
-            var holding = await _goldRepository
-                .GetHolding(dto.UserId);
-
+            var holding = await _goldRepository.GetHolding(dto.UserId);
             if (holding == null)
             {
                 holding = new VirtualGoldHolding
                 {
                     UserId = dto.UserId,
-                    BranchId = dto.BranchId,
+                    BranchId = dto.BranchId.Value,
                     Quantity = quantity,
                     CreatedAt = DateTime.Now
                 };
-
-                await _goldRepository
-                    .AddHolding(holding);
+                await _goldRepository.AddHolding(holding);
             }
             else
             {
                 holding.Quantity += quantity;
             }
 
-            // Add transaction
+            var transaction = new TransactionHistory
+            {
+                UserId = dto.UserId,
+                BranchId = dto.BranchId.Value,
+                TransactionType = "Buy",
+                TransactionStatus = "Success",
+                Quantity = quantity,
+                Amount = dto.Amount.Value,
+                CreatedAt = DateTime.Now
+            };
 
-            var transaction =
-                new TransactionHistory
-                {
-                    UserId = dto.UserId,
-                    BranchId = dto.BranchId,
-                    TransactionType = "Buy",
-                    TransactionStatus = "Success",
-                    Quantity = quantity,
-                    Amount = dto.Amount,
-                    CreatedAt = DateTime.Now
-                };
-
-            await _goldRepository
-                .AddTransactionHistory(
-                    transaction);
-
-            await _goldRepository
-                .SaveChanges();
+            await _goldRepository.AddTransactionHistory(transaction);
+            await _goldRepository.SaveChanges();
         }
 
-        // SELL GOLD
-        public async Task SellGold(
-            SellGoldDto dto)
+        public async Task SellGold(GoldActionRequestDto dto)
         {
-            var user = await _goldRepository
-                .GetUserById(dto.UserId);
+            var user = await _goldRepository.GetUserById(dto.UserId);
+            if (user == null) throw new Exception("User not found");
 
-            if (user == null)
-            {
-                throw new NotFoundException("User not found");
-            }
+            var holding = await _goldRepository.GetHolding(dto.UserId);
+            if (holding == null || holding.Quantity < dto.Quantity.Value)
+                throw new Exception("Insufficient gold quantity");
 
-            var holding = await _goldRepository
-                .GetHolding(dto.UserId);
+            var branch = await _goldRepository.GetBranchById(holding.BranchId ?? 0);
+            decimal goldPrice = branch?.Vendor?.CurrentGoldPrice ?? 0;
+            decimal amount = dto.Quantity.Value * goldPrice;
 
-            if (holding == null ||
-                holding.Quantity < dto.Quantity)
-            {
-                throw new Exception(
-                    "Insufficient gold quantity");
-            }
-
-            var branch = await _goldRepository
-                .GetBranchById(
-                    holding.BranchId ?? 0);
-
-            decimal goldPrice =
-                branch?.Vendor?.CurrentGoldPrice ?? 0;
-
-            decimal amount =
-                dto.Quantity * goldPrice;
-
-            // Reduce holding
-
-            holding.Quantity -= dto.Quantity;
-
-            // Add wallet balance
-
+            holding.Quantity -= dto.Quantity.Value;
             user.Balance += amount;
 
-            // Add transaction
+            var transaction = new TransactionHistory
+            {
+                UserId = dto.UserId,
+                BranchId = holding.BranchId,
+                TransactionType = "Sell",
+                TransactionStatus = "Success",
+                Quantity = dto.Quantity.Value,
+                Amount = amount,
+                CreatedAt = DateTime.Now
+            };
 
-            var transaction =
-                new TransactionHistory
-                {
-                    UserId = dto.UserId,
-                    BranchId = holding.BranchId,
-                    TransactionType = "Sell",
-                    TransactionStatus = "Success",
-                    Quantity = dto.Quantity,
-                    Amount = amount,
-                    CreatedAt = DateTime.Now
-                };
-
-            await _goldRepository
-                .AddTransactionHistory(
-                    transaction);
-
-            await _goldRepository
-                .SaveChanges();
+            await _goldRepository.AddTransactionHistory(transaction);
+            await _goldRepository.SaveChanges();
         }
 
-        // GET HOLDINGS
-
-        public async Task<GoldHoldingDto>
-            GetHoldings(int userId)
+        public async Task<GoldPortfolioDto> GetHoldings(int userId)
         {
-            var holding = await _goldRepository
-                .GetHolding(userId);
-
-            return new GoldHoldingDto
+            var holding = await _goldRepository.GetHolding(userId);
+            var price = await _goldRepository.GetCurrentGoldPrice();
+            return new GoldPortfolioDto
             {
                 UserId = userId,
-
-                TotalGoldQuantity =
-                    holding?.Quantity ?? 0
+                TotalGold = holding?.Quantity ?? 0,
+                CurrentGoldPrice = price,
+                GoldPriceUpdatedAt = DateTime.Now,
+                CurrentValue = (holding?.Quantity ?? 0) * price,
+                TotalInvestment = 0,
+                ProfitLoss = 0
             };
         }
 
-        // GET CURRENT PRICE
-
-        public async Task<GoldPriceDto>
-            GetCurrentPrice()
+        public async Task<GoldPortfolioDto> GetCurrentPrice()
         {
-            decimal price =
-                await _goldRepository
-                    .GetCurrentGoldPrice();
-
-            return new GoldPriceDto
+            decimal price = await _goldRepository.GetCurrentGoldPrice();
+            return new GoldPortfolioDto
             {
                 CurrentGoldPrice = price,
-
-                UpdatedAt = DateTime.Now
+                GoldPriceUpdatedAt = DateTime.Now
             };
         }
 
-        // CONVERT TO PHYSICAL
-
-        public async Task ConvertToPhysical(
-            ConvertToPhysicalDto dto)
+        public async Task ConvertToPhysical(GoldActionRequestDto dto)
         {
-            var holding = await _goldRepository
-                .GetHolding(dto.UserId);
+            var holding = await _goldRepository.GetHolding(dto.UserId);
+            if (holding == null || holding.Quantity < dto.Quantity.Value)
+                throw new Exception("Insufficient gold quantity");
 
-            if (holding == null ||
-                holding.Quantity < dto.Quantity)
+            holding.Quantity -= dto.Quantity.Value;
+
+            var transaction = new PhysicalGoldTransaction
             {
-                throw new Exception(
-                    "Insufficient gold quantity");
-            }
+                UserId = dto.UserId,
+                BranchId = dto.BranchId.Value,
+                Quantity = dto.Quantity.Value,
+                DeliveryAddressId = dto.DeliveryAddressId.Value,
+                CreatedAt = DateTime.Now
+            };
 
-            // Reduce holdings
-
-            holding.Quantity -= dto.Quantity;
-
-            // Add physical transaction
-
-            var transaction =
-                new PhysicalGoldTransaction
-                {
-                    UserId = dto.UserId,
-                    BranchId = dto.BranchId,
-                    Quantity = dto.Quantity,
-                    DeliveryAddressId =
-                        dto.DeliveryAddressId,
-                    CreatedAt = DateTime.Now
-                };
-
-            await _goldRepository
-                .AddPhysicalTransaction(
-                    transaction);
-
-            await _goldRepository
-                .SaveChanges();
+            await _goldRepository.AddPhysicalTransaction(transaction);
+            await _goldRepository.SaveChanges();
         }
 
-        // GET PHYSICAL HISTORY
-
-        public async Task<List<PhysicalGoldHistoryDto>>
-            GetPhysicalHistory(int userId)
+        public async Task<List<GoldTransactionDto>> GetPhysicalHistory(int userId)
         {
-            var data = await _goldRepository
-                .GetPhysicalTransactions(userId);
-
-            return _mapper.Map<List<PhysicalGoldHistoryDto>>(data);
-        }
-
-        // GET TRANSACTIONS
-
-        public async Task<List<GoldTransactionDto>>
-            GetTransactions(int userId)
-        {
-            var data = await _goldRepository
-                .GetTransactions(userId);
-
+            var data = await _goldRepository.GetPhysicalTransactions(userId);
             return _mapper.Map<List<GoldTransactionDto>>(data);
         }
 
-        // GET VENDOR STOCK
-
-        public async Task<VendorStockDto>
-            GetVendorStock(int branchId)
+        public async Task<List<GoldTransactionDto>> GetTransactions(int userId)
         {
-            var branch = await _goldRepository
-                .GetVendorStock(branchId);
+            var data = await _goldRepository.GetTransactions(userId);
+            return _mapper.Map<List<GoldTransactionDto>>(data);
+        }
 
-            if (branch == null)
+        public async Task<BranchDetailDto> GetVendorStock(int branchId)
+        {
+            var branch = await _goldRepository.GetAllBranches();
+            var b = branch.FirstOrDefault(x => x.BranchId == branchId);
+
+            if (b == null)
             {
                 throw new Exception("Branch not found");
             }
 
-            return _mapper.Map<VendorStockDto>(branch);
-        }
-
-        // CALCULATE GOLD
-
-        public async Task<GoldCalculationDto>
-            CalculateGold(decimal amount)
-        {
-            decimal goldPrice =
-                await _goldRepository
-                    .GetCurrentGoldPrice();
-
-            decimal quantity =
-                amount / goldPrice;
-
-            return new GoldCalculationDto
+            return new BranchDetailDto
             {
-                Amount = amount,
-
-                GoldPrice = goldPrice,
-
-                Quantity = quantity
+                BranchId = b.BranchId,
+                VendorId = b.VendorId,
+                BranchName = $"Vault Branch {b.BranchId}",
+                VendorName = b.Vendor?.VendorName ?? "Verified Vendor",
+                Address = b.Address != null ? $"{b.Address.Street}, {b.Address.City}, {b.Address.State}" : "Secured Vault Location",
+                AvailableQuantity = b.Quantity,
+                CreatedAt = b.CreatedAt
             };
         }
 
-        // GET PORTFOLIO
-
-        public async Task<GoldPortfolioDto>
-            GetPortfolio(int userId)
+        public async Task<GoldCalculationDto> CalculateGold(decimal amount)
         {
-            var holdings = await _goldRepository
-                .GetPortfolio(userId);
+            decimal goldPrice = await _goldRepository.GetCurrentGoldPrice();
+            return new GoldCalculationDto
+            {
+                Amount = amount,
+                GoldPrice = goldPrice,
+                Quantity = amount / goldPrice
+            };
+        }
 
-            decimal totalGold =
-                holdings.Sum(x => x.Quantity);
-
-            decimal currentPrice =
-                await _goldRepository
-                    .GetCurrentGoldPrice();
-
-            decimal currentValue =
-                totalGold * currentPrice;
+        public async Task<GoldPortfolioDto> GetPortfolio(int userId)
+        {
+            var holdings = await _goldRepository.GetPortfolio(userId);
+            decimal totalGold = holdings.Sum(x => x.Quantity);
+            decimal currentPrice = await _goldRepository.GetCurrentGoldPrice();
+            decimal currentValue = totalGold * currentPrice;
 
             return new GoldPortfolioDto
             {
                 UserId = userId,
-
                 TotalGold = totalGold,
-
-                CurrentGoldPrice =
-                    currentPrice,
-
-                CurrentValue =
-                    currentValue,
-
-                TotalInvestment =
-                    currentValue,
-
+                CurrentGoldPrice = currentPrice,
+                CurrentValue = currentValue,
+                TotalInvestment = currentValue,
                 ProfitLoss = 0
             };
+        }
+
+        public async Task<List<BranchDetailDto>> GetAllBranches()
+        {
+            var branches = await _goldRepository.GetAllBranches();
+            if (branches == null) return new List<BranchDetailDto>();
+
+            return branches.Select(b => new BranchDetailDto
+            {
+                BranchId = b.BranchId,
+                VendorId = b.VendorId,
+                BranchName = b.Vendor != null ? $"{b.Vendor.VendorName} - Branch {b.BranchId}" : $"Vault Branch {b.BranchId}",
+                VendorName = b.Vendor?.VendorName ?? "Certified Gold Partner",
+                Address = b.Address != null ? $"{b.Address.Street}, {b.Address.City}" : "Secured Facility",
+                AvailableQuantity = b.Quantity,
+                CreatedAt = b.CreatedAt
+            }).ToList();
         }
     }
 }

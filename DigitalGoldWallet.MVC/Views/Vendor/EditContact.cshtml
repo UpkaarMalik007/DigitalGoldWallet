@@ -1,0 +1,54 @@
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
+@{
+    Layout = "_VendorLayout";
+    ViewData["Title"] = "Edit Vendor Contact";
+    ViewData["PageHeader"] = "Edit Vendor Contact";
+}
+
+<div class="max-w-5xl mx-auto">
+    <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold">Edit Contact Details</h2>
+            <p class="mt-2 text-muted">Update contact fields through the vendor contact API endpoint.</p>
+        </div>
+        <a asp-action="Dashboard" class="rounded-xl border border-line px-6 py-3 font-bold text-muted hover:bg-cream-2">Back to Dashboard</a>
+    </div>
+
+    <form asp-action="EditContact" method="post" class="rounded-2xl border border-line bg-white p-8 shadow-soft space-y-7">
+        @Html.AntiForgeryToken()
+        <input asp-for="VendorId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-red-700 font-medium"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label asp-for="ContactPersonName" class="mb-2 block font-bold">Contact Person Name</label>
+                <input asp-for="ContactPersonName" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactPersonName" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ContactEmail" class="mb-2 block font-bold">Contact Email</label>
+                <input asp-for="ContactEmail" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactEmail" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ContactPhone" class="mb-2 block font-bold">Contact Phone</label>
+                <input asp-for="ContactPhone" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactPhone" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="WebsiteUrl" class="mb-2 block font-bold">Website URL</label>
+                <input asp-for="WebsiteUrl" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="WebsiteUrl" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 border-t border-line pt-6">
+            <a asp-action="Dashboard" class="rounded-xl border border-line px-7 py-3 font-bold text-muted hover:bg-cream-2">Cancel</a>
+            <button type="submit" class="rounded-xl bg-gold px-8 py-3 font-extrabold text-[#554300] shadow-soft hover:opacity-90">Save Contact Details</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

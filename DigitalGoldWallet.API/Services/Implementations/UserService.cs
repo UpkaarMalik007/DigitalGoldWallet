@@ -1,21 +1,16 @@
 using AutoMapper;
-using BCrypt.Net;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Exceptions;
-using DigitalGoldWallet.API.Helpers;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
 
-namespace DigitalGoldWallet.API.Services;
+namespace DigitalGoldWallet.API.Services.Implementations;
 
 public class UserService : IUserService
 {
     private readonly IUserRepository _repository;
-
     private readonly IMapper _mapper;
-
-    private readonly JwtHelper _jwtHelper;
 
     public UserService(
         IUserRepository repository,
@@ -25,23 +20,66 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
-
-  
-
-    public async Task<IEnumerable<UserDto>>
-        GetAllUsersAsync()
+    public async Task<AdminDashboardDto> GetDashboardDataAsync()
     {
-        var users =
-            await _repository.GetAllUsersAsync();
+        var dashboard =
+            await _repository.GetDashboardDataAsync();
+
+        if (dashboard == null)
+        {
+            throw new NotFoundException(
+                "Admin dashboard data not found");
+        }
+
+        if (dashboard.TotalUsers < 0)
+        {
+            throw new Exception(
+                "Invalid total users count");
+        }
+
+        if (dashboard.TotalVendors < 0)
+        {
+            throw new Exception(
+                "Invalid total vendors count");
+        }
+
+        if (dashboard.TotalPayments < 0)
+        {
+            throw new Exception(
+                "Invalid total payments count");
+        }
+
+        if (dashboard.SuccessfulPayments < 0)
+        {
+            throw new Exception(
+                "Invalid successful payments count");
+        }
+
+        if (dashboard.FailedPayments < 0)
+        {
+            throw new Exception(
+                "Invalid failed payments count");
+        }
+
+        if (dashboard.TotalGoldTransactions < 0)
+        {
+            throw new Exception(
+                "Invalid gold transactions count");
+        }
+
+        return dashboard;
+    }
+
+    public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+    {
+        var users = await _repository.GetAllUsersAsync();
 
         return _mapper.Map<IEnumerable<UserDto>>(users);
     }
 
-    public async Task<UserDto?> GetUserByIdAsync(
-        int id)
+    public async Task<UserDto> GetUserByIdAsync(int id)
     {
-        var user =
-            await _repository.GetUserByIdAsync(id);
+        var user = await _repository.GetUserByIdAsync(id);
 
         if (user == null)
         {
@@ -52,35 +90,17 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto> CreateUserAsync(
-        CreateUserDto dto)
+    public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
     {
         var existingUser =
-            await _repository.GetUserByEmailAsync(
-                dto.Email);
+            await _repository.GetUserByEmailAsync(dto.Email);
 
         if (existingUser != null)
         {
-            throw new ConflictException(
-                "User already exists");
+            throw new ConflictException("User already exists");
         }
 
-        var user = new User
-        {
-            Name = dto.Name,
-
-            Email = dto.Email,
-
-            Password =
-                BCrypt.Net.BCrypt.HashPassword(
-                    dto.Password),
-
-            AddressId = dto.AddressId,
-
-            Balance = 0,
-
-            RoleId = 2
-        };
+        var user = _mapper.Map<User>(dto);
 
         var createdUser =
             await _repository.CreateUserAsync(user);
@@ -88,12 +108,11 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(createdUser);
     }
 
-    public async Task<UserDto?> UpdateUserAsync(
+    public async Task<UserDto> UpdateUserAsync(
         int id,
-        UpdateUserDto dto)
+        UserDto dto)
     {
-        var user =
-            await _repository.GetUserByIdAsync(id);
+        var user = await _repository.GetUserByIdAsync(id);
 
         if (user == null)
         {
@@ -101,16 +120,10 @@ public class UserService : IUserService
                 $"User with Id {id} not found");
         }
 
-        if (!string.IsNullOrWhiteSpace(dto.Name))
-        {
-            user.Name = dto.Name;
-        }
-
         if (!string.IsNullOrWhiteSpace(dto.Email))
         {
             var existingUser =
-                await _repository
-                    .GetUserByEmailAsync(dto.Email);
+                await _repository.GetUserByEmailAsync(dto.Email);
 
             if (existingUser != null &&
                 existingUser.UserId != id)
@@ -118,91 +131,87 @@ public class UserService : IUserService
                 throw new ConflictException(
                     "Email already exists");
             }
-
-            user.Email = dto.Email;
         }
 
-        if (!string.IsNullOrWhiteSpace(dto.Password))
-        {
-            user.Password =
-                BCrypt.Net.BCrypt.HashPassword(
-                    dto.Password);
-        }
+        _mapper.Map(dto, user);
 
         await _repository.UpdateUserAsync(user);
 
         return _mapper.Map<UserDto>(user);
     }
 
-    
-
-    public async Task<AddressDto?> GetAddressByIdAsync(
-        int addressId)
+    public async Task<IEnumerable<AddressDto>> GetAllAddressesAsync()
     {
+        var addresses = await _repository.GetAllAddressesAsync();
+
+        return _mapper.Map<IEnumerable<AddressDto>>(addresses);
+    }
+
+    public async Task<AddressDto> CreateAddressAsync(CreateAddressDto dto)
+    {
+        var address = _mapper.Map<Address>(dto);
+
+        var createdAddress =
+            await _repository.CreateAddressAsync(address);
+
+        return _mapper.Map<AddressDto>(createdAddress);
+    }
+
+    public async Task<AddressDto> GetAddressByUserIdAsync(
+     int userId)
+    {
+        var user = await _repository.GetUserByIdAsync(userId);
+
+        if (user == null)
+        {
+            throw new NotFoundException(
+                $"User with Id {userId} not found");
+        }
+
         var address =
-            await _repository
-                .GetAddressByIdAsync(addressId);
+            await _repository.GetAddressByUserIdAsync(userId);
 
         if (address == null)
         {
             throw new NotFoundException(
-                $"Address with Id {addressId} not found");
+                $"Address for User Id {userId} not found");
         }
 
         return _mapper.Map<AddressDto>(address);
     }
 
-    public async Task<AddressDto?> UpdateAddressAsync(
-        int addressId,
-        UpdateAddressDto dto)
+    public async Task<AddressDto> UpdateAddressByUserIdAsync(
+        int userId,
+        AddressDto dto)
     {
+        var user = await _repository.GetUserByIdAsync(userId);
+
+        if (user == null)
+        {
+            throw new NotFoundException(
+                $"User with Id {userId} not found");
+        }
+
         var address =
-            await _repository
-                .GetAddressByIdAsync(addressId);
+            await _repository.GetAddressByUserIdAsync(userId);
 
         if (address == null)
         {
             throw new NotFoundException(
-                $"Address with Id {addressId} not found");
+                $"Address for User Id {userId} not found");
         }
 
-        if (!string.IsNullOrWhiteSpace(dto.Street))
-        {
-            address.Street = dto.Street;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dto.City))
-        {
-            address.City = dto.City;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dto.State))
-        {
-            address.State = dto.State;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dto.PostalCode))
-        {
-            address.PostalCode = dto.PostalCode;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dto.Country))
-        {
-            address.Country = dto.Country;
-        }
+        _mapper.Map(dto, address);
 
         await _repository.UpdateAddressAsync(address);
 
         return _mapper.Map<AddressDto>(address);
     }
 
-    
-
-    public async Task<DashboardDto?> GetDashboardAsync(
+    public async Task<DashboardDto> GetDashboardAsync(
         int userId)
     {
-        var user =
-            await _repository.GetUserByIdAsync(userId);
+        var user = await _repository.GetUserByIdAsync(userId);
 
         if (user == null)
         {
@@ -211,37 +220,39 @@ public class UserService : IUserService
         }
 
         var walletBalance =
-            await _repository
-                .GetWalletBalanceAsync(userId);
+            await _repository.GetWalletBalanceAsync(userId);
+        if (walletBalance < 0)
+        {
+            throw new Exception(
+                "Invalid wallet balance");
+        }
 
         var totalGoldHoldings =
-            await _repository
-                .GetTotalGoldHoldingsAsync(userId);
+            await _repository.GetTotalGoldHoldingsAsync(userId);
+        
+        if (totalGoldHoldings < 0)
+        {
+            throw new Exception(
+                "Invalid gold holdings");
+        }
 
         var currentGoldPrice =
-            await _repository
-                .GetCurrentGoldPriceAsync();
+            await _repository.GetCurrentGoldPriceAsync();
 
-        return new DashboardDto
+        if (currentGoldPrice <= 0)
         {
-            WalletBalance = walletBalance,
+            throw new NotFoundException(
+                "Current gold price not available");
+        }
 
-            TotalGoldHoldings =
-                totalGoldHoldings,
-
-            CurrentGoldPrice =
-                currentGoldPrice
-        };
+        return _mapper.Map<DashboardDto>(
+            (walletBalance, totalGoldHoldings, currentGoldPrice));
     }
 
-   
-
-    public async Task<
-        IEnumerable<VirtualGoldHoldingDto>>
+    public async Task<IEnumerable<VirtualGoldHoldingDto>>
         GetVirtualGoldHoldingsAsync(int userId)
     {
-        var user =
-            await _repository.GetUserByIdAsync(userId);
+        var user = await _repository.GetUserByIdAsync(userId);
 
         if (user == null)
         {
@@ -250,22 +261,21 @@ public class UserService : IUserService
         }
 
         var holdings =
-            await _repository
-                .GetVirtualGoldHoldingsAsync(userId);
+            await _repository.GetVirtualGoldHoldingsAsync(userId);
 
-        return _mapper.Map<
-            IEnumerable<VirtualGoldHoldingDto>>
-            (holdings);
+        if (!holdings.Any())
+        {
+            throw new NotFoundException(
+                "No virtual gold holdings found");
+        }
+
+        return _mapper.Map<IEnumerable<VirtualGoldHoldingDto>>(holdings);
     }
 
-   
-
-    public async Task<
-        IEnumerable<PhysicalGoldHoldingDto>>
+    public async Task<IEnumerable<PhysicalGoldHoldingDto>>
         GetPhysicalGoldHoldingsAsync(int userId)
     {
-        var user =
-            await _repository.GetUserByIdAsync(userId);
+        var user = await _repository.GetUserByIdAsync(userId);
 
         if (user == null)
         {
@@ -274,21 +284,19 @@ public class UserService : IUserService
         }
 
         var holdings =
-            await _repository
-                .GetPhysicalGoldHoldingsAsync(userId);
+            await _repository.GetPhysicalGoldHoldingsAsync(userId);
+        if (!holdings.Any())
+        {
+            throw new NotFoundException(
+                "No physical gold holdings found");
+        }
 
-        return _mapper.Map<
-            IEnumerable<PhysicalGoldHoldingDto>>
-            (holdings);
+        return _mapper.Map<IEnumerable<PhysicalGoldHoldingDto>>(holdings);
     }
 
-   
-
-    public async Task<WalletBalanceDto>
-        GetWalletBalanceAsync(int userId)
+    public async Task<decimal> GetWalletBalanceAsync(int userId)
     {
-        var user =
-            await _repository.GetUserByIdAsync(userId);
+        var user = await _repository.GetUserByIdAsync(userId);
 
         if (user == null)
         {
@@ -296,13 +304,6 @@ public class UserService : IUserService
                 $"User with Id {userId} not found");
         }
 
-        var balance =
-            await _repository
-                .GetWalletBalanceAsync(userId);
-
-        return new WalletBalanceDto
-        {
-            Balance = balance
-        };
+        return await _repository.GetWalletBalanceAsync(userId);
     }
 }

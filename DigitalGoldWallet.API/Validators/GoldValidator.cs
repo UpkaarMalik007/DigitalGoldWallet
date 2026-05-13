@@ -3,48 +3,39 @@ using FluentValidation;
 
 namespace DigitalGoldWallet.API.Validators
 {
-    public class BuyGoldDtoValidator : AbstractValidator<BuyGoldDto>
+    public class GoldActionRequestDtoValidator : AbstractValidator<GoldActionRequestDto>
     {
-        public BuyGoldDtoValidator()
+        public GoldActionRequestDtoValidator()
         {
             RuleFor(x => x.UserId)
                 .GreaterThan(0).WithMessage("User Id is required.");
 
-            RuleFor(x => x.BranchId)
-                .GreaterThan(0).WithMessage("Branch Id is required.");
+            RuleFor(x => x.ActionType)
+                .IsInEnum().WithMessage("ActionType is required.");
 
-            RuleFor(x => x.Amount)
-                .GreaterThan(0).WithMessage("Amount must be greater than zero.");
-        }
-    }
+            When(x => x.ActionType == GoldActionType.Buy, () =>
+            {
+                RuleFor(x => x.BranchId)
+                    .NotNull().WithMessage("Branch Id is required for Buy.");
+                RuleFor(x => x.Amount)
+                    .NotNull().GreaterThan(0).WithMessage("Amount must be greater than zero for Buy.");
+            });
 
-    public class SellGoldDtoValidator : AbstractValidator<SellGoldDto>
-    {
-        public SellGoldDtoValidator()
-        {
-            RuleFor(x => x.UserId)
-                .GreaterThan(0).WithMessage("User Id is required.");
+            When(x => x.ActionType == GoldActionType.Sell, () =>
+            {
+                RuleFor(x => x.Quantity)
+                    .NotNull().GreaterThan(0).WithMessage("Quantity must be greater than zero for Sell.");
+            });
 
-            RuleFor(x => x.Quantity)
-                .GreaterThan(0).WithMessage("Quantity must be greater than zero.");
-        }
-    }
-
-    public class ConvertToPhysicalDtoValidator : AbstractValidator<ConvertToPhysicalDto>
-    {
-        public ConvertToPhysicalDtoValidator()
-        {
-            RuleFor(x => x.UserId)
-                .GreaterThan(0).WithMessage("User Id is required.");
-
-            RuleFor(x => x.BranchId)
-                .GreaterThan(0).WithMessage("Branch Id is required.");
-
-            RuleFor(x => x.Quantity)
-                .GreaterThan(0).WithMessage("Quantity must be greater than zero.");
-
-            RuleFor(x => x.DeliveryAddressId)
-                .GreaterThan(0).WithMessage("Delivery Address Id is required.");
+            When(x => x.ActionType == GoldActionType.Convert, () =>
+            {
+                RuleFor(x => x.BranchId)
+                    .NotNull().WithMessage("Branch Id is required for Convert.");
+                RuleFor(x => x.Quantity)
+                    .NotNull().GreaterThan(0).WithMessage("Quantity must be greater than zero for Convert.");
+                RuleFor(x => x.DeliveryAddressId)
+                    .NotNull().WithMessage("Delivery Address Id is required for Convert.");
+            });
         }
     }
 }

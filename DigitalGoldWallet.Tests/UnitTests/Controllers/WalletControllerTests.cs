@@ -1,6 +1,6 @@
 using DigitalGoldWallet.API.Controllers;
 using DigitalGoldWallet.API.DTO;
-using DigitalGoldWallet.API.Services.Interface;
+using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

@@ -30,17 +30,6 @@ namespace DigitalGoldWallet.API.DTOs
         public DateTime? ToDate { get; set; }
     }
 
-    public class UpdateTransactionStatusDto
-    {
-        public string TransactionStatus { get; set; } = null!;
-    }
-
-    public class CreateGoldOrderRequestDto
-    {
-        public int BranchId { get; set; }
-        public decimal Quantity { get; set; }
-    }
-
     public class VendorTransactionSummaryDto
     {
         public int TotalTransactions { get; set; }

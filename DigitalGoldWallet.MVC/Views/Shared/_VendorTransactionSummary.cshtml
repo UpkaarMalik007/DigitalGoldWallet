@@ -1,0 +1,54 @@
+@model DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionSummaryViewModel?
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">
+        Summary not available.
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Total Transactions</small>
+                <h3>@Model.TotalTransactions</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Successful</small>
+                <h3>@Model.SuccessfulTransactions</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Failed</small>
+                <h3>@Model.FailedTransactions</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Total Buy Amount</small>
+                <h3>₹@Model.TotalSellAmount</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Total Sell Amount</small>
+                <h3>₹@Model.TotalBuyAmount</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <small>Total Revenue</small>
+                <h3>₹@Model.TotalRevenue</h3>
+            </div>
+        </div>
+    </div>
+}

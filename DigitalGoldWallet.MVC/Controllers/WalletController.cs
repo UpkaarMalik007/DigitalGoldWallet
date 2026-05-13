@@ -173,7 +173,7 @@ namespace DigitalGoldWallet.MVC.Controllers
                 return View(result);
             }
             catch (Exception ex)
-            {
+{
                 TempData["Error"] = ex.Message;
                 return RedirectToAction("Index");
             }

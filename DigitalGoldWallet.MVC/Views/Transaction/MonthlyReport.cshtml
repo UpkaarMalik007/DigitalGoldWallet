@@ -1,0 +1,77 @@
+﻿@model DigitalGoldWallet.MVC.ViewModels.Transaction.MonthlyReportViewModel
+
+@{
+    Layout = "~/Views/Shared/_PaymentLayout.cshtml";
+    ViewData["Title"] = "Monthly Report";
+}
+
+<div class="space-y-8">
+
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold tracking-tight">Monthly Report</h2>
+            <p class="mt-2 text-muted text-lg">
+                Transaction report for @Model.Month / @Model.Year.
+            </p>
+        </div>
+
+        <a asp-controller="Transaction"
+               asp-action="AdminTransactions"
+               class="rounded-xl border border-line px-6 py-3 font-extrabold">
+            Back to All Transactions
+        </a>
+    </div>
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft p-7">
+        <h3 class="text-2xl font-extrabold mb-6">Select Month</h3>
+
+        <form asp-controller="Transaction"
+              asp-action="MonthlyReport"
+              method="get"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">Month</label>
+                <select name="month" class="w-full rounded-lg border border-line px-4 py-2">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        if (Model.Month == i)
+                        {
+                            <option value="@i" selected>@i</option>
+                        }
+                        else
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">Year</label>
+                <input type="number"
+                       name="year"
+                       value="@Model.Year"
+                       class="w-full rounded-lg border border-line px-4 py-2" />
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit"
+                        class="w-full rounded-lg bg-yellow-400 px-6 py-2 font-extrabold text-[#554300]">
+                    Generate
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <partial name="_TransactionSummaryCards" model="Model.Summary" />
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <div class="p-7 border-b border-line">
+            <h3 class="text-2xl font-extrabold">Report Transactions</h3>
+            <p class="mt-1 text-muted">Transactions found for selected month and year.</p>
+        </div>
+
+        <partial name="_AdminTransactionTable" model="Model.Transactions" />
+    </section>
+</div>

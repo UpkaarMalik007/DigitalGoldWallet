@@ -1,0 +1,83 @@
+@model DigitalGoldWallet.MVC.ViewModels.Gold.BuyGoldViewModel
+
+@{
+    ViewData["Title"] = "Secure Gold Purchase";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="hero-section text-center mb-4">
+                <h1 class="h2">Secure <span class="text-gold-dark">Purchase</span></h1>
+                <p class="text-secondary">Instantly secure 24K pure digital gold in your vault.</p>
+            </div>
+
+            <div class="card p-5">
+                <div class="text-center mb-5 p-4 bg-cream rounded-4">
+                    <small class="text-secondary text-uppercase ls-1 fw-bold">Live Buy Rate</small>
+                    <h3 class="mb-0 text-gold-dark mt-1">@Model.CurrentGoldPrice.ToString("C") <small class="fs-6 text-secondary">/ gm</small></h3>
+                </div>
+
+                <form asp-action="Buy" method="post">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label asp-for="Amount" class="form-label text-secondary fw-bold small">Investment Amount (INR)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-cream border-medium text-secondary">₹</span>
+                                <input asp-for="Amount" class="form-control" placeholder="Enter amount..." />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="SelectedBranch" class="form-label text-secondary fw-bold small">Select Vendor/Branch</label>
+                            <select asp-for="SelectedBranch" class="form-select form-control">
+                                <option value="">Choose a branch...</option>
+                                @foreach (var branch in Model.Branches)
+                                {
+                                    <option value="@branch.BranchId">
+                                        @branch.BranchName (@branch.VendorName) - @branch.Address
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="SelectedBranch" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="text-center p-4 rounded-4 bg-cream border border-light">
+                                <small class="text-secondary d-block mb-1">Estimated Gold Quantity</small>
+                                <h3 class="mb-0 text-dark-brown" id="estimatedQuantity">0.000 <small class="fs-6">gm</small></h3>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-gold w-100 py-3 shadow">Confirm & Pay</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <small class="text-secondary"><i class="bi bi-shield-check text-success me-1"></i> 100% Insured & Bank-Grade Security</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var price = @Html.Raw(Model.CurrentGoldPrice.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            $('#Amount').on('input', function() {
+                var amount = $(this).val();
+                if (amount > 0) {
+                    var qty = amount / price;
+                    $('#estimatedQuantity').html(qty.toFixed(3) + ' <small class="fs-6">gm</small>');
+                } else {
+                    $('#estimatedQuantity').html('0.000 <small class="fs-6">gm</small>');
+                }
+            });
+        });
+    </script>
+}

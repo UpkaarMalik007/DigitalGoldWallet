@@ -8,14 +8,23 @@ namespace DigitalGoldWallet.API.Mappings
     {
         public GoldProfile()
         {
-            CreateMap<PhysicalGoldTransaction, PhysicalGoldHistoryDto>()
+            CreateMap<PhysicalGoldTransaction, GoldTransactionDto>()
+                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.TransactionId))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId ?? 0))
-                .ForMember(dest => dest.BranchId, opt => opt.MapFrom(src => src.BranchId ?? 0));
+                .ForMember(dest => dest.BranchId, opt => opt.MapFrom(src => src.BranchId))
+                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => 0m)) 
+                .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => GoldActionType.Convert))
+                .ForMember(dest => dest.TransactionStatus, opt => opt.MapFrom(src => "Physical"))
+                .ForMember(dest => dest.DeliveryAddressId, opt => opt.MapFrom(src => src.DeliveryAddressId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
 
             CreateMap<TransactionHistory, GoldTransactionDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId ?? 0));
 
-            CreateMap<VendorBranch, VendorStockDto>();
+            CreateMap<VendorBranch, BranchDetailDto>()
+                .ForMember(dest => dest.AvailableQuantity, opt => opt.MapFrom(src => src.Quantity))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ? $"{src.Address.Street}, {src.Address.City}, {src.Address.State}" : null));
         }
     }
 }

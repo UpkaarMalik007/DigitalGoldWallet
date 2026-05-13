@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Buy Gold";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="max-w-4xl mx-auto">
+    <section class="mb-10">
+        <h1 class="text-4xl font-bold text-[#1f1b13] mb-2">
+            Buy Digital Gold
+        </h1>
+        <p class="text-[#5f5e5e] text-lg">
+            Instantly purchase 24K 99.9% pure digital gold.
+        </p>
+    </section>
+
+    <div class="bg-white rounded-2xl border border-[#e9ecef] shadow-sm p-10">
+        <div class="mb-10 flex items-center justify-between p-6 bg-[#fbf3e5] rounded-2xl border border-[#d4af37]/30">
+            <div>
+                <span class="text-sm uppercase tracking-wider text-[#735c00] font-bold">Live Market Rate</span>
+                <div class="text-3xl font-bold text-[#735c00] mt-1">₹ 7,250.00 / g</div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-[#735c00] block mb-1">Price refreshes every 30s</span>
+                <span class="material-symbols-outlined text-[#735c00] animate-spin text-xl" style="animation-duration: 3s;">sync</span>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div>
+                <label class="block text-sm uppercase tracking-wider text-[#6c757d] mb-3 font-semibold">Amount to Invest (₹)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-[#1f1b13]">₹</span>
+                    <input type="number" class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-2xl pl-12 pr-6 py-5 text-2xl font-bold text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition" placeholder="0.00" />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#6c757d]">swap_vert</span>
+            </div>
+
+            <div>
+                <label class="block text-sm uppercase tracking-wider text-[#6c757d] mb-3 font-semibold">Gold Quantity (g)</label>
+                <div class="relative">
+                    <input type="number" class="w-full bg-[#f8f9fa] border border-[#e9ecef] rounded-2xl px-6 py-5 text-2xl font-bold text-[#1f1b13] focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition" placeholder="0.00" />
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#6c757d]">grams</span>
+                </div>
+            </div>
+
+            <button class="w-full bg-[#d4af37] text-[#554300] py-5 rounded-2xl text-xl font-bold shadow-soft hover:scale-[1.02] active:scale-[0.98] transition mt-6">
+                Proceed to Purchase
+            </button>
+        </div>
+    </div>
+</div>

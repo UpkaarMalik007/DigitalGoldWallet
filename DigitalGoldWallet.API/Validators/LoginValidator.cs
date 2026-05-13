@@ -7,19 +7,15 @@ namespace DigitalGoldWallet.API.Validators
     {
         public LoginValidator()
         {
-            RuleFor(x => x.Id)
-                .GreaterThan(0)
-                .WithMessage("Invalid Id");
+            RuleFor(x => x.Email)
+                .NotEmpty()
+                .WithMessage("Email is required")
+                .EmailAddress()
+                .WithMessage("Invalid email format");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
-                .WithMessage("Password is required")
-
-                // Example valid:
-                // User@123
-                // Admin@123
-                .Matches(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{6,}$")
-                .WithMessage("Invalid password format");
+                .WithMessage("Password is required");
         }
     }
 }

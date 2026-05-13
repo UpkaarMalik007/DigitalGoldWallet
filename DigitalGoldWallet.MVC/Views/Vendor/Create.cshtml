@@ -1,0 +1,78 @@
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
+@{
+    Layout = "_VendorLayout";
+    ViewData["Title"] = "Add Vendor";
+    ViewData["PageHeader"] = "Add Vendor";
+}
+
+<div class="max-w-5xl mx-auto">
+    <div class="mb-7 flex items-center justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold">Add Vendor</h2>
+            <p class="mt-2 text-muted">Create a verified gold vendor using database/API fields.</p>
+        </div>
+        <a asp-action="Index" class="rounded-xl border border-line px-6 py-3 font-bold text-muted hover:bg-cream-2">Cancel</a>
+    </div>
+
+    <form asp-action="Create" method="post" class="rounded-2xl border border-line bg-white p-8 shadow-soft space-y-7">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-red-700 font-medium"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label asp-for="VendorName" class="mb-2 block font-bold">Vendor Name</label>
+                <input asp-for="VendorName" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Sona Jewellers" />
+                <span asp-validation-for="VendorName" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="Status" class="mb-2 block font-bold">Status</label>
+                <select asp-for="Status" asp-items="ViewBag.StatusOptions" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold"></select>
+                <span class="mt-1 block text-xs text-muted">Static UI field. Vendor database fields are saved through API.</span>
+            </div>
+            <div class="md:col-span-2">
+                <label asp-for="Description" class="mb-2 block font-bold">Description</label>
+                <textarea asp-for="Description" rows="4" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Trusted gold vendor"></textarea>
+                <span asp-validation-for="Description" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ContactPersonName" class="mb-2 block font-bold">Contact Person Name</label>
+                <input asp-for="ContactPersonName" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactPersonName" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ContactEmail" class="mb-2 block font-bold">Contact Email</label>
+                <input asp-for="ContactEmail" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactEmail" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ContactPhone" class="mb-2 block font-bold">Contact Phone</label>
+                <input asp-for="ContactPhone" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="ContactPhone" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="WebsiteUrl" class="mb-2 block font-bold">Website URL</label>
+                <input asp-for="WebsiteUrl" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="WebsiteUrl" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="CurrentGoldPrice" class="mb-2 block font-bold">Current Gold Price</label>
+                <input asp-for="CurrentGoldPrice" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="CurrentGoldPrice" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="Password" class="mb-2 block font-bold">Password</label>
+                <input asp-for="Password" type="password" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" />
+                <span asp-validation-for="Password" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 border-t border-line pt-6">
+            <a asp-action="Index" class="rounded-xl border border-line px-7 py-3 font-bold text-muted hover:bg-cream-2">Cancel</a>
+            <button type="submit" class="rounded-xl bg-gold px-8 py-3 font-extrabold text-[#554300] shadow-soft hover:opacity-90">Create Vendor</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

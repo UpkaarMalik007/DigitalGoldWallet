@@ -1,4 +1,4 @@
-﻿namespace DigitalGoldWallet.API.Exceptions;
+namespace DigitalGoldWallet.API.Exceptions;
 
 public class ConflictException : Exception
 {

@@ -1,6 +1,6 @@
 using DigitalGoldWallet.API.DTO;
 
-namespace DigitalGoldWallet.API.Services.Interface
+namespace DigitalGoldWallet.API.Services.Interfaces
 {
     public interface IWalletService
     {
