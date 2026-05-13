@@ -68,19 +68,15 @@ namespace DigitalGoldWallet.API.Controllers
         public async Task<IActionResult> GetPhysicalHistory(int userId)
         {
             var data = await _goldService.GetPhysicalHistory(userId);
-            if (data == null || data.Count == 0)
-                throw new Exception("No physical history found.");
-            return Ok(data);
+            return Ok(data ?? new List<GoldTransactionDto>());
         }
 
         [HttpGet("transactions/{userId}")]
-        [Authorize(Roles = "User,Admin")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTransactions(int userId)
         {
             var data = await _goldService.GetTransactions(userId);
-            if (data == null || data.Count == 0)
-                throw new Exception("No transactions found.");
-            return Ok(data);
+            return Ok(data ?? new List<GoldTransactionDto>());
         }
 
         [HttpGet("vendor-stock/{branchId}")]
@@ -104,12 +100,20 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpGet("portfolio/{userId}")]
-        [Authorize(Roles = "User,Admin")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetPortfolio(int userId)
         {
             var data = await _goldService.GetPortfolio(userId);
             if (data == null)
                 throw new Exception("Portfolio not found.");
+            return Ok(data);
+        }
+
+        [HttpGet("branches")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllBranches()
+        {
+            var data = await _goldService.GetAllBranches();
             return Ok(data);
         }
     }

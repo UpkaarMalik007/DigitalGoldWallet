@@ -1,0 +1,38 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.Gold.RecentTransactionViewModel>
+
+<div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="bg-cream">
+            <tr>
+                <th class="ps-4 border-0 text-secondary small text-uppercase py-3">Activity</th>
+                <th class="border-0 text-secondary small text-uppercase py-3">Date</th>
+                <th class="border-0 text-secondary small text-uppercase py-3">Quantity</th>
+                <th class="border-0 text-secondary small text-uppercase py-3 text-end pe-4">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var tx in Model)
+                {
+                    <tr>
+                        <td class="ps-4 py-3">
+                            <span class="fw-bold @(tx.Type == "Buy" ? "text-success" : "text-danger")">
+                                @tx.Type
+                            </span>
+                        </td>
+                        <td class="text-secondary">@tx.Date.ToString("dd MMM yyyy")</td>
+                        <td class="fw-600">@tx.Quantity.ToString("N3") gm</td>
+                        <td class="text-end pe-4 fw-bold">@tx.Amount.ToString("C")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-secondary">No recent transactions.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -36,6 +36,8 @@ namespace DigitalGoldWallet.API.Repositories.Interfaces
         Task<List<VirtualGoldHolding>>
             GetPortfolio(int userId);
 
+        Task<List<VendorBranch>> GetAllBranches();
+
         Task SaveChanges();
     }
 }
