@@ -10,6 +10,14 @@
     decimal averageRate = Model.Any(v => (v.CurrentGoldPrice ?? 0) > 0)
         ? Model.Where(v => (v.CurrentGoldPrice ?? 0) > 0).Average(v => v.CurrentGoldPrice ?? 0)
         : 0;
+    string role = Context.Session.GetString("UserRole") ?? Context.Session.GetString("Role") ?? string.Empty;
+    bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+    bool isUser = role.Equals("User", StringComparison.OrdinalIgnoreCase);
+
+    if (isUser)
+    {
+        Layout = "~/Views/Shared/_UserLayout.cshtml";
+    }
 }
 
 <div class="space-y-8">

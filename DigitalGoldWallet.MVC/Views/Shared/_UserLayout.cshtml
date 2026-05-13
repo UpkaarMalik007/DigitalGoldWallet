@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Digital Gold Wallet</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+          rel="stylesheet" />
+
+    <style>
+
+        body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff8f0;
+        }
+
+        .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+        }
+
+    </style>
+
+</head>
+
+<body class="bg-[#fff8f0] text-[#1f1b13]">
+
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-[#fbf3e5] border-r border-[#e9ecef] hidden md:flex flex-col px-4 py-6">
+
+        <!-- Logo -->
+        <div class="mb-10">
+
+            <h2 class="text-2xl font-bold text-[#735c00]">
+                Digital Gold
+            </h2>
+
+        </div>
+
+        <!-- User Info -->
+        <div class="flex items-center gap-3 mb-8">
+
+            <div class="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center text-white font-bold text-lg">
+
+                @(Context.Session.GetString("UserName")?.Substring(0, 1).ToUpper())
+
+            </div>
+
+            <div>
+
+                <h4 class="font-semibold text-[#1f1b13]">
+
+                    @Context.Session.GetString("UserName")
+
+                </h4>
+
+                <p class="text-sm text-[#6c757d]">
+                    Gold Investor
+                </p>
+
+            </div>
+
+        </div>
+
+        <nav class="flex flex-col gap-2 flex-1">
+            <a asp-controller="User"
+               asp-action="Dashboard"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["Title"]?.ToString() == "Dashboard" ? "bg-[#d4af37] text-[#554300]" : "text-[#4d4635] hover:bg-[#efe7da]") font-semibold transition">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+
+            <a asp-controller="Wallet"
+               asp-action="History"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#4d4635] hover:bg-[#efe7da] transition">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                Wallet
+            </a>
+
+            <a asp-controller="Gold"
+               asp-action="Index"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#4d4635] hover:bg-[#efe7da] transition">
+                <span class="material-symbols-outlined">payments</span>
+                Gold
+            </a>
+
+            <a asp-controller="Transaction"
+               asp-action="History"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#4d4635] hover:bg-[#efe7da] transition">
+                <span class="material-symbols-outlined">receipt_long</span>
+                Transactions
+            </a>
+
+            <a asp-controller="Vendor"
+               asp-action="Index"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#4d4635] hover:bg-[#efe7da] transition">
+                <span class="material-symbols-outlined">store</span>
+                Vendors
+            </a>
+
+            <a asp-controller="User"
+               asp-action="Profile"
+               class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["Title"]?.ToString() == "Profile" ? "bg-[#d4af37] text-[#554300]" : "text-[#4d4635] hover:bg-[#efe7da]") font-semibold transition">
+                <span class="material-symbols-outlined">person</span>
+                Profile
+            </a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="pt-6 border-t border-[#e9ecef]">
+
+            <a asp-controller="Account"
+                   asp-action="Logout"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition">
+
+                <span class="material-symbols-outlined">
+                    logout
+                </span>
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- Main -->
+    <main class="md:ml-64 min-h-screen p-6 lg:p-10">
+
+        <!-- Top Navbar -->
+        <header class="flex justify-between items-center mb-10">
+
+            <div>
+
+                <h1 class="text-3xl font-bold text-[#1f1b13]">
+
+                    @ViewData["Title"]
+
+                </h1>
+
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <span class="text-sm text-[#6c757d]">
+                    Welcome,
+                </span>
+
+                <span class="font-semibold text-[#735c00]">
+
+                    @Context.Session.GetString("UserName")
+
+                </span>
+
+            </div>
+
+        </header>
+
+        <!-- Body -->
+        @RenderBody()
+
+    </main>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

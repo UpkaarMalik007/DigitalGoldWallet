@@ -40,7 +40,7 @@ public class AccountController : Controller
 
         if (role.Equals("User", StringComparison.OrdinalIgnoreCase))
         {
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "User");
         }
 
         return RedirectToAction("Login", "Auth");

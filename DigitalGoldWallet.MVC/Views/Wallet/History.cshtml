@@ -1,8 +1,32 @@
 @{
-    ViewData["Title"] = "Page";
-    ViewData["PageHeader"] = "Digital Gold Wallet";
+    ViewData["Title"] = "Wallet History";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
-<div class="rounded-2xl border border-line bg-white p-10 shadow-soft">
-    <h2 class="text-3xl font-extrabold">Page available</h2>
-    <p class="mt-3 text-muted">This MVC page route is working. Connect this page to its API module when that module is ready.</p>
+
+<div class="max-w-7xl mx-auto">
+    <section class="mb-10">
+        <h1 class="text-4xl font-bold text-[#1f1b13] mb-2">
+            Wallet History
+        </h1>
+        <p class="text-[#5f5e5e] text-lg">
+            Track your deposits, withdrawals, and balance updates.
+        </p>
+    </section>
+
+    <div class="bg-white rounded-2xl border border-[#e9ecef] shadow-sm overflow-hidden">
+        <div class="p-8 text-center py-20">
+            <div class="w-20 h-20 bg-[#fbf3e5] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-[#d4af37] text-4xl">account_balance_wallet</span>
+            </div>
+            <h3 class="text-2xl font-bold text-[#1f1b13] mb-3">Wallet feature coming soon</h3>
+            <p class="text-[#6c757d] max-w-md mx-auto">
+                We are working on bringing your wallet details and transaction history here. Stay tuned!
+            </p>
+            <div class="mt-10">
+                <a asp-controller="User" asp-action="Dashboard" class="bg-[#d4af37] text-[#554300] px-8 py-3 rounded-xl font-bold shadow-sm hover:scale-105 transition">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
