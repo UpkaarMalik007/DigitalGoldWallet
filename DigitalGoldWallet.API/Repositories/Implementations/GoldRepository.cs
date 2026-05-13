@@ -125,6 +125,14 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         }
 
 
+        public async Task<List<VendorBranch>> GetAllBranches()
+        {
+            return await _context.VendorBranches
+                .Include(b => b.Address)
+                .Include(b => b.Vendor)
+                .ToListAsync();
+        }
+
         public async Task SaveChanges()
         {
             await _context.SaveChangesAsync();

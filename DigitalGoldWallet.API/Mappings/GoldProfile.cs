@@ -22,7 +22,9 @@ namespace DigitalGoldWallet.API.Mappings
             CreateMap<TransactionHistory, GoldTransactionDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId ?? 0));
 
-            CreateMap<VendorBranch, VendorStockDto>();
+            CreateMap<VendorBranch, BranchDetailDto>()
+                .ForMember(dest => dest.AvailableQuantity, opt => opt.MapFrom(src => src.Quantity))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ? $"{src.Address.Street}, {src.Address.City}, {src.Address.State}" : null));
         }
     }
 }
