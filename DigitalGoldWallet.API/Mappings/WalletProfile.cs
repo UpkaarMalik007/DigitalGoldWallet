@@ -1,3 +1,24 @@
+// using AutoMapper;
+// using DigitalGoldWallet.API.DTO;
+// using DigitalGoldWallet.API.Models;
+
+// namespace DigitalGoldWallet.API.Mappings
+// {
+//     public class WalletProfile : Profile
+//     {
+//         public WalletProfile()
+//         {
+//             CreateMap<WalletAmountDTO, Payment>();
+
+//             CreateMap<TransferMoneyDTO, Payment>();
+
+//             CreateMap<WalletAmountDTO, TransactionHistory>();
+
+//             CreateMap<TransferMoneyDTO, TransactionHistory>();
+//         }
+//     }
+// }
+
 using AutoMapper;
 using DigitalGoldWallet.API.DTO;
 using DigitalGoldWallet.API.Models;
@@ -8,13 +29,38 @@ namespace DigitalGoldWallet.API.Mappings
     {
         public WalletProfile()
         {
-            CreateMap<WalletAmountDTO, Payment>();
+            CreateMap<WalletAmountDTO, Payment>()
 
-            CreateMap<TransferMoneyDTO, Payment>();
+                .ForMember(
+                    dest => dest.PaymentMethod,
+                    opt => opt.MapFrom(src => "Bank Transfer"))
 
-            CreateMap<WalletAmountDTO, TransactionHistory>();
+                .ForMember(
+                    dest => dest.TransactionType,
+                    opt => opt.MapFrom(src => "Credited to wallet"))
 
-            CreateMap<TransferMoneyDTO, TransactionHistory>();
+                .ForMember(
+                    dest => dest.PaymentStatus,
+                    opt => opt.MapFrom(src => "Success"))
+
+                .ForMember(
+                    dest => dest.CreatedAt,
+                    opt => opt.MapFrom(src => DateTime.Now));
+                    
+            // CreateMap<TransferMoneyDTO, Payment>();
+            CreateMap<WalletAmountDTO, Payment>()
+                .ForMember(
+                    dest => dest.PaymentId, 
+                    opt => opt.Ignore())
+                .ForMember(
+                    dest => dest.CreatedAt, 
+                    opt => opt.Ignore())
+                .ForMember(
+                    dest => dest.TransactionType, 
+                    opt => opt.Ignore())
+                .ForMember(
+                    dest => dest.PaymentStatus, 
+                    opt => opt.Ignore());
         }
     }
 }

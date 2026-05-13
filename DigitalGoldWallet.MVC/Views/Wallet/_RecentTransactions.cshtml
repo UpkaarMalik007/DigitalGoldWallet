@@ -1,0 +1,44 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.WalletHistoryViewModel>
+
+<div class="card shadow-sm border-0" style="border-radius:20px;">
+    <div class="card-body p-4">
+        <h4 class="mb-4">
+            Recent Transactions
+        </h4>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.TransactionType</td>
+                            <td>₹ @item.Amount</td>
+                            <td>@item.PaymentStatus</td>
+                            <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>@item.PaymentMethod</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            No transactions found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

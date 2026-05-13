@@ -93,7 +93,13 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
             return await _context.Payments
                 .Include(x => x.User)
                 .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<List<User>> GetAllUsers()
+        {
+            return await _context.Users.ToListAsync();
         }
     }
 }

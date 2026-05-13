@@ -96,3 +96,147 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+@* Wallet - Himanshi *@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Digital Gold Wallet</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #fbfbfb;
+            font-family: Arial, sans-serif;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #000000;
+            padding-left: 25px;
+            margin-bottom: 40px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: #333;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 10px;
+            margin: 8px 15px;
+        }
+
+        .sidebar a:hover {
+            background-color: #d4af37;
+            color: white;
+        }
+
+        .sidebar .active {
+            background-color: #d4af37;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .topbar {
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .profile-name {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+
+    <div class="sidebar">
+
+        <div class="logo">
+            Digital Gold Wallet
+        </div>
+
+        <a href="/">Dashboard</a>
+
+        <a class="active"
+           href="/Wallet">
+            Wallet
+        </a>
+
+        <a href="#">Gold</a>
+
+        <a href="#">
+            Transactions
+        </a>
+
+        <a href="#">
+            Users
+        </a>
+
+        <a href="#">
+            Vendors
+        </a>
+
+    </div>
+
+
+    <!-- Main Content -->
+
+    <div class="main-content">
+
+        <!-- Topbar -->
+
+        <div class="topbar">
+
+            <h4>
+                Your Wallet
+            </h4>
+
+            <div class="profile-name">
+                @(User.Identity?.Name ?? "User")
+            </div>
+
+        </div>
+
+        @RenderBody()
+
+    </div>
+
+</body>
+</html>
+
+@* Wallet - Himanshi *@
