@@ -22,6 +22,7 @@ public class Program
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IVendorApiService, VendorApiService>();
+        builder.Services.AddScoped<IUserApiService, UserApiService>();
 
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>

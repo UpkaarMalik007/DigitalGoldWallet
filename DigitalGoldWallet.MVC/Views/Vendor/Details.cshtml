@@ -12,9 +12,15 @@
     decimal totalGoldQuantity = Model.TotalGoldQuantity ?? 0;
     decimal branchTotalQuantity = Model.BranchTotalQuantity ?? 0;
     List<VendorTransactionViewModel> transactions = ViewBag.Transactions as List<VendorTransactionViewModel> ?? new();
-    string loggedInRole = Context.Session.GetString("UserRole") ?? string.Empty;
+    string loggedInRole = Context.Session.GetString("UserRole") ?? Context.Session.GetString("Role") ?? string.Empty;
     bool isVendorLogin = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
+    bool isUser = loggedInRole.Equals("User", StringComparison.OrdinalIgnoreCase);
     int activeBranches = Model.Branches.Count;
+
+    if (isUser)
+    {
+        Layout = "~/Views/Shared/_UserLayout.cshtml";
+    }
 }
 
 <div class="space-y-8">
