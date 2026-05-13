@@ -4,50 +4,27 @@ namespace DigitalGoldWallet.API.Services.Interfaces
 {
     public interface IGoldService
     {
-        // BUY GOLD
 
-        Task BuyGold(BuyGoldDto dto);
+        Task BuyGold(GoldActionRequestDto dto);
 
-        // SELL GOLD
+        Task SellGold(GoldActionRequestDto dto);
 
-        Task SellGold(SellGoldDto dto);
+        Task<GoldPortfolioDto> GetHoldings(int userId);
 
-        // GET HOLDINGS
+        Task<GoldPortfolioDto> GetCurrentPrice();
 
-        Task<GoldHoldingDto>
-            GetHoldings(int userId);
+        Task ConvertToPhysical(GoldActionRequestDto dto);
 
-        // GET CURRENT PRICE
-
-        Task<GoldPriceDto>
-            GetCurrentPrice();
-
-        // CONVERT TO PHYSICAL
-
-        Task ConvertToPhysical(
-            ConvertToPhysicalDto dto);
-
-        // PHYSICAL HISTORY
-
-        Task<List<PhysicalGoldHistoryDto>>
-            GetPhysicalHistory(int userId);
-
-        // TRANSACTIONS
+        Task<List<GoldTransactionDto>> GetPhysicalHistory(int userId);
 
         Task<List<GoldTransactionDto>>
             GetTransactions(int userId);
 
-        // VENDOR STOCK
-
         Task<VendorStockDto>
             GetVendorStock(int branchId);
 
-        // CALCULATE GOLD
-
         Task<GoldCalculationDto>
             CalculateGold(decimal amount);
-
-        // PORTFOLIO
 
         Task<GoldPortfolioDto>
             GetPortfolio(int userId);
