@@ -22,6 +22,8 @@ namespace DigitalGoldWallet.API.Controllers
 
 
         // 1. get wallet balance
+        // [AllowAnonymous]
+        [Authorize(Roles = "User")]
         [HttpGet("balance/{userId:int}")]
         public async Task<IActionResult> GetWalletBalance(
             int userId)
@@ -47,12 +49,40 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 2. Add money
+        [Authorize(Roles = "User")]
         [HttpPost("add-money")]
+        // [AllowAnonymous]
         public async Task<IActionResult> AddMoney(WalletAmountDTO dto)
         {
             try
             {
                 var result = await _walletService.AddMoney(dto);
+                return Ok(result);
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    500,
+                    ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
+        // 3. Deduct money from wallet
+        [Authorize(Roles = "User")]
+        [HttpPost("deduct-money")]
+        public async Task<IActionResult> DeductMoney(WalletAmountDTO dto)
+        {
+            try
+            {
+                var result = await _walletService.DeductMoney(dto);
                 return Ok(result);
             }
             catch (NotFoundException)
@@ -69,29 +99,8 @@ namespace DigitalGoldWallet.API.Controllers
             }
         }
 
-        // 3. Deduct money from wallet
-        [HttpPost("deduct-money")]
-        public async Task<IActionResult> DeductMoney(WalletAmountDTO dto)
-        {
-            try
-            {
-                var result = await _walletService.DeductMoney(dto);
-                return Ok(result);
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (BadRequestException){
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
-        }
-
         // 4. get wallet transaction history
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("history/{userId:int}")]
         public async Task<IActionResult> GetWalletHistory(int userId)
         {
@@ -110,30 +119,32 @@ namespace DigitalGoldWallet.API.Controllers
             }
         }
 
-        // 5. Transfer Money
-        [HttpPost("transfer")]
-        public async Task<IActionResult> TransferMoney(TransferMoneyDTO dto)
-        {
-            try
-            {
-                var result =await _walletService.TransferMoney(dto);
-                return Ok(result);
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (BadRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
-        }
+        // // 5. Transfer Money
+        // // [Authorize(Roles = "User")]
+        // [HttpPost("transfer")]
+        // public async Task<IActionResult> TransferMoney(TransferMoneyDTO dto)
+        // {
+        //     try
+        //     {
+        //         var result =await _walletService.TransferMoney(dto);
+        //         return Ok(result);
+        //     }
+        //     catch (NotFoundException)
+        //     {
+        //         return NotFound();
+        //     }
+        //     catch (BadRequestException)
+        //     {
+        //         return BadRequest();
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(500, ex.Message);
+        //     }
+        // }
 
         // 6. Get Last Transaction
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("last-transaction/{userId:int}")]
         public async Task<IActionResult> GetLastTransaction(
             int userId)
@@ -154,6 +165,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 7. Get Wallet Summary
+        [Authorize(Roles = "Admin")]
         [HttpGet("summary/{userId:int}")]
         public async Task<IActionResult> GetWalletSummary(int userId)
         {
@@ -173,6 +185,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 8. Get Transaction Count
+        [Authorize(Roles = "Admin")]
         [HttpGet("transaction-count/{userId:int}")]
         public async Task<IActionResult> GetTransactionCount(int userId)
         {
@@ -188,12 +201,13 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 9. Filter Transaction By date
+        [Authorize(Roles = "User")]
         [HttpGet("history/date-range")]
         public async Task<IActionResult> GetTransactionsByDate(int userId, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var result =await _walletService.GetTransactionsByDate(userId, startDate, endDate);
+                var result = await _walletService.GetTransactionsByDate(userId, startDate, endDate);
                 return Ok(result);
             }
             catch (Exception)
@@ -203,6 +217,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 10. Filter Transaction By Status
+        [Authorize(Roles = "User")]
         [HttpGet("history/status")]
         public async Task<IActionResult> GetTransactionsByStatus(int userId, string status)
         {
@@ -214,6 +229,39 @@ namespace DigitalGoldWallet.API.Controllers
             catch (Exception)
             {
                 return StatusCode(500);
+            }
+        }
+
+        // 11. get all users
+        [Authorize(Roles = "User")]
+        [HttpGet("users")]
+        // [AllowAnonymous]
+        public async Task<IActionResult> GetUsers()
+        {
+            try
+            {
+                var result =
+                    await _walletService.GetUsers();
+
+                return Ok(result);
+            }
+
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
+
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    500,
+                    ex.InnerException?.Message
+                    ?? ex.Message);
             }
         }
     }

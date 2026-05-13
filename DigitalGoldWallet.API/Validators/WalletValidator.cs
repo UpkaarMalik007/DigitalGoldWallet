@@ -33,24 +33,24 @@ namespace DigitalGoldWallet.API.Validators
         }
     }
 
-    // Transfer Money Validation
-    public class TransferMoneyValidator
-        : AbstractValidator<TransferMoneyDTO>
-    {
-        public TransferMoneyValidator()
-        {
-            RuleFor(x => x.SenderId)
-                .GreaterThan(0);
+    // // Transfer Money Validation
+    // public class TransferMoneyValidator
+    //     : AbstractValidator<TransferMoneyDTO>
+    // {
+    //     public TransferMoneyValidator()
+    //     {
+    //         RuleFor(x => x.SenderId)
+    //             .GreaterThan(0);
 
-            RuleFor(x => x.ReceiverId)
-                .GreaterThan(0);
+    //         RuleFor(x => x.ReceiverId)
+    //             .GreaterThan(0);
 
-            RuleFor(x => x.Amount)
-                .GreaterThan(0);
+    //         RuleFor(x => x.Amount)
+    //             .GreaterThan(0);
 
-            RuleFor(x => x)
-                .Must(x => x.SenderId != x.ReceiverId)
-                .WithMessage("Sender and Receiver cannot be same");
-        }
-    }
+    //         RuleFor(x => x)
+    //             .Must(x => x.SenderId != x.ReceiverId)
+    //             .WithMessage("Sender and Receiver cannot be same");
+    //     }
+    // }
 }

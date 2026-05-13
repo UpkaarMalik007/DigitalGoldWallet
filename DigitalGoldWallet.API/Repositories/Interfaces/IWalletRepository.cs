@@ -14,5 +14,6 @@ namespace DigitalGoldWallet.API.Repositories.Interfaces
         Task<List<Payment>> GetTransactionsByStatus(int userId, string status);
         Task<int> GetTransactionsCount(int userId);
         Task<List<Payment>> GetAllTransactions(int userId);
+        Task<List<User>> GetAllUsers();
     }
 }

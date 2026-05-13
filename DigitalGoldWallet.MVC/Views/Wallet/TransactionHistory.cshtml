@@ -1,0 +1,194 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.WalletHistoryViewModel>
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="mb-0">
+            Wallet Transaction History
+        </h2>
+
+        <a asp-controller="Wallet"
+        asp-action="Index"
+        class="btn btn-outline-secondary">
+
+            ← Back to Dashboard
+
+        </a>
+
+    </div>
+
+    <form method="get" asp-action="TransactionHistory" class="mb-4">
+
+        <div class="row">
+
+            @* Start Date *@
+            <div class="col-md-3">
+                <label>Start Date</label>
+                <input type="date"
+                    name="startDate"
+                    class="form-control"
+                    value="@Context.Request.Query["startDate"]" />
+            </div>
+
+            @* End Date *@
+            <div class="col-md-3">
+                <label>End Date</label>
+                <input type="date"
+                    name="endDate"
+                    class="form-control"
+                    value="@Context.Request.Query["endDate"]" />
+            </div>
+
+            @* Status  *@
+            <div class="col-md-3">
+                <label>Status</label>
+                <select name="status" class="form-control">
+
+                    <option value="">All</option>
+
+                    <option value="Success"
+                            selected="@(Context.Request.Query["status"] == "Success")">
+                        Success
+                    </option>
+
+                    <option value="Failed"
+                            selected="@(Context.Request.Query["status"] == "Failed")">
+                        Failed
+                    </option>
+
+                </select>
+            </div>
+
+            @* payment method *@
+            <div class="col-md-3">
+                <label>Payment Method</label>
+                <select name="paymentMethod" class="form-control">
+                    <option value="">All</option>
+                    <option>Credit Card</option>
+                    <option>Debit Card</option>
+                    <option>Google Pay</option>
+                    <option>Amazon Pay</option>
+                    <option>PhonePe</option>
+                    <option>Paytm</option>
+                    <option>Bank Transfer</option>
+                </select>
+            </div>
+
+            @* transaction type filter *@
+            <div class="col-md-3">
+                <label>Transaction Type</label>
+                <select name="type" class="form-control">
+
+                    <option value="">All</option>
+
+                    <option value="Credited to wallet"
+                            selected="@(Context.Request.Query["type"] == "Credited to wallet")">
+                        Credit
+                    </option>
+
+                    <option value="Debited from wallet"
+                            selected="@(Context.Request.Query["type"] == "Debited from wallet")">
+                        Debit
+                    </option>
+
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-3 d-flex align-items-end">
+
+                <button type="submit" class="btn btn-primary me-2">
+                    Filter
+                </button>
+
+                <a asp-action="TransactionHistory"
+                class="btn btn-outline-secondary">
+                    Reset
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>    
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Transaction Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>₹ @item.Amount</td>
+                        <td>@item.PaymentMethod</td>
+                        <td>@item.TransactionType</td>
+                        <td>@item.PaymentStatus</td>
+                        <td>@item.CreatedAt.ToString("dd MMM yyyy")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <nav>
+            <ul class="pagination justify-content-center">
+
+                <!-- Previous -->
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link"
+                    asp-action="TransactionHistory"
+                    asp-route-page="@(ViewBag.CurrentPage - 1)"
+                    asp-route-startDate="@ViewBag.StartDate"
+                    asp-route-endDate="@ViewBag.EndDate"
+                    asp-route-status="@ViewBag.Status"
+                    asp-route-type="@ViewBag.Type"
+                    asp-route-paymentMethod="@ViewBag.PaymentMethod">
+                        Previous
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link"
+                        asp-action="TransactionHistory"
+                        asp-route-page="@i"
+                        asp-route-startDate="@ViewBag.StartDate"
+                        asp-route-endDate="@ViewBag.EndDate"
+                        asp-route-status="@ViewBag.Status"
+                        asp-route-type="@ViewBag.Type"
+                        asp-route-paymentMethod="@ViewBag.PaymentMethod">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <!-- Next -->
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link"
+                    asp-action="TransactionHistory"
+                    asp-route-page="@(ViewBag.CurrentPage + 1)"
+                    asp-route-startDate="@ViewBag.StartDate"
+                    asp-route-endDate="@ViewBag.EndDate"
+                    asp-route-status="@ViewBag.Status"
+                    asp-route-type="@ViewBag.Type"
+                    asp-route-paymentMethod="@ViewBag.PaymentMethod">
+                        Next
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </div>
+
+</div>

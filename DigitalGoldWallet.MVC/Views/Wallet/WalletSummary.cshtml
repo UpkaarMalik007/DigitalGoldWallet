@@ -1,0 +1,55 @@
+@model DigitalGoldWallet.MVC.Models.WalletSummaryModel
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="mb-0">Add Money</h2>
+
+    <a asp-controller="Wallet"
+       asp-action="Index"
+       class="btn btn-outline-secondary">
+
+        ← Back to Dashboard
+
+    </a>
+
+    </div>
+
+    <div class="row">
+
+        <!-- Balance -->
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm">
+                <h6 class="text-muted">Balance</h6>
+                <h4>₹ @Model.Balance</h4>
+            </div>
+        </div>
+
+        <!-- Total Credit -->
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm">
+                <h6 class="text-muted">Total Credit</h6>
+                <h4 style="color:green;">₹ @Model.TotalCredit</h4>
+            </div>
+        </div>
+
+        <!-- Total Debit -->
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm">
+                <h6 class="text-muted">Total Debit</h6>
+                <h4 style="color:red;">₹ @Model.TotalDebit</h4>
+            </div>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="col-md-3 mb-3">
+            <div class="card p-3 shadow-sm">
+                <h6 class="text-muted">Transactions</h6>
+                <h4>@Model.TotalTransaction</h4>
+            </div>
+        </div>
+
+    </div>
+
+</div>

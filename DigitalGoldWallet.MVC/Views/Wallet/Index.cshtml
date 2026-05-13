@@ -1,0 +1,14 @@
+@model DigitalGoldWallet.MVC.ViewModels.WalletDashboardViewModel
+
+<div class="container-fluid">
+
+    <!-- Wallet Balance -->
+    <partial name="_WalletBalance" model="Model" />
+
+    <!-- Action Buttons -->
+    <partial name="_WalletActions" />
+
+    <!-- Recent Transactions -->
+    <partial name="_RecentTransactions" model="Model.RecentTransactions" />
+
+</div>
