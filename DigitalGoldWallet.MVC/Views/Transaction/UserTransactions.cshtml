@@ -1,0 +1,85 @@
+﻿@model DigitalGoldWallet.MVC.ViewModels.Transaction.TransactionListPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_PaymentLayout.cshtml";
+    ViewData["Title"] = "My Transactions";
+}
+
+<div class="space-y-8">
+
+    <div>
+        <h2 class="text-4xl font-extrabold tracking-tight">My Transactions</h2>
+        <p class="mt-2 text-muted text-lg">View your gold transaction history.</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="rounded-2xl border border-green-300 bg-green-50 px-5 py-4 text-green-800 font-bold">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-bold">
+            @TempData["Error"]
+        </div>
+    }
+
+    <partial name="_TransactionSummaryCards" model="Model.Summary" />
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft p-7">
+        <h3 class="text-2xl font-extrabold mb-6">Filter Transactions</h3>
+
+        <form asp-controller="Transaction"
+              asp-action="FilterUserTransactions"
+              method="post"
+              class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">Type</label>
+                <select asp-for="Filter.TransactionType" name="TransactionType" class="w-full rounded-lg border border-line px-4 py-2">
+                    <option value="">All Types</option>
+                    <option value="Buy">Buy</option>
+                    <option value="Sell">Sell</option>
+                    <option value="Convert to Physical">Convert to Physical</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">Status</label>
+                <select asp-for="Filter.TransactionStatus" name="TransactionStatus" class="w-full rounded-lg border border-line px-4 py-2">
+                    <option value="">All Status</option>
+                    <option value="Success">Success</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">From</label>
+                <input asp-for="Filter.FromDate" name="FromDate" type="date" class="w-full rounded-lg border border-line px-4 py-2" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-extrabold text-muted mb-2">To</label>
+                <input asp-for="Filter.ToDate" name="ToDate" type="date" class="w-full rounded-lg border border-line px-4 py-2" />
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit"
+                        class="w-full rounded-lg bg-yellow-400 px-6 py-2 font-extrabold text-[#554300]">
+                    Filter
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <div class="p-7 border-b border-line">
+            <h3 class="text-2xl font-extrabold">Transaction History</h3>
+            <p class="mt-1 text-muted">Complete list of your gold transactions.</p>
+        </div>
+
+        <partial name="_UserTransactionTable" model="Model.Transactions" />
+    </section>
+</div>
