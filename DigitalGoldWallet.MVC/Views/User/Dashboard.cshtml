@@ -1,0 +1,180 @@
+@model DigitalGoldWallet.MVC.ViewModels.User.UserDashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="max-w-7xl mx-auto">
+
+    <section class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-4xl font-bold text-[#1f1b13] mb-2">
+                Welcome back, @Model.User.Name
+            </h1>
+
+            <p class="text-[#5f5e5e] text-lg">
+                Your digital gold portfolio summary.
+            </p>
+        </div>
+
+        <div class="flex gap-3">
+            <a asp-controller="Gold"
+               asp-action="Index"
+               class="bg-[#d4af37] text-[#554300] px-6 py-3 rounded-xl font-semibold shadow-sm hover:scale-105 transition">
+                Buy Gold
+            </a>
+
+            <a asp-controller="Gold"
+               asp-action="Index"
+               class="border border-[#d4af37] text-[#735c00] px-6 py-3 rounded-xl font-semibold hover:bg-[#fbf3e5] transition">
+                Sell Gold
+            </a>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+        <div class="bg-white p-6 rounded-2xl border border-[#e9ecef] shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs uppercase tracking-wider text-[#6c757d] font-semibold">
+                    Wallet Balance
+                </span>
+
+                <span class="material-symbols-outlined text-[#735c00]">
+                    account_balance_wallet
+                </span>
+            </div>
+
+            <div class="text-4xl font-bold text-[#1f1b13] mb-2">
+                ₹ @Model.WalletBalance.ToString("N2")
+            </div>
+
+            <div class="text-sm text-green-600 flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">trending_up</span>
+                Active Wallet
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-[#e9ecef] shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs uppercase tracking-wider text-[#6c757d] font-semibold">
+                    Gold Holdings
+                </span>
+
+                <span class="material-symbols-outlined text-[#735c00]">
+                    payments
+                </span>
+            </div>
+
+            <div class="text-4xl font-bold text-[#1f1b13] mb-2">
+                @Model.TotalGoldHoldings.ToString("N2") g
+            </div>
+
+            <div class="text-sm text-[#6c757d]">
+                Secure Digital Gold Holdings
+            </div>
+        </div>
+
+        <div class="bg-[#fbf3e5] p-6 rounded-2xl border border-[#d4af37]/30 relative overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs uppercase tracking-wider text-[#735c00] font-semibold">
+                    Current Gold Price
+                </span>
+
+                <span class="text-sm font-bold text-[#735c00]">
+                    Live
+                </span>
+            </div>
+
+            <div class="text-3xl font-bold text-[#735c00] mb-3">
+                ₹ @Model.CurrentGoldPrice.ToString("N2") / g
+            </div>
+
+            <div class="flex items-end gap-1 h-14 mt-4">
+                <div class="bg-[#d4af37]/20 w-full h-6 rounded-t"></div>
+                <div class="bg-[#d4af37]/30 w-full h-8 rounded-t"></div>
+                <div class="bg-[#d4af37]/40 w-full h-10 rounded-t"></div>
+                <div class="bg-[#d4af37]/60 w-full h-12 rounded-t"></div>
+                <div class="bg-[#d4af37] w-full h-14 rounded-t"></div>
+            </div>
+        </div>
+
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-12 bg-white rounded-2xl border border-[#e9ecef] shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-[#e9ecef] flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-[#1f1b13]">
+                    Recent Transactions
+                </h2>
+
+                <a asp-controller="Transaction"
+                   asp-action="History"
+                   class="text-[#735c00] text-sm font-semibold hover:underline">
+                    View All
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-[#f8f9fa]">
+                        <tr>
+                            <th class="px-6 py-4 text-xs uppercase text-[#6c757d]">Type</th>
+                            <th class="px-6 py-4 text-xs uppercase text-[#6c757d]">Description</th>
+                            <th class="px-6 py-4 text-xs uppercase text-[#6c757d]">Date</th>
+                            <th class="px-6 py-4 text-xs uppercase text-[#6c757d] text-right">Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.RecentTransactions != null && Model.RecentTransactions.Any())
+                        {
+                            foreach (var item in Model.RecentTransactions)
+                            {
+                                <tr class="border-b border-[#e9ecef] hover:bg-[#fbf3e5]/40 transition">
+                                    <td class="px-6 py-5 font-semibold text-[#1f1b13]">
+                                        @item.Type
+                                    </td>
+
+                                    <td class="px-6 py-5 text-[#4d4635]">
+                                        @item.Description
+                                    </td>
+
+                                    <td class="px-6 py-5 text-[#4d4635]">
+                                        @item.TransactionDate.ToString("dd MMM yyyy")
+                                    </td>
+
+                                    <td class="px-6 py-5 text-right font-bold">
+                                        @if (item.Amount >= 0)
+                                        {
+                                            <span class="text-green-600">
+                                                +₹ @item.Amount.ToString("N2")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-red-600">
+                                                ₹ @item.Amount.ToString("N2")
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-10 text-[#6c757d]">
+                                    No recent transactions found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</div>

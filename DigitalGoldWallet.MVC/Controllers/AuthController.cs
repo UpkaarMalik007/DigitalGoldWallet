@@ -69,13 +69,19 @@ public class AuthController : Controller
             ?? GetClaimValue(token, "name", "unique_name")
             ?? model.Email;
 
+        string userEmail = GetString(data, "email", "userEmail")
+    ?? GetClaimValue(token, "email", "Email")
+    ?? model.Email;
+
         HttpContext.Session.SetString("Token", token);
         HttpContext.Session.SetString("UserName", userName);
+        HttpContext.Session.SetString("UserEmail", userEmail);
         HttpContext.Session.SetString("UserRole", role);
 
         // Keep old keys too, so any teammate code using them still works.
         HttpContext.Session.SetString("JWToken", token);
         HttpContext.Session.SetString("Name", userName);
+        HttpContext.Session.SetString("UserEmail", userEmail);
         HttpContext.Session.SetString("Role", role);
 
         if (role.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
