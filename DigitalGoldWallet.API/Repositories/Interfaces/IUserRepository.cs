@@ -16,6 +16,10 @@ public interface IUserRepository
 
     Task UpdateUserAsync(User user);
 
+    Task<IEnumerable<Address>> GetAllAddressesAsync();
+
+    Task<Address> CreateAddressAsync(Address address);
+
     Task<Address?> GetAddressByUserIdAsync(int userId);
 
     Task UpdateAddressAsync(Address address);

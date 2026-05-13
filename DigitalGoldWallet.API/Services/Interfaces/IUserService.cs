@@ -13,6 +13,10 @@ public interface IUserService
 
     Task<UserDto> UpdateUserAsync(int id, UserDto dto);
 
+    Task<IEnumerable<AddressDto>> GetAllAddressesAsync();
+
+    Task<AddressDto> CreateAddressAsync(CreateAddressDto dto);
+
     Task<AddressDto> GetAddressByUserIdAsync(int userId);
 
     Task<AddressDto> UpdateAddressByUserIdAsync(int userId, AddressDto dto);

@@ -15,6 +15,11 @@ public class MappingProfile : Profile
 
         CreateMap<Address, AddressDto>();
 
+        CreateMap<CreateAddressDto, Address>()
+
+            .ForMember(dest => dest.AddressId,
+                opt => opt.Ignore());
+
         CreateMap<VirtualGoldHolding, VirtualGoldHoldingDto>();
 
         CreateMap<PhysicalGoldTransaction,

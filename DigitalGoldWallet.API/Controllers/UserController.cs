@@ -128,6 +128,47 @@ public class UsersController : ControllerBase
         });
     }
 
+    [HttpGet("addresses")]
+    [Authorize(Roles = "User,Admin,Vendor")]
+    public async Task<IActionResult> GetAllAddresses()
+    {
+        var result = await _service.GetAllAddressesAsync();
+
+        if (result == null)
+        {
+            throw new InvalidOperationException(
+                "Controller failed to receive addresses data");
+        }
+
+        return Ok(new
+        {
+            StatusCode = 200,
+            Message = "Addresses fetched successfully",
+            Data = result
+        });
+    }
+
+    [HttpPost("addresses")]
+    [Authorize(Roles = "User,Admin,Vendor")]
+    public async Task<IActionResult> CreateAddress(
+        [FromBody] CreateAddressDto dto)
+    {
+        var result = await _service.CreateAddressAsync(dto);
+
+        if (result == null)
+        {
+            throw new InvalidOperationException(
+                "Controller failed to receive created address data");
+        }
+
+        return StatusCode(201, new
+        {
+            StatusCode = 201,
+            Message = "Address created successfully",
+            Data = result
+        });
+    }
+
     [HttpGet("{userId}/address")]
     [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetAddressByUserId(
