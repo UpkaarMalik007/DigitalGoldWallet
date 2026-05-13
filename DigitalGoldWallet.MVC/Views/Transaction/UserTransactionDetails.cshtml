@@ -1,0 +1,66 @@
+﻿@model DigitalGoldWallet.MVC.ViewModels.Transaction.UserTransactionViewModel
+
+@{
+    Layout = "~/Views/Shared/_PaymentLayout.cshtml";
+    ViewData["Title"] = "Transaction Details";
+}
+
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <div>
+        <h2 class="text-4xl font-extrabold tracking-tight">Transaction Details</h2>
+        <p class="mt-2 text-muted text-lg">Detailed information about your transaction.</p>
+    </div>
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft p-8">
+
+        <div class="flex items-center justify-between border-b border-line pb-5 mb-6">
+            <div>
+                <p class="text-muted font-bold">Transaction ID</p>
+                <h3 class="text-3xl font-extrabold">#@Model.TransactionId</h3>
+            </div>
+
+            <span class="rounded-full bg-green-100 text-green-700 px-4 py-2 font-bold">
+                @Model.TransactionStatus
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+                <p class="text-muted font-bold">Branch</p>
+                <p class="text-xl font-extrabold">@Model.BranchId</p>
+            </div>
+
+            <div>
+                <p class="text-muted font-bold">Transaction Type</p>
+                <p class="text-xl font-extrabold">@Model.TransactionType</p>
+            </div>
+
+            <div>
+                <p class="text-muted font-bold">Quantity</p>
+                <p class="text-xl font-extrabold">@Model.Quantity gm</p>
+            </div>
+
+            <div>
+                <p class="text-muted font-bold">Amount</p>
+                <p class="text-xl font-extrabold text-yellow-700">₹@Model.Amount</p>
+            </div>
+
+            <div>
+                <p class="text-muted font-bold">Date</p>
+                <p class="text-xl font-extrabold">
+                    @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a asp-controller="Transaction"
+                   asp-action="UserTransactions"
+                   class="rounded-xl bg-yellow-400 px-6 py-3 font-extrabold text-[#554300]">
+                Back to Transactions
+            </a>
+        </div>
+    </section>
+</div>

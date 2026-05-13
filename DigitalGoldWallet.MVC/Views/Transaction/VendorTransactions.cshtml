@@ -1,0 +1,40 @@
+﻿@model List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel>
+
+@{
+    ViewData["Title"] = "Vendor Transactions";
+}
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold tracking-tight">Transactions</h2>
+            <p class="mt-2 text-muted text-lg">Recent vendor transactions and status updates.</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="rounded-2xl border border-green-300 bg-green-50 px-5 py-4 text-green-800 font-medium flex items-start gap-3">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-800 font-medium flex items-start gap-3">
+            <span class="material-symbols-outlined">error</span>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <partial name="_VendorTransactionSummary" model="ViewBag.VendorSummary" />
+
+    <section class="rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <div class="p-7 border-b border-line">
+            <h3 class="text-2xl font-extrabold">Transaction List</h3>
+            <p class="mt-1 text-muted">Manage and update transaction statuses.</p>
+        </div>
+        <partial name="_VendorTransactionTable" model="@Model" />
+    </section>
+</div>
