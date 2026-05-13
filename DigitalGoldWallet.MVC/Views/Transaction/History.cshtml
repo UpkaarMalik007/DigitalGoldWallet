@@ -1,13 +1,11 @@
 @{
-    ViewData["Title"] = "Transaction History";
-    Layout = "~/Views/Shared/_UserLayout.cshtml";
     string role = Context.Session.GetString("UserRole")
         ?? Context.Session.GetString("Role")
         ?? string.Empty;
 
     Layout = role.Equals("Vendor", StringComparison.OrdinalIgnoreCase)
-        ? "_VendorLayout"
-        : "_Layout";
+        ? "~/Views/Shared/_VendorLayout.cshtml"
+        : "~/Views/Shared/_UserLayout.cshtml";
 
     ViewData["Title"] = "Transactions";
     ViewData["PageHeader"] = "Transactions";
@@ -33,7 +31,7 @@
                 Once you start buying or selling gold, your transaction history will appear here.
             </p>
             <div class="mt-10">
-                <a asp-controller="Gold" asp-action="Index" class="bg-[#d4af37] text-[#554300] px-8 py-3 rounded-xl font-bold shadow-sm hover:scale-105 transition">
+                <a asp-controller="Gold" asp-action="Dashboard" class="bg-[#d4af37] text-[#554300] px-8 py-3 rounded-xl font-bold shadow-sm hover:scale-105 transition">
                     Explore Gold Options
                 </a>
             </div>
@@ -43,4 +41,5 @@
 <div class="rounded-2xl border border-line bg-white p-10 shadow-soft">
     <h2 class="text-3xl font-extrabold">Transactions</h2>
     <p class="mt-3 text-muted">Transaction module route is working. Your teammate can connect this page to the transaction API module.</p>
+</div>
 </div>

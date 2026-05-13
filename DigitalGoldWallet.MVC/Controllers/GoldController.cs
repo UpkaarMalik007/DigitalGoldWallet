@@ -225,8 +225,8 @@ namespace DigitalGoldWallet.MVC.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Index() => View("Holdings");
-        public IActionResult Holdings() => View();
+        public IActionResult Index() => RedirectToAction(nameof(Dashboard));
+        public IActionResult Holdings() => RedirectToAction(nameof(Dashboard));
         public IActionResult BuyGold() => View();
         public IActionResult SellGold() => View();
     }
