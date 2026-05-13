@@ -140,6 +140,23 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
+    public async Task<IEnumerable<AddressDto>> GetAllAddressesAsync()
+    {
+        var addresses = await _repository.GetAllAddressesAsync();
+
+        return _mapper.Map<IEnumerable<AddressDto>>(addresses);
+    }
+
+    public async Task<AddressDto> CreateAddressAsync(CreateAddressDto dto)
+    {
+        var address = _mapper.Map<Address>(dto);
+
+        var createdAddress =
+            await _repository.CreateAddressAsync(address);
+
+        return _mapper.Map<AddressDto>(createdAddress);
+    }
+
     public async Task<AddressDto> GetAddressByUserIdAsync(
      int userId)
     {

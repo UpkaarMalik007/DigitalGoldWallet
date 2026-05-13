@@ -71,6 +71,24 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<Address>> GetAllAddressesAsync()
+    {
+        return await _context.Addresses
+            .AsNoTracking()
+            .OrderBy(a => a.City)
+            .ThenBy(a => a.State)
+            .ThenBy(a => a.Street)
+            .ToListAsync();
+    }
+
+    public async Task<Address> CreateAddressAsync(Address address)
+    {
+        await _context.Addresses.AddAsync(address);
+        await _context.SaveChangesAsync();
+
+        return address;
+    }
+
     public async Task<Address?> GetAddressByUserIdAsync(int userId)
     {
         return await _context.Users

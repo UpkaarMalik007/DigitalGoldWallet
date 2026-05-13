@@ -1,7 +1,6 @@
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.ViewModels.Vendor;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DigitalGoldWallet.MVC.Controllers;
 
@@ -33,12 +32,13 @@ public class VendorController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        List<VendorTransactionViewModel> transactions =
-            await _vendorApiService.GetVendorTransactionsAsync(vendorId);
+        decimal? apiPrice = await _vendorApiService.GetVendorPriceAsync(vendorId);
+        if (apiPrice.HasValue)
+        {
+            vendor.CurrentGoldPrice = apiPrice.Value;
+        }
 
-        ViewBag.Transactions = transactions.Take(5).ToList();
         ViewBag.IsVendorDashboard = true;
-
         return View("Details", vendor);
     }
 
@@ -84,6 +84,11 @@ public class VendorController : Controller
 
     public async Task<IActionResult> Details(int id)
     {
+        if (GetCurrentRole().Equals("Vendor", StringComparison.OrdinalIgnoreCase))
+        {
+            return RedirectToAction(nameof(Dashboard));
+        }
+
         VendorViewModel? vendor = await _vendorApiService.GetVendorInventoryAsync(id)
             ?? await _vendorApiService.GetVendorByIdAsync(id);
 
@@ -95,22 +100,20 @@ public class VendorController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        List<VendorTransactionViewModel> transactions =
-            await _vendorApiService.GetVendorTransactionsAsync(id);
-
-        ViewBag.Transactions = transactions.Take(5).ToList();
         ViewBag.IsVendorDashboard = false;
-
         return View(vendor);
     }
 
-    public async Task<IActionResult> Branches()
+    public async Task<IActionResult> Branches(int page = 1, int pageSize = 6)
     {
         if (!TryGetVendorSession(out int vendorId))
         {
             TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
             return RedirectToAction("Login", "Account");
         }
+
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize is 6 or 9 or 12 ? pageSize : 6;
 
         VendorViewModel? vendor = await _vendorApiService.GetVendorByIdAsync(vendorId);
         List<VendorBranchViewModel> branches = await _vendorApiService.GetVendorBranchesAsync(vendorId);
@@ -120,13 +123,45 @@ public class VendorController : Controller
             ViewBag.ApiErrorMessage = _vendorApiService.LastErrorMessage;
         }
 
+        int totalRecords = branches.Count;
+        int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+        if (totalPages > 0 && page > totalPages)
+        {
+            page = totalPages;
+        }
+
+        List<VendorBranchViewModel> pagedBranches = branches
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
         ViewBag.VendorName = vendor?.VendorName ?? HttpContext.Session.GetString("UserName") ?? "Vendor";
         ViewBag.CurrentGoldPrice = vendor?.CurrentGoldPrice ?? 0;
+        ViewBag.TotalStock = branches.Sum(branch => branch.Quantity ?? 0);
+        ViewBag.TotalRecords = totalRecords;
+        ViewBag.CurrentPage = page;
+        ViewBag.PageSize = pageSize;
+        ViewBag.TotalPages = totalPages;
 
-        return View(branches);
+        return View(pagedBranches);
     }
 
-    public async Task<IActionResult> Transactions()
+    [HttpGet]
+    public IActionResult AddBranch()
+    {
+        if (!TryGetVendorSession(out _))
+        {
+            TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        return View(new AddVendorBranchViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddBranch(AddVendorBranchViewModel viewModel)
     {
         if (!TryGetVendorSession(out int vendorId))
         {
@@ -134,15 +169,44 @@ public class VendorController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        List<VendorTransactionViewModel> transactions =
-            await _vendorApiService.GetVendorTransactionsAsync(vendorId);
-
-        if (!transactions.Any() && !string.IsNullOrWhiteSpace(_vendorApiService.LastErrorMessage))
+        if (!ModelState.IsValid)
         {
-            ViewBag.ApiErrorMessage = _vendorApiService.LastErrorMessage;
+            return View(viewModel);
         }
 
-        return View(transactions);
+        AddressViewModel addressToCreate = new()
+        {
+            Street = viewModel.Street.Trim(),
+            City = viewModel.City.Trim(),
+            State = viewModel.State.Trim(),
+            PostalCode = string.IsNullOrWhiteSpace(viewModel.PostalCode) ? null : viewModel.PostalCode.Trim(),
+            Country = viewModel.Country.Trim()
+        };
+
+        AddressViewModel? createdAddress = await _vendorApiService.CreateAddressAsync(addressToCreate);
+
+        if (createdAddress is null || createdAddress.AddressId <= 0)
+        {
+            ModelState.AddModelError(string.Empty, _vendorApiService.LastErrorMessage ?? "Unable to create branch address.");
+            return View(viewModel);
+        }
+
+        VendorBranchViewModel branchToCreate = new()
+        {
+            AddressId = createdAddress.AddressId,
+            Quantity = viewModel.Quantity
+        };
+
+        bool added = await _vendorApiService.AddVendorBranchAsync(vendorId, branchToCreate);
+
+        if (!added)
+        {
+            ModelState.AddModelError(string.Empty, _vendorApiService.LastErrorMessage ?? "Address was created, but unable to add vendor branch.");
+            return View(viewModel);
+        }
+
+        TempData["SuccessMessage"] = "Vendor branch added successfully.";
+        return RedirectToAction(nameof(Branches));
     }
 
     [HttpPost]
@@ -208,72 +272,12 @@ public class VendorController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Edit()
     {
-        if (!GetCurrentRole().Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        if (!TryGetVendorSession(out int vendorId))
         {
-            TempData["ErrorMessage"] = "Only Admin can create vendors.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        PopulateStaticDropdowns();
-        return View(new VendorViewModel());
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(VendorViewModel viewModel)
-    {
-        if (!GetCurrentRole().Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        {
-            TempData["ErrorMessage"] = "Only Admin can create vendors.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (!ModelState.IsValid)
-        {
-            PopulateStaticDropdowns();
-            return View(viewModel);
-        }
-
-        bool created = await _vendorApiService.CreateVendorAsync(viewModel);
-
-        if (!created)
-        {
-            ModelState.AddModelError(
-                string.Empty,
-                _vendorApiService.LastErrorMessage
-                    ?? "Unable to create vendor. Please check authorization and entered details.");
-
-            PopulateStaticDropdowns();
-            return View(viewModel);
-        }
-
-        TempData["SuccessMessage"] = "Vendor created successfully.";
-        return RedirectToAction(nameof(Index));
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Edit(int? id)
-    {
-        int vendorId;
-
-        if (GetCurrentRole().Equals("Vendor", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!TryGetVendorSession(out vendorId))
-            {
-                TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
-                return RedirectToAction("Login", "Account");
-            }
-        }
-        else if (id.HasValue && id.Value > 0)
-        {
-            vendorId = id.Value;
-        }
-        else
-        {
-            TempData["ErrorMessage"] = "Vendor ID is required.";
-            return RedirectToAction(nameof(Index));
+            TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
         }
 
         VendorViewModel? vendor = await _vendorApiService.GetVendorByIdAsync(vendorId);
@@ -283,11 +287,10 @@ public class VendorController : Controller
             TempData["ErrorMessage"] = _vendorApiService.LastErrorMessage
                 ?? "Vendor not found or you are not authorized.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Dashboard));
         }
 
         vendor.Password = null;
-        PopulateStaticDropdowns();
         return View(vendor);
     }
 
@@ -295,48 +298,88 @@ public class VendorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(VendorViewModel viewModel)
     {
-        if (GetCurrentRole().Equals("Vendor", StringComparison.OrdinalIgnoreCase))
+        if (!TryGetVendorSession(out int vendorId))
         {
-            if (!TryGetVendorSession(out int vendorId))
-            {
-                TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            viewModel.VendorId = vendorId;
+            TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
         }
 
+        viewModel.VendorId = vendorId;
         viewModel.Password = null;
 
         if (!ModelState.IsValid)
         {
-            PopulateStaticDropdowns();
             return View(viewModel);
         }
 
-        bool updated = await _vendorApiService.UpdateVendorAsync(
-            viewModel.VendorId,
-            viewModel);
+        bool updated = await _vendorApiService.UpdateVendorAsync(vendorId, viewModel);
 
         if (!updated)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                _vendorApiService.LastErrorMessage
-                    ?? "Unable to update vendor. Please check authorization and entered details.");
-
-            PopulateStaticDropdowns();
+            ModelState.AddModelError(string.Empty, _vendorApiService.LastErrorMessage ?? "Unable to update vendor profile.");
             return View(viewModel);
         }
 
         TempData["SuccessMessage"] = "Vendor profile updated successfully.";
+        return RedirectToAction(nameof(Dashboard));
+    }
 
-        if (GetCurrentRole().Equals("Vendor", StringComparison.OrdinalIgnoreCase))
+    [HttpGet]
+    public async Task<IActionResult> EditContact()
+    {
+        if (!TryGetVendorSession(out int vendorId))
         {
+            TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        VendorViewModel? vendor = await _vendorApiService.GetVendorByIdAsync(vendorId);
+
+        if (vendor is null)
+        {
+            TempData["ErrorMessage"] = _vendorApiService.LastErrorMessage
+                ?? "Vendor contact data not found or you are not authorized.";
+
             return RedirectToAction(nameof(Dashboard));
         }
 
-        return RedirectToAction(nameof(Details), new { id = viewModel.VendorId });
+        vendor.Password = null;
+        return View(vendor);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditContact(VendorViewModel viewModel)
+    {
+        if (!TryGetVendorSession(out int vendorId))
+        {
+            TempData["ErrorMessage"] = "Vendor login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        viewModel.VendorId = vendorId;
+        viewModel.Password = null;
+
+        // PATCH endpoint updates only contact fields. Remove validation errors for full-profile-only fields.
+        ModelState.Remove(nameof(VendorViewModel.VendorName));
+        ModelState.Remove(nameof(VendorViewModel.Description));
+        ModelState.Remove(nameof(VendorViewModel.CurrentGoldPrice));
+
+        if (!ModelState.IsValid)
+        {
+            return View(viewModel);
+        }
+
+        bool updated = await _vendorApiService.UpdateVendorContactAsync(vendorId, viewModel);
+
+        if (!updated)
+        {
+            ModelState.AddModelError(string.Empty, _vendorApiService.LastErrorMessage ?? "Unable to update vendor contact details.");
+            return View(viewModel);
+        }
+
+        TempData["SuccessMessage"] = "Vendor contact details updated successfully.";
+        return RedirectToAction(nameof(Dashboard));
     }
 
     private bool TryGetVendorSession(out int vendorId)
@@ -361,15 +404,5 @@ public class VendorController : Controller
         return HttpContext.Session.GetString("UserRole")
             ?? HttpContext.Session.GetString("Role")
             ?? string.Empty;
-    }
-
-    private void PopulateStaticDropdowns()
-    {
-        ViewBag.StatusOptions = new List<SelectListItem>
-        {
-            new() { Text = "Active", Value = "Active" },
-            new() { Text = "In Review", Value = "In Review" },
-            new() { Text = "Maintenance", Value = "Maintenance" }
-        };
     }
 }

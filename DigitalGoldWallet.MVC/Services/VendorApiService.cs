@@ -26,7 +26,8 @@ public class VendorApiService : IVendorApiService
     private HttpClient CreateClient()
     {
         HttpClient client = _httpClientFactory.CreateClient("DigitalGoldWalletApi");
-        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token");
+        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+            ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
 
         if (!string.IsNullOrWhiteSpace(token))
         {
@@ -122,18 +123,35 @@ public class VendorApiService : IVendorApiService
         return await ReadSuccessDataAsync<List<VendorBranchViewModel>>(response) ?? new List<VendorBranchViewModel>();
     }
 
-    public async Task<List<VendorTransactionViewModel>> GetVendorTransactionsAsync(int id)
+    public async Task<decimal?> GetVendorPriceAsync(int id)
     {
         LastErrorMessage = null;
-        HttpResponseMessage response = await CreateClient().GetAsync($"vendors/{id}/transactions");
+        HttpResponseMessage response = await CreateClient().GetAsync($"vendors/{id}/price");
 
         if (!response.IsSuccessStatusCode)
         {
             await SetErrorAsync(response);
-            return new List<VendorTransactionViewModel>();
+            return null;
         }
 
-        return await ReadSuccessDataAsync<List<VendorTransactionViewModel>>(response) ?? new List<VendorTransactionViewModel>();
+        string json = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (document.RootElement.TryGetProperty("data", out JsonElement data)
+                && data.TryGetProperty("currentGoldPrice", out JsonElement priceElement)
+                && priceElement.TryGetDecimal(out decimal price))
+            {
+                return price;
+            }
+        }
+        catch
+        {
+            LastErrorMessage = "Unable to read vendor gold price response.";
+        }
+
+        return null;
     }
 
     public async Task<bool> CreateVendorAsync(VendorViewModel viewModel)
@@ -154,6 +172,20 @@ public class VendorApiService : IVendorApiService
     {
         LastErrorMessage = null;
         HttpResponseMessage response = await CreateClient().PutAsJsonAsync($"vendors/{id}", viewModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return true;
+        }
+
+        await SetErrorAsync(response);
+        return false;
+    }
+
+    public async Task<bool> UpdateVendorContactAsync(int id, VendorViewModel viewModel)
+    {
+        LastErrorMessage = null;
+        HttpResponseMessage response = await CreateClient().PatchAsJsonAsync($"vendors/{id}/contact", viewModel);
 
         if (response.IsSuccessStatusCode)
         {
@@ -204,5 +236,33 @@ public class VendorApiService : IVendorApiService
 
         await SetErrorAsync(response);
         return false;
+    }
+
+    public async Task<List<AddressViewModel>> GetAddressesAsync()
+    {
+        LastErrorMessage = null;
+        HttpResponseMessage response = await CreateClient().GetAsync("users/addresses");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await SetErrorAsync(response);
+            return new List<AddressViewModel>();
+        }
+
+        return await ReadSuccessDataAsync<List<AddressViewModel>>(response) ?? new List<AddressViewModel>();
+    }
+
+    public async Task<AddressViewModel?> CreateAddressAsync(AddressViewModel viewModel)
+    {
+        LastErrorMessage = null;
+        HttpResponseMessage response = await CreateClient().PostAsJsonAsync("users/addresses", viewModel);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            await SetErrorAsync(response);
+            return null;
+        }
+
+        return await ReadSuccessDataAsync<AddressViewModel>(response);
     }
 }

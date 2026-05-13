@@ -1,0 +1,75 @@
+@model AddVendorBranchViewModel
+@{
+    ViewData["Title"] = "Add Vendor Branch";
+    ViewData["PageHeader"] = "Add Vendor Branch";
+}
+
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h2 class="text-4xl font-extrabold">Add Vendor Branch</h2>
+            <p class="mt-2 text-muted">Enter branch address details and initial stock quantity. The address will be created first, then linked to this branch.</p>
+        </div>
+        <a asp-action="Branches" class="rounded-xl border border-line px-6 py-3 font-bold text-muted hover:bg-cream-2">Back to Branches</a>
+    </div>
+
+    <form asp-action="AddBranch" method="post" class="rounded-2xl border border-line bg-white p-8 shadow-soft space-y-7">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-red-700 font-medium"></div>
+
+        <div>
+            <h3 class="text-2xl font-extrabold">Branch Address</h3>
+            <p class="mt-1 text-muted">Do not enter database IDs. Fill the address fields shown to the vendor.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label asp-for="Street" class="mb-2 block font-bold">Street</label>
+                <input asp-for="Street" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter street address" />
+                <span asp-validation-for="Street" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="City" class="mb-2 block font-bold">City</label>
+                <input asp-for="City" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter city" />
+                <span asp-validation-for="City" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="State" class="mb-2 block font-bold">State</label>
+                <input asp-for="State" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter state" />
+                <span asp-validation-for="State" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="PostalCode" class="mb-2 block font-bold">Postal Code</label>
+                <input asp-for="PostalCode" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter postal code" />
+                <span asp-validation-for="PostalCode" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="Country" class="mb-2 block font-bold">Country</label>
+                <input asp-for="Country" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter country" />
+                <span asp-validation-for="Country" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="border-t border-line pt-7">
+            <h3 class="text-2xl font-extrabold">Branch Stock</h3>
+            <div class="mt-5 max-w-md">
+                <label asp-for="Quantity" class="mb-2 block font-bold">Initial Stock Quantity</label>
+                <input asp-for="Quantity" type="number" min="0" step="0.01" class="w-full rounded-xl border-line focus:border-gold focus:ring-gold" placeholder="Enter quantity in grams" />
+                <span asp-validation-for="Quantity" class="mt-1 block text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 border-t border-line pt-6">
+            <a asp-action="Branches" class="rounded-xl border border-line px-7 py-3 font-bold text-muted hover:bg-cream-2">Cancel</a>
+            <button type="submit" class="rounded-xl bg-gold px-8 py-3 font-extrabold text-[#554300] shadow-soft hover:opacity-90">Add Branch</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
