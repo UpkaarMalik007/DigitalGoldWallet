@@ -1,6 +1,6 @@
-﻿using DigitalGoldWallet.API.Models;
+using DigitalGoldWallet.API.Models;
 
-namespace DigitalGoldWallet.API.Repos.Interfaces
+namespace DigitalGoldWallet.API.Repositories.Interfaces
 {
     public interface IAuthRepository
     {

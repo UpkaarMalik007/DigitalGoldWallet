@@ -1,5 +1,6 @@
-@model VendorViewModel
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
 @{
+    Layout = "_VendorLayout";
     ViewData["Title"] = "Vendor Dashboard";
     ViewData["PageHeader"] = "Vendor Management";
 
@@ -7,11 +8,11 @@
     string description = Model.Description ?? "Description not available";
     string phone = Model.ContactPhone ?? "Not available";
     string email = Model.ContactEmail ?? "Not available";
+    string personName = Model.ContactPersonName ?? "Not available";
     string website = Model.WebsiteUrl ?? "Not available";
     decimal currentGoldPrice = Model.CurrentGoldPrice ?? 0;
     decimal totalGoldQuantity = Model.TotalGoldQuantity ?? 0;
     decimal branchTotalQuantity = Model.BranchTotalQuantity ?? 0;
-    List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel> transactions = ViewBag.Transactions as List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel> ?? new();
     string loggedInRole = Context.Session.GetString("UserRole") ?? string.Empty;
     bool isVendorLogin = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
     int activeBranches = Model.Branches.Count;
@@ -21,31 +22,32 @@
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-7">
         <section class="xl:col-span-8 rounded-2xl border border-line bg-white p-7 shadow-soft">
             <div class="flex flex-col md:flex-row gap-7">
-                <div class="h-36 w-36 shrink-0 overflow-hidden rounded-xl border border-line bg-cream-3 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[76px] text-gold-dark">store</span>
+                <div class="h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-line bg-cream-3 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[72px] text-gold-dark">store</span>
                 </div>
                 <div class="flex-1">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <h2 class="text-4xl font-extrabold tracking-tight">@vendorName</h2>
-                            <p class="mt-2 text-lg text-muted">@description</p>
-                        </div>
-                        <span class="w-fit rounded-lg border border-gold/30 bg-gold/10 px-4 py-2 text-sm font-extrabold text-gold-dark">VERIFIED</span>
+                    <div>
+                        <h2 class="text-4xl font-extrabold tracking-tight">@vendorName</h2>
+                        <p class="mt-2 text-lg text-muted">@description</p>
                     </div>
 
-                    <div class="mt-7 grid grid-cols-1 md:grid-cols-2 gap-5 text-lg">
-                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[30px] text-gold-dark">call</span><span>@phone</span></div>
-                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[30px] text-gold-dark">mail</span><span class="break-all">@email</span></div>
-                        <div class="flex items-center gap-4 md:col-span-2"><span class="material-symbols-outlined text-[30px] text-gold-dark">language</span><span class="break-all">@website</span></div>
+                    <div class="mt-7 grid grid-cols-1 md:grid-cols-2 gap-5 text-base">
+                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[28px] text-gold-dark">person</span><span>@personName</span></div>
+                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[28px] text-gold-dark">call</span><span>@phone</span></div>
+                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[28px] text-gold-dark">mail</span><span class="break-all">@email</span></div>
+                        <div class="flex items-center gap-4"><span class="material-symbols-outlined text-[28px] text-gold-dark">language</span><span class="break-all">@website</span></div>
                     </div>
 
                     <div class="mt-8 flex flex-wrap gap-4">
-                        <a asp-action="Edit" asp-route-id="@Model.VendorId" class="rounded-xl border border-gold px-8 py-4 font-extrabold text-gold-dark hover:bg-cream-2">Edit Vendor Profile</a>
-                        <a asp-action="Branches" class="rounded-xl border border-line px-8 py-4 font-extrabold text-muted hover:bg-cream-2">Manage Branches</a>
-                        <a asp-action="Transactions" class="rounded-xl border border-line px-8 py-4 font-extrabold text-muted hover:bg-cream-2">View Transactions</a>
-                        @if (!isVendorLogin)
+                        @if (isVendorLogin)
                         {
-                            <a asp-action="Index" class="rounded-xl border border-line px-8 py-4 font-extrabold text-muted hover:bg-cream-2">Back to Directory</a>
+                            <a asp-action="Edit" class="rounded-xl border border-gold px-6 py-3 font-extrabold text-gold-dark hover:bg-cream-2">Edit Vendor Profile</a>
+                            <a asp-action="EditContact" class="rounded-xl border border-line px-6 py-3 font-extrabold text-muted hover:bg-cream-2">Edit Contact</a>
+                            <a asp-action="Branches" class="rounded-xl border border-line px-6 py-3 font-extrabold text-muted hover:bg-cream-2">Manage Branches</a>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" class="rounded-xl border border-line px-6 py-3 font-extrabold text-muted hover:bg-cream-2">Back to Directory</a>
                         }
                     </div>
                 </div>
@@ -85,21 +87,19 @@
             </div>
         </aside>
 
-        <section class="xl:col-span-4 rounded-2xl border border-line bg-white p-7 shadow-soft">
-            <h3 class="text-2xl font-extrabold">Vendor Rating</h3>
-            <div class="mt-5 rounded-xl border border-line bg-cream-2 p-6">
-                <p class="text-sm font-bold text-muted">Static UI value</p>
-                <p class="mt-2 text-3xl font-extrabold text-gold-dark">★ ★ ★ ★ ☆ <span class="text-ink">4.8 / 5.0</span></p>
-            </div>
-        </section>
-
-        <section class="xl:col-span-8 rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
+        <section class="xl:col-span-12 rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
             <div class="p-7 border-b border-line flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h3 class="text-2xl font-extrabold">Branches Summary</h3>
                     <p class="mt-1 text-muted">Branch stock and address information from API response.</p>
                 </div>
-                <a asp-action="Branches" class="rounded-xl border border-gold px-5 py-3 font-extrabold text-gold-dark hover:bg-cream-2">Manage Branches</a>
+                @if (isVendorLogin)
+                {
+                    <div class="flex flex-wrap gap-3">
+                        <a asp-action="AddBranch" class="rounded-xl bg-gold px-5 py-3 font-extrabold text-[#554300] hover:opacity-90">Add Branch</a>
+                        <a asp-action="Branches" class="rounded-xl border border-gold px-5 py-3 font-extrabold text-gold-dark hover:bg-cream-2">Manage Branches</a>
+                    </div>
+                }
             </div>
             @if (Model.Branches.Any())
             {
@@ -109,7 +109,7 @@
                             <tr><th class="px-7 py-4">Branch</th><th class="px-7 py-4">Address</th><th class="px-7 py-4">Quantity</th><th class="px-7 py-4 text-right">Status</th></tr>
                         </thead>
                         <tbody class="divide-y divide-line">
-                            @foreach (VendorBranchViewModel branch in Model.Branches.Take(4))
+                            @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel branch in Model.Branches.Take(5))
                             {
                                 <tr class="hover:bg-cream-2/70">
                                     <td class="px-7 py-5 font-bold">Branch @branch.BranchId</td>
@@ -126,37 +126,6 @@
             {
                 <div class="p-7 text-muted">No branches available for this vendor.</div>
             }
-        </section>
-
-        <section class="xl:col-span-12 rounded-2xl border border-line bg-white shadow-soft overflow-hidden">
-            <div class="p-7 border-b border-line flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h3 class="text-2xl font-extrabold">Recent Vendor Transactions</h3>
-                <a asp-action="Transactions" class="rounded-xl border border-gold px-5 py-3 font-extrabold text-gold-dark hover:bg-cream-2">View All</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-cream-2 text-sm uppercase tracking-[0.12em] text-muted"><tr><th class="px-7 py-4">Date</th><th class="px-7 py-4">Type</th><th class="px-7 py-4">Quantity</th><th class="px-7 py-4">Amount</th><th class="px-7 py-4 text-right">Status</th></tr></thead>
-                    <tbody class="divide-y divide-line">
-                        @if (transactions.Any())
-                        {
-                        @foreach (DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel tx in transactions)
-                            {
-                                <tr>
-                                    <td class="px-7 py-5">@tx.CreatedAt.ToString("dd MMM yyyy")</td>
-                                    <td class="px-7 py-5">@tx.TransactionType</td>
-                                    <td class="px-7 py-5 font-extrabold">@tx.Quantity.ToString("N2") gm</td>
-                                    <td class="px-7 py-5 font-extrabold">₹@tx.Amount.ToString("N2")</td>
-                                    <td class="px-7 py-5 text-right"><span class="rounded-lg bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">@tx.TransactionStatus</span></td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr><td class="px-7 py-5 text-muted" colspan="5">No transactions available for this vendor.</td></tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
         </section>
     </div>
 </div>

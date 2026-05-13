@@ -1,5 +1,6 @@
-@model List<VendorViewModel>
+@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel>
 @{
+    Layout = "_VendorLayout";
     ViewData["Title"] = "Vendor Directory";
     ViewData["PageHeader"] = "Vendor Directory";
     int currentPage = ViewBag.CurrentPage ?? 1;
@@ -9,8 +10,6 @@
     decimal averageRate = Model.Any(v => (v.CurrentGoldPrice ?? 0) > 0)
         ? Model.Where(v => (v.CurrentGoldPrice ?? 0) > 0).Average(v => v.CurrentGoldPrice ?? 0)
         : 0;
-    string role = Context.Session.GetString("UserRole") ?? Context.Session.GetString("Role") ?? string.Empty;
-    bool isAdmin = role.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="space-y-8">
@@ -28,13 +27,6 @@
                     <option value="12" selected="@(pageSize == 12)">12 per page</option>
                 </select>
             </form>
-            @if (isAdmin)
-            {
-                <a asp-controller="Vendor" asp-action="Create" class="inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-4 font-extrabold text-[#554300] shadow-soft hover:opacity-90">
-                    <span class="material-symbols-outlined text-[26px]">add</span>
-                    Add Vendor
-                </a>
-            }
         </div>
     </div>
 
@@ -49,7 +41,7 @@
     @if (Model.Any())
     {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
-            @foreach (VendorViewModel vendor in Model)
+            @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel vendor in Model)
             {
                 decimal price = vendor.CurrentGoldPrice ?? 0;
                 <a asp-controller="Vendor" asp-action="Details" asp-route-id="@vendor.VendorId" class="group rounded-2xl border border-line bg-white p-7 shadow-soft transition hover:-translate-y-1 hover:border-gold">
@@ -87,17 +79,6 @@
                     </div>
                 </a>
             }
-
-            @if (isAdmin)
-            {
-                <a asp-controller="Vendor" asp-action="Create" class="min-h-[290px] rounded-2xl border-2 border-dashed border-line bg-cream-2 p-7 flex flex-col items-center justify-center text-center hover:bg-cream-3">
-                    <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-soft">
-                        <span class="material-symbols-outlined text-[42px] text-gold-dark">add_business</span>
-                    </div>
-                    <h3 class="text-2xl font-extrabold">Onboard New Partner</h3>
-                    <p class="mt-2 max-w-xs text-muted">Only Admin can create a new vendor.</p>
-                </a>
-            }
         </div>
 
         @if (totalPages > 1)
@@ -126,12 +107,6 @@
             @if (ViewBag.ApiErrorMessage != null)
             {
                 <p class="mt-2 text-sm font-semibold text-red-700">@ViewBag.ApiErrorMessage</p>
-            }
-            @if (isAdmin)
-            {
-                <a asp-controller="Vendor" asp-action="Create" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-gold px-7 py-3 font-extrabold text-[#554300]">
-                    <span class="material-symbols-outlined">add</span>Add Vendor
-                </a>
             }
         </div>
     }

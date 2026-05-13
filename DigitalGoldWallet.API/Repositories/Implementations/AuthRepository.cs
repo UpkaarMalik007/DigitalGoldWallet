@@ -1,9 +1,9 @@
-﻿using DigitalGoldWallet.API.Data;
+using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Models;
-using DigitalGoldWallet.API.Repos.Interfaces;
+using DigitalGoldWallet.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace DigitalGoldWallet.API.Repos.Implementations
+namespace DigitalGoldWallet.API.Repositories.Implementations
 {
     public class AuthRepository : IAuthRepository
     {

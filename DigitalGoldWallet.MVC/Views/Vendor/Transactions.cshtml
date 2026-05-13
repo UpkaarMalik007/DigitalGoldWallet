@@ -1,6 +1,6 @@
-@model List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel>
-@using DigitalGoldWallet.MVC.ViewModels.Transaction
+@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorTransactionViewModel>
 @{
+    Layout = "_VendorLayout";
     ViewData["Title"] = "Vendor Transactions";
     ViewData["PageHeader"] = "Vendor Transactions";
 }
@@ -57,7 +57,7 @@
                 <tbody class="divide-y divide-line">
                     @if (Model.Any())
                     {
-                        @foreach (VendorTransactionViewModel tx in Model)
+                        @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorTransactionViewModel tx in Model)
                         {
                             <tr class="hover:bg-cream-2/70">
                                 <td class="px-7 py-5">@tx.CreatedAt.ToString("dd MMM yyyy")</td>

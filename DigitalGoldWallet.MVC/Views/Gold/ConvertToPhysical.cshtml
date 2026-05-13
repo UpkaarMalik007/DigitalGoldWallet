@@ -1,0 +1,69 @@
+@model DigitalGoldWallet.MVC.ViewModels.Gold.ConvertToPhysicalViewModel
+
+@{
+    ViewData["Title"] = "Physical Gold Conversion";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-10">
+            <div class="hero-section text-center mb-4">
+                <h1 class="h2">Convert to <span class="text-gold-dark">Physical Gold</span></h1>
+                <p class="text-secondary">Redeem your digital holdings for certified 24K physical gold bars/coins.</p>
+            </div>
+
+            <div class="card p-5">
+                <div class="text-center mb-5 p-4 bg-cream rounded-4">
+                    <small class="text-secondary text-uppercase ls-1 fw-bold">Current Virtual Balance</small>
+                    <h3 class="mb-0 text-dark-brown mt-1">@Model.GoldBalance.ToString("N3") <small class="fs-6 text-secondary">gm</small></h3>
+                </div>
+
+                <form asp-action="ConvertToPhysical" method="post">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label asp-for="QuantityInGrams" class="form-label text-secondary fw-bold small">Quantity to Convert (gm)</label>
+                            <div class="input-group">
+                                <input asp-for="QuantityInGrams" class="form-control" placeholder="0.000" />
+                                <span class="input-group-text bg-cream border-medium text-secondary">gm</span>
+                            </div>
+                            <span asp-validation-for="QuantityInGrams" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="SelectedBranch" class="form-label text-secondary fw-bold small">Select Pickup/Verification Branch</label>
+                            <select asp-for="SelectedBranch" class="form-select form-control">
+                                <option value="">Choose a pickup/storage branch...</option>
+                                @foreach (var branch in Model.Branches)
+                                {
+                                    <option value="@branch.BranchId">
+                                        @branch.BranchName (@branch.VendorName) - @branch.Address
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="SelectedBranch" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="DeliveryAddress" class="form-label text-secondary fw-bold small">Delivery Address (Optional for Home Delivery)</label>
+                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Enter full address for doorstep delivery..."></textarea>
+                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <div class="p-3 rounded-4 border border-gold bg-cream-light mb-4">
+                                <div class="d-flex">
+                                    <i class="bi bi-info-circle-fill text-gold-dark me-3 mt-1"></i>
+                                    <small class="text-secondary">
+                                        Note: A making charge and delivery fee may apply based on the quantity and coin/bar type selected at the branch. 
+                                        Minimum conversion is 1 gm.
+                                    </small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-gold w-100 py-3 shadow">Create Conversion Request</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

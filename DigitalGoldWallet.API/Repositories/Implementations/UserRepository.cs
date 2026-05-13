@@ -4,7 +4,7 @@ using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace DigitalGoldWallet.API.Repositories;
+namespace DigitalGoldWallet.API.Repositories.Implementations;
 
 public class UserRepository : IUserRepository
 {
@@ -69,6 +69,24 @@ public class UserRepository : IUserRepository
     {
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<Address>> GetAllAddressesAsync()
+    {
+        return await _context.Addresses
+            .AsNoTracking()
+            .OrderBy(a => a.City)
+            .ThenBy(a => a.State)
+            .ThenBy(a => a.Street)
+            .ToListAsync();
+    }
+
+    public async Task<Address> CreateAddressAsync(Address address)
+    {
+        await _context.Addresses.AddAsync(address);
+        await _context.SaveChangesAsync();
+
+        return address;
     }
 
     public async Task<Address?> GetAddressByUserIdAsync(int userId)

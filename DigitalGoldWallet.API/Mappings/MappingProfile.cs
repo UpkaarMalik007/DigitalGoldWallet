@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BCrypt.Net;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Models;
@@ -14,6 +14,11 @@ public class MappingProfile : Profile
         CreateMap<User, UserDto>();
 
         CreateMap<Address, AddressDto>();
+
+        CreateMap<CreateAddressDto, Address>()
+
+            .ForMember(dest => dest.AddressId,
+                opt => opt.Ignore());
 
         CreateMap<VirtualGoldHolding, VirtualGoldHoldingDto>();
 

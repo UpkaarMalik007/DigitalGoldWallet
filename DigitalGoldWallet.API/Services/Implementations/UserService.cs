@@ -5,7 +5,7 @@ using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
 
-namespace DigitalGoldWallet.API.Services;
+namespace DigitalGoldWallet.API.Services.Implementations;
 
 public class UserService : IUserService
 {
@@ -138,6 +138,23 @@ public class UserService : IUserService
         await _repository.UpdateUserAsync(user);
 
         return _mapper.Map<UserDto>(user);
+    }
+
+    public async Task<IEnumerable<AddressDto>> GetAllAddressesAsync()
+    {
+        var addresses = await _repository.GetAllAddressesAsync();
+
+        return _mapper.Map<IEnumerable<AddressDto>>(addresses);
+    }
+
+    public async Task<AddressDto> CreateAddressAsync(CreateAddressDto dto)
+    {
+        var address = _mapper.Map<Address>(dto);
+
+        var createdAddress =
+            await _repository.CreateAddressAsync(address);
+
+        return _mapper.Map<AddressDto>(createdAddress);
     }
 
     public async Task<AddressDto> GetAddressByUserIdAsync(

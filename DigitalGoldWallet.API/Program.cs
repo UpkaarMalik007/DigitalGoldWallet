@@ -4,14 +4,9 @@ using DigitalGoldWallet.API.Data;
 using DigitalGoldWallet.API.Helpers;
 using DigitalGoldWallet.API.Mappings;
 using DigitalGoldWallet.API.Middleware;
-using DigitalGoldWallet.API.Repos.Implementations;
-using DigitalGoldWallet.API.Repos.Interfaces;
-using DigitalGoldWallet.API.Repositories;
 using DigitalGoldWallet.API.Repositories.Implementations;
 using DigitalGoldWallet.API.Repositories.Interfaces;
-using DigitalGoldWallet.API.Services;
 using DigitalGoldWallet.API.Services.Implementations;
-using DigitalGoldWallet.API.Services.Interface;
 using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.API.Validators;
 using FluentValidation;
@@ -86,7 +81,7 @@ builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddMoneyValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<BuyGoldDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<GoldActionRequestDtoValidator>();
 
 // Keep this only if this class exists in your project.
 // If you renamed it, replace CreateVendorDtoValidator with your actual vendor validator class name.

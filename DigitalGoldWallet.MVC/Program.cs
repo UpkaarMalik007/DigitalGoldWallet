@@ -10,6 +10,10 @@ public class Program
 
         builder.Services.AddControllersWithViews();
 
+        builder.Services.AddHttpClient();
+        builder.Services.AddScoped<IGoldApiService, GoldApiService>();
+
+        builder.Services.AddHttpClient<ApiService>(client =>
         builder.Services.AddHttpClient("api", client =>
         {
             client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);

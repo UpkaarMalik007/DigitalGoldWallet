@@ -1,6 +1,6 @@
 using DigitalGoldWallet.API.DTO;
 using DigitalGoldWallet.API.Services.Implementations;
-using DigitalGoldWallet.API.Services.Interface;
+using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.API.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;

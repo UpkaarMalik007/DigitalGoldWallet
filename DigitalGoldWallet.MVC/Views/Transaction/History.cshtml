@@ -1,0 +1,17 @@
+@{
+    string role = Context.Session.GetString("UserRole")
+        ?? Context.Session.GetString("Role")
+        ?? string.Empty;
+
+    Layout = role.Equals("Vendor", StringComparison.OrdinalIgnoreCase)
+        ? "_VendorLayout"
+        : "_Layout";
+
+    ViewData["Title"] = "Transactions";
+    ViewData["PageHeader"] = "Transactions";
+}
+
+<div class="rounded-2xl border border-line bg-white p-10 shadow-soft">
+    <h2 class="text-3xl font-extrabold">Transactions</h2>
+    <p class="mt-3 text-muted">Transaction module route is working. Your teammate can connect this page to the transaction API module.</p>
+</div>
