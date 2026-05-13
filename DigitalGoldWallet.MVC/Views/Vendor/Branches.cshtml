@@ -1,5 +1,6 @@
 @model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel>
 @{
+    Layout = "_VendorLayout";
     ViewData["Title"] = "Vendor Branches";
     ViewData["PageHeader"] = "Vendor Branch Management";
     string vendorName = ViewBag.VendorName as string ?? "Vendor";

@@ -7,8 +7,6 @@ using System.Globalization;
 
 namespace DigitalGoldWallet.MVC.Controllers
 {
-namespace DigitalGoldWallet.MVC.Controllers;
-
     public class GoldController : Controller
     {
         private readonly IGoldApiService _goldApiService;
@@ -226,9 +224,10 @@ namespace DigitalGoldWallet.MVC.Controllers;
             };
             return View(viewModel);
         }
+
+        public IActionResult Index() => View("Holdings");
+        public IActionResult Holdings() => View();
+        public IActionResult BuyGold() => View();
+        public IActionResult SellGold() => View();
     }
-    public IActionResult Index() => View("Holdings");
-    public IActionResult Holdings() => View();
-    public IActionResult BuyGold() => View();
-    public IActionResult SellGold() => View();
 }
