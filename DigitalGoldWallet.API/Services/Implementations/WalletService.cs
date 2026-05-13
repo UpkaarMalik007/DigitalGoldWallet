@@ -2,7 +2,7 @@ using System.Transactions;
 using DigitalGoldWallet.API.DTO;
 using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
-using DigitalGoldWallet.API.Services.Interface;
+using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.API.Exceptions;
 using AutoMapper;
 

@@ -3,7 +3,7 @@ using DigitalGoldWallet.API.Dtos.AuthDto;
 using DigitalGoldWallet.API.Exceptions;
 using DigitalGoldWallet.API.Helpers;
 using DigitalGoldWallet.API.Models;
-using DigitalGoldWallet.API.Repos.Interfaces;
+using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
 using FluentValidation;
 

@@ -4,7 +4,7 @@ using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace DigitalGoldWallet.API.Repositories;
+namespace DigitalGoldWallet.API.Repositories.Implementations;
 
 public class UserRepository : IUserRepository
 {

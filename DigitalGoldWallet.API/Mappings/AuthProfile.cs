@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using DigitalGoldWallet.API.Dtos.AuthDto;
 using DigitalGoldWallet.API.Models;
 

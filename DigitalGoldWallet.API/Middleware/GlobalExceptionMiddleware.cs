@@ -118,15 +118,6 @@ public class GlobalExceptionMiddleware
                 };
                 break;
 
-            case InvalidOperationException:
-                statusCode = (int)HttpStatusCode.InternalServerError;
-                response = new
-                {
-                    statusCode,
-                    message = exception.Message
-                };
-                break;
-
             default:
                 statusCode = (int)HttpStatusCode.InternalServerError;
 

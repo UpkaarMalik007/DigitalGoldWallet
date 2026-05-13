@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BCrypt.Net;
 using DigitalGoldWallet.API.DTOs;
 using DigitalGoldWallet.API.Models;

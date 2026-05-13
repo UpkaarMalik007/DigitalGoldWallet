@@ -1,4 +1,4 @@
-@model List<VendorViewModel>
+@model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel>
 @{
     ViewData["Title"] = "Vendor Directory";
     ViewData["PageHeader"] = "Vendor Directory";
@@ -40,7 +40,7 @@
     @if (Model.Any())
     {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
-            @foreach (VendorViewModel vendor in Model)
+            @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel vendor in Model)
             {
                 decimal price = vendor.CurrentGoldPrice ?? 0;
                 <a asp-controller="Vendor" asp-action="Details" asp-route-id="@vendor.VendorId" class="group rounded-2xl border border-line bg-white p-7 shadow-soft transition hover:-translate-y-1 hover:border-gold">

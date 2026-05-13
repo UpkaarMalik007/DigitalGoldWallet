@@ -5,7 +5,7 @@ using DigitalGoldWallet.API.Models;
 using DigitalGoldWallet.API.Repositories.Interfaces;
 using DigitalGoldWallet.API.Services.Interfaces;
 
-namespace DigitalGoldWallet.API.Services;
+namespace DigitalGoldWallet.API.Services.Implementations;
 
 public class UserService : IUserService
 {

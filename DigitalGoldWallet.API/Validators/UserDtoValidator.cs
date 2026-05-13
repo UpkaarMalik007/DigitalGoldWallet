@@ -1,4 +1,4 @@
-﻿using DigitalGoldWallet.API.DTOs;
+using DigitalGoldWallet.API.DTOs;
 using FluentValidation;
 
 namespace DigitalGoldWallet.API.Validators;

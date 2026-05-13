@@ -1,4 +1,4 @@
-@model VendorViewModel
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
 @{
     ViewData["Title"] = "Vendor Dashboard";
     ViewData["PageHeader"] = "Vendor Management";
@@ -108,7 +108,7 @@
                             <tr><th class="px-7 py-4">Branch</th><th class="px-7 py-4">Address</th><th class="px-7 py-4">Quantity</th><th class="px-7 py-4 text-right">Status</th></tr>
                         </thead>
                         <tbody class="divide-y divide-line">
-                            @foreach (VendorBranchViewModel branch in Model.Branches.Take(5))
+                            @foreach (DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel branch in Model.Branches.Take(5))
                             {
                                 <tr class="hover:bg-cream-2/70">
                                     <td class="px-7 py-5 font-bold">Branch @branch.BranchId</td>
