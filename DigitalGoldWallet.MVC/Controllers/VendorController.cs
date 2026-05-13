@@ -1,4 +1,5 @@
 using DigitalGoldWallet.MVC.Services;
+using DigitalGoldWallet.MVC.ViewModels.Transaction;
 using DigitalGoldWallet.MVC.ViewModels.Vendor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

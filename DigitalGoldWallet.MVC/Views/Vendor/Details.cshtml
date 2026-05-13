@@ -11,7 +11,7 @@
     decimal currentGoldPrice = Model.CurrentGoldPrice ?? 0;
     decimal totalGoldQuantity = Model.TotalGoldQuantity ?? 0;
     decimal branchTotalQuantity = Model.BranchTotalQuantity ?? 0;
-    List<VendorTransactionViewModel> transactions = ViewBag.Transactions as List<VendorTransactionViewModel> ?? new();
+    List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel> transactions = ViewBag.Transactions as List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel> ?? new();
     string loggedInRole = Context.Session.GetString("UserRole") ?? string.Empty;
     bool isVendorLogin = loggedInRole.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
     int activeBranches = Model.Branches.Count;
@@ -139,7 +139,7 @@
                     <tbody class="divide-y divide-line">
                         @if (transactions.Any())
                         {
-                            @foreach (VendorTransactionViewModel tx in transactions)
+                        @foreach (DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel tx in transactions)
                             {
                                 <tr>
                                     <td class="px-7 py-5">@tx.CreatedAt.ToString("dd MMM yyyy")</td>

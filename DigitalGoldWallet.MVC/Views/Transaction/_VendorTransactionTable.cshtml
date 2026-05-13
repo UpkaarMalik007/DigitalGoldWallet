@@ -1,0 +1,73 @@
+﻿@model List<DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionViewModel>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-warning">
+        No transactions found.
+    </div>
+}
+else
+{
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-cream-2 text-sm uppercase tracking-[0.12em] text-muted">
+                <tr>
+                    <th class="px-7 py-4">ID</th>
+                    <th class="px-7 py-4">Type</th>
+                    <th class="px-7 py-4">Quantity</th>
+                    <th class="px-7 py-4">Amount</th>
+                    <th class="px-7 py-4">Date</th>
+                    <th class="px-7 py-4 text-right">Status</th>
+                    <th class="px-7 py-4 text-right">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-line">
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-cream-2/70">
+                        <td class="px-7 py-5 font-bold">@item.TransactionId</td>
+                        <td class="px-7 py-5">@item.TransactionType</td>
+                        <td class="px-7 py-5 font-extrabold">@item.Quantity.ToString("N2") gm</td>
+                        <td class="px-7 py-5 font-extrabold">₹@item.Amount.ToString("N2")</td>
+                        <td class="px-7 py-5">@item.CreatedAt.ToString("dd MMM yyyy")</td>
+
+                        <td class="px-7 py-5 text-right">
+                            @if (item.TransactionStatus == "Success")
+                            {
+                                <span class="rounded-lg bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700">Success</span>
+                            }
+                            else
+                            {
+                                <span class="rounded-lg bg-red-100 px-3 py-1 text-xs font-extrabold text-red-700">Failed</span>
+                            }
+                        </td>
+
+                        <td class="px-7 py-5 text-right">
+                            <form asp-controller="Transaction"
+                                  asp-action="UpdateStatus"
+                                  method="post"
+                                  class="flex gap-2 justify-end">
+
+                                <input type="hidden"
+                                       name="transactionId"
+                                       value="@item.TransactionId" />
+
+                                <select name="transactionStatus"
+                                        class="rounded-lg border border-line px-3 py-2 text-sm">
+                                    <option value="Success">Success</option>
+                                    <option value="Failed">Failed</option>
+                                </select>
+
+                                <button type="submit"
+                                        class="rounded-lg bg-gold px-4 py-2 font-extrabold text-[#554300] hover:shadow-sm">
+                                    Update
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -3,104 +3,91 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 
-namespace DigitalGoldWallet.MVC.Services;
-
-public class ApiService
+namespace DigitalGoldWallet.MVC.Services
 {
-    private readonly HttpClient _httpClient;
-
-    public ApiService(HttpClient httpClient)
+    public class ApiService
     {
-        _httpClient = httpClient;
-    }
+        private readonly IHttpClientFactory _httpClientFactory;
 
-    public string? LastErrorMessage { get; private set; }
-
-    public async Task<JObject?> LoginUserAsync(LoginViewModel model)
-    {
-        return await PostAndReadObjectAsync("api/Auth/login-user", model);
-    }
-
-    public async Task<JObject?> LoginVendorAsync(LoginViewModel model)
-    {
-        return await PostAndReadObjectAsync("api/Auth/login-vendor", model);
-    }
-
-    public async Task<bool> RegisterUserAsync(RegisterViewModel model)
-    {
-        LastErrorMessage = null;
-
-        string json = JsonConvert.SerializeObject(model);
-        using StringContent content = new(json, Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await _httpClient.PostAsync("api/Auth/register-user", content);
-
-        if (response.IsSuccessStatusCode)
+        public ApiService(IHttpClientFactory httpClientFactory)
         {
-            return true;
+            _httpClientFactory = httpClientFactory;
         }
 
-        await SetErrorAsync(response);
-        return false;
-    }
+        public string? LastErrorMessage { get; private set; }
 
-    private async Task<JObject?> PostAndReadObjectAsync(string url, object model)
-    {
-        LastErrorMessage = null;
-
-        string json = JsonConvert.SerializeObject(model);
-        using StringContent content = new(json, Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await _httpClient.PostAsync(url, content);
-        string responseBody = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
+        private HttpClient CreateClient()
         {
-            SetErrorFromJson(responseBody, response);
-            return null;
+            return _httpClientFactory.CreateClient("api");
         }
 
-        if (string.IsNullOrWhiteSpace(responseBody))
+        // USER LOGIN
+
+        public async Task<JObject?> LoginUserAsync(LoginViewModel model)
         {
-            LastErrorMessage = "API returned an empty response.";
-            return null;
+            return await PostAsync("api/Auth/login-user", model);
         }
 
-        try
+        // VENDOR LOGIN
+
+        public async Task<JObject?> LoginVendorAsync(LoginViewModel model)
         {
+            return await PostAsync("api/Auth/login-vendor", model);
+        }
+
+        // REGISTER USER
+
+        public async Task<bool> RegisterUserAsync(RegisterViewModel model)
+        {
+            var client = CreateClient();
+
+            string json = JsonConvert.SerializeObject(model);
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.PostAsync(
+                "api/Auth/register-user",
+                content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                LastErrorMessage = "Registration failed.";
+                return false;
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+
+        // COMMON POST METHOD
+
+        private async Task<JObject?> PostAsync(string url, object model)
+        {
+            var client = CreateClient();
+
+            string json = JsonConvert.SerializeObject(model);
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.PostAsync(url, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                LastErrorMessage = "Invalid credentials.";
+                return null;
+            }
+
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(responseBody))
+                return null;
+
             return JObject.Parse(responseBody);
-        }
-        catch
-        {
-            LastErrorMessage = "API returned invalid JSON.";
-            return null;
-        }
-    }
-
-    private async Task SetErrorAsync(HttpResponseMessage response)
-    {
-        string responseBody = await response.Content.ReadAsStringAsync();
-        SetErrorFromJson(responseBody, response);
-    }
-
-    private void SetErrorFromJson(string responseBody, HttpResponseMessage response)
-    {
-        if (string.IsNullOrWhiteSpace(responseBody))
-        {
-            LastErrorMessage = $"API returned {(int)response.StatusCode} {response.ReasonPhrase}.";
-            return;
-        }
-
-        try
-        {
-            JObject json = JObject.Parse(responseBody);
-            LastErrorMessage = json["message"]?.ToString()
-                ?? json["Message"]?.ToString()
-                ?? $"API returned {(int)response.StatusCode} {response.ReasonPhrase}.";
-        }
-        catch
-        {
-            LastErrorMessage = responseBody;
         }
     }
 }

@@ -1,3 +1,4 @@
+using DigitalGoldWallet.MVC.ViewModels.Transaction;
 using DigitalGoldWallet.MVC.ViewModels.Vendor;
 
 namespace DigitalGoldWallet.MVC.Services;
