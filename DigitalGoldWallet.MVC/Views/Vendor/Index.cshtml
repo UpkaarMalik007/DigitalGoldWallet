@@ -1,5 +1,6 @@
 @model List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel>
 @{
+    Layout = "_VendorLayout";
     ViewData["Title"] = "Vendor Directory";
     ViewData["PageHeader"] = "Vendor Directory";
     int currentPage = ViewBag.CurrentPage ?? 1;

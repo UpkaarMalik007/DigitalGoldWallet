@@ -1,12 +1,5 @@
 using DigitalGoldWallet.MVC.Services;
 
-var builder = WebApplication.CreateBuilder(args);
-using DigitalGoldWallet.MVC.Services;
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<IGoldApiService, GoldApiService>();
 namespace DigitalGoldWallet.MVC;
 
 public class Program
@@ -16,6 +9,9 @@ public class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllersWithViews();
+
+        builder.Services.AddHttpClient();
+        builder.Services.AddScoped<IGoldApiService, GoldApiService>();
 
         builder.Services.AddHttpClient<ApiService>(client =>
         {
