@@ -83,53 +83,53 @@ namespace DigitalGoldWallet.API.Services.Implementations
             return _mapper.Map<TransactionHistoryDto>(savedTransaction);
         }
 
-        public async Task<object> CreateOrderAsync(int branchId, decimal quantity)
-        {
-            if (branchId <= 0)
-                throw new BadRequestException("Invalid branch.");
+        //public async Task<object> CreateOrderAsync(int branchId, decimal quantity)
+        //{
+        //    if (branchId <= 0)
+        //        throw new BadRequestException("Invalid branch.");
 
-            if (quantity <= 0)
-                throw new BadRequestException("Invalid quantity.");
+        //    if (quantity <= 0)
+        //        throw new BadRequestException("Invalid quantity.");
 
-            var branch = await _vendorRepository.GetBranchByIdAsync(branchId);
+        //    var branch = await _vendorRepository.GetBranchByIdAsync(branchId);
 
-            if (branch == null)
-                throw new NotFoundException("Branch not found.");
+        //    if (branch == null)
+        //        throw new NotFoundException("Branch not found.");
 
-            if (branch.Vendor == null)
-                throw new NotFoundException("Vendor not found.");
+        //    if (branch.Vendor == null)
+        //        throw new NotFoundException("Vendor not found.");
 
-            if (branch.Quantity < quantity)
-                throw new BadRequestException("Not enough gold available.");
+        //    if (branch.Quantity < quantity)
+        //        throw new BadRequestException("Not enough gold available.");
 
-            decimal amount = branch.Vendor.CurrentGoldPrice * quantity;
+        //    decimal amount = branch.Vendor.CurrentGoldPrice * quantity;
 
-            var key = _config["Razorpay:Key"];
-            var secret = _config["Razorpay:Secret"];
+        //    var key = _config["Razorpay:Key"];
+        //    var secret = _config["Razorpay:Secret"];
 
-            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))
-                throw new BadRequestException("Razorpay configuration is missing.");
+        //    if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))
+        //        throw new BadRequestException("Razorpay configuration is missing.");
 
-            RazorpayClient client = new RazorpayClient(key, secret);
+        //    RazorpayClient client = new RazorpayClient(key, secret);
 
-            var options = new Dictionary<string, object>
-            {
-                { "amount", Convert.ToInt32(amount * 100) },
-                { "currency", "INR" },
-                { "receipt", Guid.NewGuid().ToString() }
-            };
+        //    var options = new Dictionary<string, object>
+        //    {
+        //        { "amount", Convert.ToInt32(amount * 100) },
+        //        { "currency", "INR" },
+        //        { "receipt", Guid.NewGuid().ToString() }
+        //    };
 
-            Order order = client.Order.Create(options);
+        //    Order order = client.Order.Create(options);
 
-            return new
-            {
-                OrderId = order["id"].ToString(),
-                Amount = Convert.ToInt32(order["amount"]),
-                Currency = order["currency"].ToString(),
-                BranchId = branchId,
-                Quantity = quantity
-            };
-        }
+        //    return new
+        //    {
+        //        OrderId = order["id"].ToString(),
+        //        Amount = Convert.ToInt32(order["amount"]),
+        //        Currency = order["currency"].ToString(),
+        //        BranchId = branchId,
+        //        Quantity = quantity
+        //    };
+        //}
 
         public async Task<List<TransactionHistoryDto>> GetAllTransactionsAsync(
                 int pageNumber, int pageSize)

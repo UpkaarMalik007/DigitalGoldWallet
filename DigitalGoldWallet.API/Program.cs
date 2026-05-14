@@ -87,8 +87,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddMoneyValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<GoldActionRequestDtoValidator>();
 
-// Keep this only if this class exists in your project.
-// If you renamed it, replace CreateVendorDtoValidator with your actual vendor validator class name.
 builder.Services.AddValidatorsFromAssemblyContaining<CreateVendorDtoValidator>();
 
 // Swagger
