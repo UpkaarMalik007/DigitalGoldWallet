@@ -165,7 +165,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 7. Get Wallet Summary
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("summary/{userId:int}")]
         public async Task<IActionResult> GetWalletSummary(int userId)
         {
@@ -185,7 +185,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // 8. Get Transaction Count
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("transaction-count/{userId:int}")]
         public async Task<IActionResult> GetTransactionCount(int userId)
         {

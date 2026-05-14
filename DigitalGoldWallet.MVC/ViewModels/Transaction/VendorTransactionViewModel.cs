@@ -8,8 +8,7 @@ public class VendorTransactionViewModel
 
     public int? BranchId { get; set; }
 
-    // optional display fields populated from API if available
-    public string? UserName { get; set; }
+    public string? Name { get; set; }
 
     public string? BranchName { get; set; }
 

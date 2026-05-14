@@ -12,7 +12,8 @@ else
         <table class="w-full text-left">
             <thead class="bg-cream-2 text-sm uppercase tracking-[0.12em] text-muted">
                 <tr>
-                    <th class="px-7 py-4">ID</th>
+                    <th class="px-7 py-4">Transaction Trace</th>
+                    <th class="px-7 py-4">User</th>
                     <th class="px-7 py-4">Type</th>
                     <th class="px-7 py-4">Quantity</th>
                     <th class="px-7 py-4">Amount</th>
@@ -27,6 +28,7 @@ else
                 {
                     <tr class="hover:bg-cream-2/70">
                         <td class="px-7 py-5 font-bold">@item.TransactionId</td>
+                        <td class="px-7 py-5 font-bold">@item.Name</td>
                         <td class="px-7 py-5">@item.TransactionType</td>
                         <td class="px-7 py-5 font-extrabold">@item.Quantity.ToString("N2") gm</td>
                         <td class="px-7 py-5 font-extrabold">₹@item.Amount.ToString("N2")</td>

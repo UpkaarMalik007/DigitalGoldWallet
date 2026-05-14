@@ -4,6 +4,12 @@
     Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
+@if (TempData["Success"] != null)
+{
+    <script>
+        alert('@TempData["Success"]');
+    </script>
+}
 
 <div class="container-fluid">
 

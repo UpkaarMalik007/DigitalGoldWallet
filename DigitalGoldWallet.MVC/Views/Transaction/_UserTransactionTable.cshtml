@@ -12,8 +12,7 @@ else
         <table class="w-full text-left">
             <thead class="bg-[#fff8e1]">
                 <tr>
-                    <th class="px-6 py-4">ID</th>
-                    <th class="px-6 py-4">Branch</th>
+                    <th class="px-6 py-4">Transaction No.</th>
                     <th class="px-6 py-4">Type</th>
                     <th class="px-6 py-4">Quantity</th>
                     <th class="px-6 py-4">Amount</th>
@@ -24,11 +23,13 @@ else
             </thead>
 
             <tbody>
+                @{
+                    int serialNo = 1;
+                }
                 @foreach (var item in Model)
                 {
                     <tr class="border-t border-line hover:bg-gray-50">
-                        <td class="px-6 py-4 font-bold">#@item.TransactionId</td>
-                        <td class="px-6 py-4">@item.BranchId</td>
+                        <td class="px-6 py-4 font-bold">@serialNo</td>
                         <td class="px-6 py-4">@item.TransactionType</td>
                         <td class="px-6 py-4">@item.Quantity gm</td>
                         <td class="px-6 py-4">₹@item.Amount</td>
@@ -43,10 +44,11 @@ else
                                    asp-action="UserTransactionDetails"
                                    asp-route-id="@item.TransactionId"
                                    class="font-bold text-yellow-700 hover:underline">
-                                View
+                                View full Details
                             </a>
                         </td>
                     </tr>
+                    serialNo++;
                 }
             </tbody>
         </table>

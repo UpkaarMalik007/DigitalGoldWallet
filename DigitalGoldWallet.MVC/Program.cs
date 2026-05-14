@@ -20,7 +20,17 @@ builder.Services.AddHttpClient("DigitalGoldWalletApi", client =>
     client.BaseAddress = new Uri(new Uri(apiBaseUrl), "api/");
 });
 
-builder.Services.AddHttpClient<IGoldApiService, GoldApiService>();
+builder.Services.AddHttpClient<IWalletApiService, WalletApiService>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
+builder.Services.AddHttpClient<GoldApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
+});
+
+
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ApiService>();
@@ -50,7 +60,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
-app.UseAuthorization();
+//app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

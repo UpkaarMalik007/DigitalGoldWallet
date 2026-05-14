@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalGoldWallet.API.Controllers
 {
+   
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase

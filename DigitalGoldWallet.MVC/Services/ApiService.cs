@@ -87,6 +87,7 @@ public class ApiService
         return true;
     }
 
+    
     public async Task<WalletBalanceViewModel> GetWalletBalance(int userId)
     {
         LastErrorMessage = null;

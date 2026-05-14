@@ -75,6 +75,10 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<TransactionValidator>();
 
+//Gold
+builder.Services.AddScoped<IGoldRepository, GoldRepository>();
+builder.Services.AddScoped<IGoldService, GoldService>();
+
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
@@ -197,6 +201,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseRouting(); //new
 
 app.UseAuthentication();
 
