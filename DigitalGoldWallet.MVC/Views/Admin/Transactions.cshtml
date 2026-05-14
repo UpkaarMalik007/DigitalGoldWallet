@@ -1,0 +1,100 @@
+@model List<DigitalGoldWallet.MVC.ViewModels.Transaction.TransactionViewModel>
+@{
+    ViewData["Title"] = "System Transactions";
+    Layout = "_AdminLayout";
+}
+
+<div class="space-y-12">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div>
+            <h1 class="text-4xl font-black text-[#1f1b13] tracking-tight">Transactions Ledger</h1>
+            <p class="text-[#6c757d] text-lg mt-2">Comprehensive audit log of all digital gold operations.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="px-6 py-3 bg-white border border-[#efe7da] text-[#4d4635] font-black rounded-xl hover:border-[#d4af37] transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">filter_alt</span>
+                Refine Search
+            </button>
+            <button class="px-6 py-3 bg-white border border-[#efe7da] text-[#4d4635] font-black rounded-xl hover:border-[#d4af37] transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">ios_share</span>
+                Export Audit
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[40px] border border-[#efe7da] shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-[#fbf3e5]/50">
+                        <th class="px-10 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Transaction Trace</th>
+                        <th class="px-10 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Timestamp</th>
+                        <th class="px-10 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Operation</th>
+                        <th class="px-10 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Value Dynamics</th>
+                        <th class="px-10 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Status Control</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#fbf3e5]">
+                    @foreach (var txn in Model)
+                    {
+                        <tr class="hover:bg-[#fdf9f0]/30 transition-colors group">
+                            <td class="px-10 py-8">
+                                <span class="font-mono text-[11px] font-black text-[#a58b3d] bg-[#fdf9f0] px-3 py-1 rounded-md">#TXN-@txn.TransactionId</span>
+                            </td>
+                            <td class="px-10 py-8">
+                                <div class="text-sm font-bold text-[#1f1b13]">@txn.CreatedAt.ToString("dd MMM yyyy")</div>
+                                <div class="text-[11px] text-[#6c757d] font-semibold mt-0.5">@txn.CreatedAt.ToString("hh:mm:ss tt")</div>
+                            </td>
+                            <td class="px-10 py-8">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest @(txn.TransactionType.Equals("Buy", StringComparison.OrdinalIgnoreCase) ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700")">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="px-10 py-8">
+                                <div class="text-xl font-black text-[#1f1b13]">₹@txn.Amount.ToString("N2")</div>
+                                <div class="text-[11px] text-[#6c757d] font-bold mt-0.5">@txn.Quantity.ToString("N3") gm processed</div>
+                            </td>
+                             <td class="px-10 py-8">
+                                 @{
+                                     string statusClass = txn.TransactionStatus.Equals("Completed", StringComparison.OrdinalIgnoreCase) || txn.TransactionStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)
+                                         ? "bg-green-100 text-green-700 border-green-200"
+                                         : (txn.TransactionStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase) ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-red-100 text-red-700 border-red-200");
+                                 }
+                                  <div class="flex items-center gap-4">
+                                      <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest @statusClass">
+                                          @txn.TransactionStatus
+                                      </span>
+                                      @if (!txn.TransactionStatus.Equals("Success", StringComparison.OrdinalIgnoreCase) && !txn.TransactionStatus.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                                      {
+                                          <form asp-action="UpdateTransactionStatus" method="post" class="flex items-center">
+                                              <input type="hidden" name="id" value="@txn.TransactionId" />
+                                              <select name="status" onchange="this.form.submit()" class="text-[11px] font-black text-[#735c00] bg-white border border-[#efe7da] rounded-lg px-2 py-1 outline-none hover:border-[#d4af37] transition-all cursor-pointer">
+                                                  <option value="">Actions</option>
+                                                  <option value="Success">Authorize</option>
+                                                  <option value="Failed">Decline</option>
+                                                  <option value="Pending">Queue</option>
+                                              </select>
+                                          </form>
+                                      }
+                                  </div>
+                             </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="px-10 py-24 text-center">
+                                <div class="flex flex-col items-center gap-4">
+                                    <div class="w-20 h-20 bg-[#fdf9f0] rounded-full flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-[#d4af37] text-4xl">inventory_2</span>
+                                    </div>
+                                    <p class="text-[#6c757d] font-bold text-lg">The system ledger is currently empty. No active cycles detected.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -4,23 +4,36 @@ using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.API.DTOs.Gold;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DigitalGoldWallet.MVC.Controllers
 {
     public class GoldController : Controller
     {
         private readonly IGoldApiService _goldApiService;
-        private readonly int _currentUserId = 1; // Default for demo
 
         public GoldController(IGoldApiService goldApiService)
         {
             _goldApiService = goldApiService;
         }
 
+        private int GetUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId") ?? 0;
+        }
+
         public async Task<IActionResult> Dashboard()
         {
-            var portfolio = await _goldApiService.GetPortfolioAsync(_currentUserId);
-            var allTransactions = await _goldApiService.GetTransactionsAsync(_currentUserId);
+            string? token = HttpContext.Session.GetString("Token") ?? HttpContext.Session.GetString("JWToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            int userId = GetUserId();
+            var portfolio = await _goldApiService.GetPortfolioAsync(userId);
+            var allTransactions = await _goldApiService.GetTransactionsAsync(userId);
 
             var viewModel = new DashboardViewModel
             {
@@ -29,13 +42,15 @@ namespace DigitalGoldWallet.MVC.Controllers
                 PortfolioValue = portfolio?.CurrentValue ?? 0,
                 TotalInvestment = portfolio?.TotalInvestment ?? 0,
                 ProfitLoss = portfolio?.ProfitLoss ?? 0,
-                RecentTransactions = allTransactions?.OrderByDescending(t => t.CreatedAt).Take(5)
-                    .Select(t => new RecentTransactionViewModel {
-                        Date = t.CreatedAt,
-                        Type = t.TransactionType.ToString(),
-                        Quantity = t.Quantity,
-                        Amount = t.Amount
-                    }).ToList() ?? new List<RecentTransactionViewModel>()
+                RecentTransactions = allTransactions != null 
+                    ? allTransactions.OrderByDescending(t => t.CreatedAt).Take(5)
+                        .Select(t => new RecentTransactionViewModel {
+                            Date = t.CreatedAt,
+                            Type = t.TransactionType.ToString(),
+                            Quantity = t.Quantity,
+                            Amount = t.Amount
+                        }).ToList() 
+                    : new List<RecentTransactionViewModel>()
             };
 
             viewModel.ProfitLossPercentage = viewModel.TotalInvestment > 0 ? (viewModel.ProfitLoss / viewModel.TotalInvestment) * 100 : 0;
@@ -46,7 +61,9 @@ namespace DigitalGoldWallet.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Buy()
         {
-            var portfolio = await _goldApiService.GetPortfolioAsync(_currentUserId);
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
+            var portfolio = await _goldApiService.GetPortfolioAsync(userId);
             var branches = await _goldApiService.GetAllBranchesAsync();
             var viewModel = new BuyGoldViewModel
             {
@@ -59,6 +76,7 @@ namespace DigitalGoldWallet.MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Buy(BuyGoldViewModel model)
         {
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
             if (model.Amount <= 0)
             {
                 ModelState.AddModelError("Amount", "Please enter a valid amount.");
@@ -67,7 +85,7 @@ namespace DigitalGoldWallet.MVC.Controllers
 
             var request = new GoldActionRequestDto
             {
-                UserId = _currentUserId,
+                UserId = GetUserId(),
                 Amount = model.Amount,
                 ActionType = GoldActionType.Buy
             };
@@ -86,7 +104,9 @@ namespace DigitalGoldWallet.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Sell()
         {
-            var portfolio = await _goldApiService.GetPortfolioAsync(_currentUserId);
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
+            var portfolio = await _goldApiService.GetPortfolioAsync(userId);
             var branches = await _goldApiService.GetAllBranchesAsync();
             var viewModel = new SellGoldViewModel
             {
@@ -100,6 +120,7 @@ namespace DigitalGoldWallet.MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Sell(SellGoldViewModel model)
         {
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
             if (model.Quantity <= 0)
             {
                 ModelState.AddModelError("Quantity", "Invalid quantity.");
@@ -108,7 +129,7 @@ namespace DigitalGoldWallet.MVC.Controllers
 
             var request = new GoldActionRequestDto
             {
-                UserId = _currentUserId,
+                UserId = GetUserId(),
                 Quantity = model.Quantity,
                 ActionType = GoldActionType.Sell
             };
@@ -126,8 +147,10 @@ namespace DigitalGoldWallet.MVC.Controllers
 
         public async Task<IActionResult> Transactions(int page = 1)
         {
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
             const int pageSize = 5;
-            var allTransactions = await _goldApiService.GetTransactionsAsync(_currentUserId) ?? new List<GoldTransactionDto>();
+            var allTransactions = await _goldApiService.GetTransactionsAsync(userId) ?? new List<GoldTransactionDto>();
             
             var totalCount = allTransactions.Count;
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -157,8 +180,10 @@ namespace DigitalGoldWallet.MVC.Controllers
 
         public async Task<IActionResult> ConvertToPhysical()
         {
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
             Console.WriteLine("DEBUG: ConvertToPhysical requested.");
-            var portfolio = await _goldApiService.GetPortfolioAsync(_currentUserId);
+            var portfolio = await _goldApiService.GetPortfolioAsync(userId);
             Console.WriteLine($"DEBUG: Portfolio retrieved. Gold: {portfolio?.TotalGold}");
             
             var branches = await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
@@ -185,7 +210,9 @@ namespace DigitalGoldWallet.MVC.Controllers
 
         public async Task<IActionResult> PhysicalHistory()
         {
-            var history = await _goldApiService.GetPhysicalHistoryAsync(_currentUserId) ?? new List<GoldTransactionDto>();
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
+            var history = await _goldApiService.GetPhysicalHistoryAsync(userId) ?? new List<GoldTransactionDto>();
             var viewModel = new PhysicalHistoryViewModel
             {
                 Conversions = history.Select(h => new PhysicalConversionItemViewModel
@@ -203,7 +230,9 @@ namespace DigitalGoldWallet.MVC.Controllers
 
         public async Task<IActionResult> Calculator()
         {
-            var portfolio = await _goldApiService.GetPortfolioAsync(_currentUserId);
+            if (GetUserId() == 0) return RedirectToAction("Login", "Auth");
+            int userId = GetUserId();
+            var portfolio = await _goldApiService.GetPortfolioAsync(userId);
             return View(new GoldValueCalculatorViewModel { CurrentPricePerGram = portfolio?.CurrentGoldPrice ?? 6000 });
         }
 

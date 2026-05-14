@@ -52,9 +52,11 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             string role = user.RoleId == 1 ? "Admin" : "User";
 
+            string displayName = user.Name ?? user.Email;
+
             string token = _jwtHelper.GenerateToken(
                 user.UserId,
-                user.Name,
+                displayName,
                 role);
 
             return new AuthResponseDto
@@ -62,7 +64,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 Message = "Login successful",
                 Token = token,
                 Id = user.UserId,
-                Name = user.Name,
+                Name = displayName,
                 Role = role
             };
         }
@@ -76,19 +78,24 @@ namespace DigitalGoldWallet.API.Services.Implementations
 
             var vendor = await _authRepository.GetVendorByEmailAsync(dto.Email);
 
-            if (vendor == null || string.IsNullOrEmpty(vendor.Password))
-                throw new UnauthorizedException("Invalid email or password.");
+            if (vendor == null)
+                throw new UnauthorizedException($"Vendor with email '{dto.Email}' not found.");
+
+            if (string.IsNullOrEmpty(vendor.Password))
+                throw new UnauthorizedException("Vendor account has no password set.");
 
             bool isPasswordValid = PasswordHelper.VerifyPassword(
                 dto.Password,
                 vendor.Password);
 
             if (!isPasswordValid)
-                throw new UnauthorizedException("Invalid email or password.");
+                throw new UnauthorizedException("Incorrect password.");
+
+            string displayName = vendor.VendorName ?? vendor.ContactEmail ?? "Vendor";
 
             string token = _jwtHelper.GenerateToken(
                 vendor.VendorId,
-                vendor.VendorName,
+                displayName,
                 "Vendor");
 
             return new AuthResponseDto
@@ -96,7 +103,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 Message = "Vendor login successful",
                 Token = token,
                 Id = vendor.VendorId,
-                Name = vendor.VendorName,
+                Name = displayName,
                 Role = "Vendor"
             };
         }

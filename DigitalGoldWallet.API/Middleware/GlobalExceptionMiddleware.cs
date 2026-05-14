@@ -126,7 +126,7 @@ public class GlobalExceptionMiddleware
                 response = new
                 {
                     statusCode,
-                    message = "An unexpected error occurred. Please try again later."
+                    message = $"Internal Server Error: {exception.Message}"
                 };
                 break;
         }

@@ -70,10 +70,9 @@ public class UserService : IUserService
         return dashboard;
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+    public async Task<IEnumerable<UserDto>> GetAllUsersAsync(int pageNumber = 1, int pageSize = 10)
     {
-        var users = await _repository.GetAllUsersAsync();
-
+        var users = await _repository.GetAllUsersAsync(pageNumber, pageSize);
         return _mapper.Map<IEnumerable<UserDto>>(users);
     }
 

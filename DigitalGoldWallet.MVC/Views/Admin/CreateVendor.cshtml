@@ -1,0 +1,66 @@
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
+@{
+    ViewData["Title"] = "Onboard Vendor";
+    Layout = "_AdminLayout";
+}
+
+<div class="max-w-2xl mx-auto space-y-8">
+    <div class="flex items-center gap-4">
+        <a asp-action="Vendors" class="p-2 hover:bg-gray-100 rounded-full transition">
+            <span class="material-symbols-outlined text-[#735c00]">arrow_back</span>
+        </a>
+        <h1 class="text-3xl font-extrabold text-[#1f1b13]">Onboard New Vendor</h1>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-xl">
+            <p class="text-sm text-red-700">@ViewBag.Error</p>
+        </div>
+    }
+
+    <div class="bg-white p-8 rounded-2xl border border-[#efe7da] shadow-sm">
+        <form asp-action="CreateVendor" method="post" class="space-y-6">
+            <div>
+                <label asp-for="VendorName" class="block text-sm font-bold text-[#4d4635] mb-2">Vendor Name</label>
+                <input asp-for="VendorName" class="w-full px-4 py-3 rounded-xl border border-[#efe7da] focus:border-[#d4af37] focus:ring-2 focus:ring-[#fdf9f0] outline-none transition" placeholder="Enter legal business name" />
+                <span asp-validation-for="VendorName" class="text-xs text-red-500 mt-1"></span>
+            </div>
+
+            <div>
+                <label asp-for="ContactPersonName" class="block text-sm font-bold text-[#4d4635] mb-2">Contact Person</label>
+                <input asp-for="ContactPersonName" class="w-full px-4 py-3 rounded-xl border border-[#efe7da] focus:border-[#d4af37] focus:ring-2 focus:ring-[#fdf9f0] outline-none transition" placeholder="Primary contact name" />
+                <span asp-validation-for="ContactPersonName" class="text-xs text-red-500 mt-1"></span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="ContactPhone" class="block text-sm font-bold text-[#4d4635] mb-2">Contact Number</label>
+                    <input asp-for="ContactPhone" class="w-full px-4 py-3 rounded-xl border border-[#efe7da] focus:border-[#d4af37] focus:ring-2 focus:ring-[#fdf9f0] outline-none transition" placeholder="+91 XXXXX XXXXX" />
+                    <span asp-validation-for="ContactPhone" class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ContactEmail" class="block text-sm font-bold text-[#4d4635] mb-2">Email Address</label>
+                    <input asp-for="ContactEmail" class="w-full px-4 py-3 rounded-xl border border-[#efe7da] focus:border-[#d4af37] focus:ring-2 focus:ring-[#fdf9f0] outline-none transition" placeholder="vendor@example.com" />
+                    <span asp-validation-for="ContactEmail" class="text-xs text-red-500 mt-1"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Password" class="block text-sm font-bold text-[#4d4635] mb-2">Account Password</label>
+                <input asp-for="Password" type="password" class="w-full px-4 py-3 rounded-xl border border-[#efe7da] focus:border-[#d4af37] focus:ring-2 focus:ring-[#fdf9f0] outline-none transition" placeholder="Create a secure password" />
+                <span asp-validation-for="Password" class="text-xs text-red-500 mt-1"></span>
+            </div>
+
+            <div class="pt-6 border-t border-[#fbf3e5] flex gap-4">
+                <button type="submit" class="flex-1 px-6 py-3 bg-[#d4af37] text-[#554300] font-bold rounded-xl shadow-sm hover:shadow-md transition">
+                    Register Vendor
+                </button>
+                <a asp-action="Vendors" class="flex-1 px-6 py-3 bg-white border border-[#efe7da] text-[#4d4635] font-bold rounded-xl text-center no-underline hover:bg-gray-50 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

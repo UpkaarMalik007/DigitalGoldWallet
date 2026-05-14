@@ -55,32 +55,16 @@ public class VendorController : Controller
         page = page < 1 ? 1 : page;
         pageSize = pageSize is 6 or 9 or 12 ? pageSize : 6;
 
-        List<VendorViewModel> vendors = await _vendorApiService.GetAllVendorsAsync();
-
-        if (!vendors.Any() && !string.IsNullOrWhiteSpace(_vendorApiService.LastErrorMessage))
-        {
-            ViewBag.ApiErrorMessage = _vendorApiService.LastErrorMessage;
-        }
-
-        int totalRecords = vendors.Count;
+        List<VendorViewModel> vendors = await _vendorApiService.GetAllVendorsAsync(page, pageSize);
+        int totalRecords = _vendorApiService.TotalCount;
         int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-
-        if (totalPages > 0 && page > totalPages)
-        {
-            page = totalPages;
-        }
-
-        List<VendorViewModel> pagedVendors = vendors
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
 
         ViewBag.CurrentPage = page;
         ViewBag.PageSize = pageSize;
         ViewBag.TotalPages = totalPages;
         ViewBag.TotalRecords = totalRecords;
 
-        return View(pagedVendors);
+        return View(vendors);
     }
 
     public async Task<IActionResult> Details(int id)

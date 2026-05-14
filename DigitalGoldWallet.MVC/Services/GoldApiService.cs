@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using DigitalGoldWallet.API.DTOs.Gold;
 
 namespace DigitalGoldWallet.MVC.Services
@@ -17,17 +18,33 @@ namespace DigitalGoldWallet.MVC.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public GoldApiService(HttpClient httpClient, IConfiguration configuration)
+        public GoldApiService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
-            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5103/api/";
+            _httpContextAccessor = httpContextAccessor;
+            string apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7269/";
+            if (!apiBaseUrl.EndsWith("/")) apiBaseUrl += "/";
+            _baseUrl = apiBaseUrl + "api/";
+        }
+
+        private void AddAuthHeader()
+        {
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+                ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         public async Task<GoldPortfolioDto?> GetPortfolioAsync(int userId)
         {
             try
             {
+                AddAuthHeader();
                 return await _httpClient.GetFromJsonAsync<GoldPortfolioDto>($"{_baseUrl}gold/portfolio/{userId}");
             }
             catch
@@ -40,6 +57,7 @@ namespace DigitalGoldWallet.MVC.Services
         {
             try
             {
+                AddAuthHeader();
                 return await _httpClient.GetFromJsonAsync<List<BranchDetailDto>>($"{_baseUrl}gold/branches");
             }
             catch
@@ -52,6 +70,7 @@ namespace DigitalGoldWallet.MVC.Services
         {
             try
             {
+                AddAuthHeader();
                 return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>($"{_baseUrl}gold/transactions/{userId}");
             }
             catch
@@ -64,6 +83,7 @@ namespace DigitalGoldWallet.MVC.Services
         {
             try
             {
+                AddAuthHeader();
                 return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>($"{_baseUrl}gold/physical-history/{userId}");
             }
             catch
@@ -76,6 +96,7 @@ namespace DigitalGoldWallet.MVC.Services
         {
             try
             {
+                AddAuthHeader();
                 var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}gold/buy", request);
                 return response.IsSuccessStatusCode;
             }
@@ -89,6 +110,7 @@ namespace DigitalGoldWallet.MVC.Services
         {
             try
             {
+                AddAuthHeader();
                 var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}gold/sell", request);
                 return response.IsSuccessStatusCode;
             }

@@ -4,7 +4,7 @@ namespace DigitalGoldWallet.API.Repositories.Interfaces;
 
 public interface IVendorRepository
 {
-    Task<List<Vendor>> GetAllVendorsAsync();
+    Task<List<Vendor>> GetAllVendorsAsync(int pageNumber = 1, int pageSize = 10);
 
     Task<Vendor?> GetVendorByIdAsync(int vendorId);
 

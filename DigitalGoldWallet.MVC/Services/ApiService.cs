@@ -46,27 +46,41 @@ public class ApiService
 
     public async Task<JObject?> LoginUserAsync(LoginViewModel model)
     {
-        return await PostAsync("api/Auth/login-user", model);
+        var loginRequest = new
+        {
+            email = model.Email,
+            password = model.Password
+        };
+
+        return await PostAsync("api/Auth/login-user", loginRequest);
     }
 
     public async Task<JObject?> LoginVendorAsync(LoginViewModel model)
     {
-        return await PostAsync("api/Auth/login-vendor", model);
+        var loginRequest = new
+        {
+            email = model.Email,
+            password = model.Password
+        };
+
+        return await PostAsync("api/Auth/login-vendor", loginRequest);
     }
 
     public async Task<bool> RegisterUserAsync(RegisterViewModel model)
     {
         LastErrorMessage = null;
 
-        HttpClient client = CreateClient();
-        string json = JsonConvert.SerializeObject(model);
-        using StringContent content = new(json, Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await client.PostAsync("api/Auth/register-user", content);
+        HttpResponseMessage response =
+            await CreateClient().PostAsJsonAsync("api/Auth/register-user", model);
 
         if (!response.IsSuccessStatusCode)
         {
-            LastErrorMessage = await ReadErrorMessageAsync(response, "Registration failed.");
+            string errorBody = await response.Content.ReadAsStringAsync();
+
+            LastErrorMessage = await ReadErrorMessageAsync(
+                errorBody,
+                "Registration failed.");
+
             return false;
         }
 
@@ -82,8 +96,10 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            string errorBody = await response.Content.ReadAsStringAsync();
+
             LastErrorMessage = await ReadErrorMessageAsync(
-                response,
+                errorBody,
                 "Unable to fetch wallet balance.");
 
             return new WalletBalanceViewModel();
@@ -102,8 +118,10 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            string errorBody = await response.Content.ReadAsStringAsync();
+
             LastErrorMessage = await ReadErrorMessageAsync(
-                response,
+                errorBody,
                 "Unable to add money.");
         }
     }
@@ -117,8 +135,10 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            string errorBody = await response.Content.ReadAsStringAsync();
+
             LastErrorMessage = await ReadErrorMessageAsync(
-                response,
+                errorBody,
                 "Unable to fetch wallet history.");
 
             return new List<WalletHistoryViewModel>();
@@ -137,8 +157,10 @@ public class ApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            string errorBody = await response.Content.ReadAsStringAsync();
+
             LastErrorMessage = await ReadErrorMessageAsync(
-                response,
+                errorBody,
                 "Unable to fetch wallet summary.");
 
             return new WalletSummaryModel();
@@ -152,29 +174,38 @@ public class ApiService
     {
         LastErrorMessage = null;
 
-        HttpClient client = CreateClient();
-        string json = JsonConvert.SerializeObject(model);
-        using StringContent content = new(json, Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await client.PostAsync(url, content);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            LastErrorMessage = await ReadErrorMessageAsync(
-                response,
-                "Invalid credentials.");
+            HttpClient client = CreateClient();
 
+            string json = JsonConvert.SerializeObject(model);
+            using StringContent content = new(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await client.PostAsync(url, content);
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                LastErrorMessage = await ReadErrorMessageAsync(
+                    responseBody,
+                    $"API Error {(int)response.StatusCode}: {response.ReasonPhrase}");
+
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(responseBody))
+            {
+                LastErrorMessage = "API returned empty response.";
+                return null;
+            }
+
+            return JObject.Parse(responseBody);
+        }
+        catch (Exception ex)
+        {
+            LastErrorMessage = ex.Message;
             return null;
         }
-
-        string responseBody = await response.Content.ReadAsStringAsync();
-
-        if (string.IsNullOrWhiteSpace(responseBody))
-        {
-            return null;
-        }
-
-        return JObject.Parse(responseBody);
     }
 
     private async Task<T?> ReadDataOrDirectAsync<T>(HttpResponseMessage response)
@@ -200,7 +231,6 @@ public class ApiService
         }
         catch
         {
-            // Fall through and try direct deserialization.
         }
 
         return System.Text.Json.JsonSerializer.Deserialize<T>(
@@ -208,34 +238,33 @@ public class ApiService
             _jsonOptions);
     }
 
-    private async Task<string> ReadErrorMessageAsync(
-        HttpResponseMessage response,
-        string fallback)
+    private Task<string> ReadErrorMessageAsync(string json, string fallback)
     {
-        string json = await response.Content.ReadAsStringAsync();
-
         if (string.IsNullOrWhiteSpace(json))
         {
-            return fallback;
+            return Task.FromResult(fallback);
         }
 
         try
         {
-            ApiResponse<object>? error =
-                System.Text.Json.JsonSerializer.Deserialize<ApiResponse<object>>(
-                    json,
-                    _jsonOptions);
+            JObject obj = JObject.Parse(json);
 
-            if (!string.IsNullOrWhiteSpace(error?.Message))
+            string? message =
+                obj["message"]?.ToString()
+                ?? obj["Message"]?.ToString()
+                ?? obj["error"]?.ToString()
+                ?? obj["title"]?.ToString()
+                ?? obj["detail"]?.ToString();
+
+            if (!string.IsNullOrWhiteSpace(message))
             {
-                return error.Message;
+                return Task.FromResult(message);
             }
         }
         catch
         {
-            // Ignore invalid JSON.
         }
 
-        return json;
+        return Task.FromResult(json);
     }
 }

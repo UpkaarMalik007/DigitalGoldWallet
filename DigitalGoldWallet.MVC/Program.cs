@@ -27,6 +27,7 @@ builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<IVendorApiService, VendorApiService>();
 builder.Services.AddScoped<ITransactionApiService, TransactionApiService>();
 builder.Services.AddScoped<IUserApiService, UserApiService>();
+builder.Services.AddScoped<IAdminApiService, AdminApiService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

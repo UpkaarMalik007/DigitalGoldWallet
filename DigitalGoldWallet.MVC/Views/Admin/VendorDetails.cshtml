@@ -1,0 +1,87 @@
+@model DigitalGoldWallet.MVC.ViewModels.Vendor.VendorViewModel
+@{
+    ViewData["Title"] = "Vendor Details";
+    Layout = "_AdminLayout";
+    var branches = ViewBag.Branches as List<DigitalGoldWallet.MVC.ViewModels.Vendor.VendorBranchViewModel>;
+}
+
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a asp-action="Vendors" class="p-2 hover:bg-gray-100 rounded-full transition">
+                <span class="material-symbols-outlined text-[#735c00]">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="text-3xl font-extrabold text-[#1f1b13]">@Model.VendorName</h1>
+                <p class="text-[#6c757d]">Verified Partner | Partner since 2023</p>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Info Card -->
+        <div class="bg-white p-8 rounded-2xl border border-[#efe7da] shadow-sm space-y-6">
+            <div class="pb-6 border-b border-[#fbf3e5]">
+                <h3 class="text-xl font-bold text-[#1f1b13] mb-4">Contact Person</h3>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                        @Model.ContactPersonName?.Substring(0, 1).ToUpper()
+                    </div>
+                    <div>
+                        <p class="font-bold text-[#1f1b13]">@Model.ContactPersonName</p>
+                        <p class="text-sm text-[#6c757d]">Primary Contact</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-[#735c00] uppercase tracking-wider">Communication</h4>
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined text-[#6c757d] text-lg">mail</span>
+                    <span class="text-[#4d4635]">@Model.ContactEmail</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined text-[#6c757d] text-lg">call</span>
+                    <span class="text-[#4d4635]">@Model.ContactPhone</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branches List -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-[#efe7da] shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-[#efe7da] flex items-center justify-between">
+                <h3 class="text-xl font-bold text-[#1f1b13]">Active Branches</h3>
+                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">@(branches?.Count ?? 0) BRANCHES</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-[#fbf3e5] text-[#735c00] text-xs uppercase tracking-widest font-bold">
+                            <th class="px-8 py-4">Branch Name</th>
+                            <th class="px-8 py-4">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#fbf3e5]">
+                        @if (branches != null && branches.Any())
+                        {
+                            foreach (var branch in branches)
+                            {
+                                <tr class="hover:bg-[#fdf9f0] transition">
+                                    <td class="px-8 py-5 font-bold text-[#1f1b13]">Branch #@branch.BranchId</td>
+                                    <td class="px-8 py-5 text-sm text-[#6c757d]">@branch.FullAddress</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2" class="px-8 py-10 text-center text-gray-400 italic">No branches found for this vendor.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

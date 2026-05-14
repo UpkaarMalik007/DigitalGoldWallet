@@ -1,0 +1,116 @@
+@model DigitalGoldWallet.MVC.ViewModels.User.UserViewModel
+@{
+    ViewData["Title"] = "User Details";
+    Layout = "_AdminLayout";
+    var dashboard = ViewBag.UserDashboard as DigitalGoldWallet.MVC.ViewModels.User.UserDashboardViewModel;
+}
+
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a asp-action="Users" class="p-2 hover:bg-gray-100 rounded-full transition">
+                <span class="material-symbols-outlined text-[#735c00]">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="text-3xl font-extrabold text-[#1f1b13]">@Model.Name</h1>
+                <p class="text-[#6c757d]">Verified User | Joined @DateTime.Now.AddMonths(-3).ToString("MMM yyyy")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Profile Card -->
+        <div class="bg-white p-8 rounded-2xl border border-[#e9ecef] shadow-sm space-y-6">
+            <div class="flex flex-col items-center text-center pb-6 border-b border-gray-100">
+                <div class="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-3xl mb-4">
+                    @Model.Name.Substring(0, 1).ToUpper()
+                </div>
+                <h3 class="text-xl font-bold text-[#1f1b13]">@Model.Name</h3>
+                <p class="text-[#6c757d]">@Model.Email</p>
+                <span class="mt-3 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">ACTIVE USER</span>
+            </div>
+
+            <div class="space-y-4">
+                <h4 class="text-sm font-bold text-[#735c00] uppercase">Contact Information</h4>
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined text-[#6c757d] text-lg">mail</span>
+                    <span class="text-[#4d4635]">@Model.Email</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined text-[#6c757d] text-lg">location_on</span>
+                    @if (Model.Address != null)
+                    {
+                        <span class="text-[#4d4635]">@Model.Address.City, @Model.Address.State, @Model.Address.Country</span>
+                    }
+                    else
+                    {
+                        <span class="text-gray-400 italic">Address not provided</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Overview -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-[#fdf9f0] p-6 rounded-2xl border border-[#efe7da] shadow-sm">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="p-3 bg-white rounded-xl text-[#735c00]">
+                            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                        </div>
+                        <h4 class="font-bold text-[#4d4635]">Wallet Balance</h4>
+                    </div>
+                    <p class="text-3xl font-bold text-[#1f1b13]">₹@Model.Balance.ToString("N2")</p>
+                    <p class="text-xs text-[#6c757d] mt-2">Available for gold purchase</p>
+                </div>
+
+                <div class="bg-[#fff9db] p-6 rounded-2xl border border-[#fff3bf] shadow-sm">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="p-3 bg-white rounded-xl text-[#735c00]">
+                            <span class="material-symbols-outlined text-2xl">payments</span>
+                        </div>
+                        <h4 class="font-bold text-[#4d4635]">Gold Holdings</h4>
+                    </div>
+                    <p class="text-3xl font-bold text-[#1f1b13]">@(dashboard?.TotalGoldHoldings ?? 0) g</p>
+                    <p class="text-xs text-[#6c757d] mt-2">Current Value: ₹@((dashboard?.TotalGoldHoldings * dashboard?.CurrentGoldPrice ?? 0).ToString("N2"))</p>
+                </div>
+            </div>
+
+            <!-- Address Details -->
+            <div class="bg-white p-8 rounded-2xl border border-[#e9ecef] shadow-sm">
+                <h3 class="text-xl font-bold text-[#1f1b13] mb-6">Address Details</h3>
+                @if (Model.Address != null)
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                        <div>
+                            <p class="text-[#6c757d] mb-1">Street</p>
+                            <p class="font-semibold text-[#4d4635]">@Model.Address.Street</p>
+                        </div>
+                        <div>
+                            <p class="text-[#6c757d] mb-1">City</p>
+                            <p class="font-semibold text-[#4d4635]">@Model.Address.City</p>
+                        </div>
+                        <div>
+                            <p class="text-[#6c757d] mb-1">State</p>
+                            <p class="font-semibold text-[#4d4635]">@Model.Address.State</p>
+                        </div>
+                        <div>
+                            <p class="text-[#6c757d] mb-1">Postal Code</p>
+                            <p class="font-semibold text-[#4d4635]">@Model.Address.PostalCode</p>
+                        </div>
+                        <div>
+                            <p class="text-[#6c757d] mb-1">Country</p>
+                            <p class="font-semibold text-[#4d4635]">@Model.Address.Country</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="py-4 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                        <p class="text-gray-400 italic">No address information available for this user.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
