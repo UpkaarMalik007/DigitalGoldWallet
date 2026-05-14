@@ -1,3 +1,4 @@
+using DigitalGoldWallet.MVC.Filters;
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.ViewModels.Transaction;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ public class TransactionController : Controller
         _userApiService = userApiService;   
     }
 
+    [RoleSessionAuthorize("User")]
     public async Task<IActionResult> UserTransactions()
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -48,6 +50,7 @@ public class TransactionController : Controller
         return View(pageModel);
     }
 
+    [RoleSessionAuthorize("User")]
     public async Task<IActionResult> UserTransactionDetails(int id)
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -75,15 +78,20 @@ public class TransactionController : Controller
         }
 
 
-        var matchedVendor = vendors.FirstOrDefault(v =>
-            v.Branches.Any(b => b.BranchId == transaction.BranchId));
+        if (string.IsNullOrWhiteSpace(transaction.VendorName))
+        {
+            var matchedVendor = vendors.FirstOrDefault(v =>
+                v.Branches != null &&
+                v.Branches.Any(b => b.BranchId == transaction.BranchId));
 
-        transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+            transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+        }
 
         return View(transaction);
     }
 
     [HttpPost]
+    [RoleSessionAuthorize("User")]
     public async Task<IActionResult> FilterUserTransactions(FilterTransactionViewModel filter)
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -108,6 +116,7 @@ public class TransactionController : Controller
     }
 
     [HttpGet]
+    [RoleSessionAuthorize("User")]
     public async Task<IActionResult> GoldPayment(
     int branchId,
     decimal quantity,
@@ -137,6 +146,7 @@ public class TransactionController : Controller
     }
 
     [HttpPost]
+    [RoleSessionAuthorize("User")]
     public async Task<IActionResult> PayGold(GoldPaymentViewModel model)
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -195,6 +205,7 @@ public class TransactionController : Controller
 
 
 
+    [RoleSessionAuthorize("Admin")]
     public async Task<IActionResult> AdminTransactions(
     int pageNumber = 1,
     int pageSize = 10)
@@ -228,19 +239,25 @@ public class TransactionController : Controller
             var matchedVendor = vendors.FirstOrDefault(v =>
                 v.Branches.Any(b => b.BranchId == transaction.BranchId));
 
-            transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+            if (string.IsNullOrWhiteSpace(transaction.VendorName))
+            {
+                transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+            }
 
             // User Name
-            if (transaction.UserId.HasValue)
+            if (string.IsNullOrWhiteSpace(transaction.Name))
             {
-                var user = await _userApiService
-                    .GetUserByIdAsync(transaction.UserId.Value);
+                if (transaction.UserId.HasValue)
+                {
+                    var user = await _userApiService
+                        .GetUserByIdAsync(transaction.UserId.Value);
 
-                transaction.Name = user?.Name ?? "N/A";
-            }
-            else
-            {
-                transaction.Name = "N/A";
+                    transaction.Name = user?.Name ?? "N/A";
+                }
+                else
+                {
+                    transaction.Name = "N/A";
+                }
             }
         }
 
@@ -255,6 +272,7 @@ public class TransactionController : Controller
         return View(pageModel);
     }
 
+    [RoleSessionAuthorize("Admin")]
     public async Task<IActionResult> AdminTransactionDetails(int id)
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -280,24 +298,31 @@ public class TransactionController : Controller
             vendor.Branches = await _vendorApiService.GetVendorBranchesAsync(vendor.VendorId);
         }
 
-        var matchedVendor = vendors.FirstOrDefault(v =>
-            v.Branches != null &&
-            v.Branches.Any(b => b.BranchId == transaction.BranchId));
-
-        transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
-
-        if (transaction.UserId.HasValue)
+        if (string.IsNullOrWhiteSpace(transaction.VendorName))
         {
-            var user = await _userApiService.GetUserByIdAsync(transaction.UserId.Value);
-            transaction.Name = user?.Name ?? "N/A";
+            var matchedVendor = vendors.FirstOrDefault(v =>
+                v.Branches != null &&
+                v.Branches.Any(b => b.BranchId == transaction.BranchId));
+
+            transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
         }
-        else
+
+        if (string.IsNullOrWhiteSpace(transaction.Name))
         {
-            transaction.Name = "N/A";
+            if (transaction.UserId.HasValue)
+            {
+                var user = await _userApiService.GetUserByIdAsync(transaction.UserId.Value);
+                transaction.Name = user?.Name ?? "N/A";
+            }
+            else
+            {
+                transaction.Name = "N/A";
+            }
         }
 
         return View(transaction);
     }
+    [RoleSessionAuthorize("Admin")]
     public async Task<IActionResult> MonthlyReport(
         int month = 0,
         int year = 0)
@@ -333,6 +358,7 @@ public class TransactionController : Controller
         return View(model);
     }
 
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> VendorTransactions()
     {
         var token = HttpContext.Session.GetString("JWToken");
@@ -349,23 +375,9 @@ public class TransactionController : Controller
 
         foreach (var transaction in transactions)
         {
-            if (transaction.UserId != null)
+            if (string.IsNullOrWhiteSpace(transaction.Name))
             {
-                var user = await _userApiService
-                    .GetUserByIdAsync(transaction.UserId.Value);
-
-                if (user != null)
-                {
-                    transaction.Name = user.Name;
-                }
-                else
-                {
-                    transaction.Name = "User Not Found";
-                }
-            }
-            else
-            {
-                transaction.Name = "No UserId";
+                transaction.Name = "N/A";
             }
         }
 
@@ -378,6 +390,7 @@ public class TransactionController : Controller
     }
 
     [HttpPost]
+    [RoleSessionAuthorize("Vendor", "Admin")]
     public async Task<IActionResult> UpdateStatus(
         int transactionId,
         string transactionStatus)

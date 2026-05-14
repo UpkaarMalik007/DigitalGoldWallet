@@ -13,14 +13,17 @@ namespace DigitalGoldWallet.Tests
     public class TransactionControllerTests
     {
         private readonly Mock<ITransactionService> _transactionServiceMock;
+        private readonly Mock<IUserService> _userServiceMock;
         private readonly TransactionController _controller;
 
         public TransactionControllerTests()
         {
             _transactionServiceMock = new Mock<ITransactionService>();
+            _userServiceMock = new Mock<IUserService>();
 
             _controller = new TransactionController(
-                _transactionServiceMock.Object);
+                _transactionServiceMock.Object,
+                _userServiceMock.Object);
 
             SetUser(1, "User");
         }

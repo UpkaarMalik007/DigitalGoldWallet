@@ -1,11 +1,8 @@
 using DigitalGoldWallet.MVC.Models;
 using DigitalGoldWallet.MVC.ViewModels;
-using Microsoft.AspNetCore.Http;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace DigitalGoldWallet.MVC.Services
 {
@@ -13,6 +10,10 @@ namespace DigitalGoldWallet.MVC.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public WalletApiService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
         {
@@ -20,58 +21,83 @@ namespace DigitalGoldWallet.MVC.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        // Attach JWT token
         private void AddToken()
         {
-            var token = _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
+            string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+                ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
 
-            if (!string.IsNullOrEmpty(token))
+            if (!string.IsNullOrWhiteSpace(token))
             {
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
-        // Get Wallet Balance
         public async Task<WalletBalanceViewModel> GetWalletBalance(int userId)
         {
             AddToken();
 
-            var response = await _httpClient.GetAsync($"api/wallet/balance/{userId}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"api/wallet/balance/{userId}");
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadFromJsonAsync<WalletBalanceViewModel>();
+            return await ReadWrappedOrDirectAsync<WalletBalanceViewModel>(response)
+                ?? new WalletBalanceViewModel();
         }
 
-        // Get Wallet History
         public async Task<List<WalletHistoryViewModel>> GetWalletHistory(int userId)
         {
             AddToken();
 
-            var response = await _httpClient.GetAsync($"api/wallet/history/{userId}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"api/wallet/history/{userId}");
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadFromJsonAsync<List<WalletHistoryViewModel>>();
+            return await ReadWrappedOrDirectAsync<List<WalletHistoryViewModel>>(response)
+                ?? new List<WalletHistoryViewModel>();
         }
 
-        // Add Money
         public async Task AddMoney(WalletAmountModel model)
         {
             AddToken();
 
-            var response = await _httpClient.PostAsJsonAsync("api/wallet/add-money", model);
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("api/wallet/add-money", model);
             response.EnsureSuccessStatusCode();
         }
 
-        // Wallet Summary
-        public async Task<object> GetWalletSummary(int userId)
+        public async Task<WalletSummaryModel> GetWalletSummary(int userId)
         {
             AddToken();
 
-            var response = await _httpClient.GetAsync($"api/wallet/summary/{userId}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"api/wallet/summary/{userId}");
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadFromJsonAsync<object>();
+            return await ReadWrappedOrDirectAsync<WalletSummaryModel>(response)
+                ?? new WalletSummaryModel();
+        }
+
+        private async Task<T?> ReadWrappedOrDirectAsync<T>(HttpResponseMessage response)
+        {
+            string json = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return default;
+            }
+
+            try
+            {
+                ApiResponse<T>? wrapped = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
+
+                if (wrapped is not null && wrapped.Data is not null)
+                {
+                    return wrapped.Data;
+                }
+            }
+            catch
+            {
+                // API may return direct data instead of ApiResponse<T>.
+            }
+
+            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
         }
     }
 }

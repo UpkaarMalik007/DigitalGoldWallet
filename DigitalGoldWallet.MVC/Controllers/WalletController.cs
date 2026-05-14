@@ -1,3 +1,4 @@
+using DigitalGoldWallet.MVC.Filters;
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using DigitalGoldWallet.MVC.ViewModels;
 
 namespace DigitalGoldWallet.MVC.Controllers
 {
+    [RoleSessionAuthorize("User")]
     public class WalletController : Controller
     {
         private readonly IWalletApiService _walletApiService;

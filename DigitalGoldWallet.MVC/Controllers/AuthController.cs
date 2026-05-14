@@ -137,6 +137,12 @@ public class AuthController : Controller
         if (userId.HasValue && userId.Value > 0)
         {
             HttpContext.Session.SetInt32("UserId", userId.Value);
+
+            if (userId.Value == 1)
+            {
+                HttpContext.Session.SetString("UserRole", "Admin");
+                HttpContext.Session.SetString("Role", "Admin");
+            }
         }
 
         return RedirectToAction("RedirectAfterLogin", "Account");

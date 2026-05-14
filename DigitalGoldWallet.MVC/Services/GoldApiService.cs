@@ -1,142 +1,144 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net.Http.Headers;
-using DigitalGoldWallet.API.DTOs.Gold;
+using DigitalGoldWallet.MVC.ViewModels.Gold;
 
-namespace DigitalGoldWallet.MVC.Services
+namespace DigitalGoldWallet.MVC.Services;
+
+public interface IGoldApiService
 {
-    public interface IGoldApiService
+    Task<GoldPortfolioDto?> GetPortfolioAsync(int userId);
+    Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId);
+    Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId);
+    Task<List<BranchDetailDto>?> GetAllBranchesAsync();
+    Task<bool> BuyGoldAsync(GoldActionRequestDto request);
+    Task<bool> SellGoldAsync(GoldActionRequestDto request);
+}
+
+public class GoldApiService : IGoldApiService
+{
+    private readonly HttpClient _httpClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly string _baseUrl;
+
+    public GoldApiService(
+        HttpClient httpClient,
+        IConfiguration configuration,
+        IHttpContextAccessor httpContextAccessor)
     {
-        Task<GoldPortfolioDto?> GetPortfolioAsync(int userId);
-        Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId);
-        Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId);
-        Task<List<BranchDetailDto>?> GetAllBranchesAsync();
-        Task<bool> BuyGoldAsync(GoldActionRequestDto request);
-        Task<bool> SellGoldAsync(GoldActionRequestDto request);
+        _httpClient = httpClient;
+        _httpContextAccessor = httpContextAccessor;
+
+        string baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7269/";
+        if (!baseUrl.EndsWith("/"))
+        {
+            baseUrl += "/";
+        }
+
+        if (!baseUrl.EndsWith("api/", StringComparison.OrdinalIgnoreCase))
+        {
+            baseUrl += "api/";
+        }
+
+        _baseUrl = baseUrl;
     }
 
-    public class GoldApiService : IGoldApiService
+    private void AddAuthHeader()
     {
-        private readonly HttpClient _httpClient;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly string _baseUrl;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+            ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
 
-        public GoldApiService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            _httpClient = httpClient;
-            _httpContextAccessor = httpContextAccessor;
-
-            var baseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5103/";
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-            if (!baseUrl.EndsWith("api/")) baseUrl += "api/";
-            _baseUrl = baseUrl;
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
         }
+    }
 
-        private void AddAuthHeader()
+    public async Task<GoldPortfolioDto?> GetPortfolioAsync(int userId)
+    {
+        try
         {
-            string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
-                         ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
-
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
-            _httpContextAccessor = httpContextAccessor;
-            string apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7269/";
-            if (!apiBaseUrl.EndsWith("/")) apiBaseUrl += "/";
-            _baseUrl = apiBaseUrl + "api/";
+            AddAuthHeader();
+            return await _httpClient.GetFromJsonAsync<GoldPortfolioDto>(
+                $"{_baseUrl}gold/portfolio/{userId}");
         }
-
-        private void AddAuthHeader()
+        catch
         {
-            var token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
-                ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
-            
-            if (!string.IsNullOrEmpty(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+            return null;
         }
+    }
 
-        public async Task<GoldPortfolioDto?> GetPortfolioAsync(int userId)
+    public async Task<List<BranchDetailDto>?> GetAllBranchesAsync()
+    {
+        try
         {
-            try
-            {
-                AddAuthHeader();
-                return await _httpClient.GetFromJsonAsync<GoldPortfolioDto>($"{_baseUrl}gold/portfolio/{userId}");
-            }
-            catch
-            {
-                return null;
-            }
+            AddAuthHeader();
+            return await _httpClient.GetFromJsonAsync<List<BranchDetailDto>>(
+                $"{_baseUrl}gold/branches");
         }
-
-        public async Task<List<BranchDetailDto>?> GetAllBranchesAsync()
+        catch
         {
-            try
-            {
-                AddAuthHeader();
-                return await _httpClient.GetFromJsonAsync<List<BranchDetailDto>>($"{_baseUrl}gold/branches");
-            }
-            catch
-            {
-                return new List<BranchDetailDto>();
-            }
+            return new List<BranchDetailDto>();
         }
+    }
 
-        public async Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId)
+    public async Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId)
+    {
+        try
         {
-            try
-            {
-                AddAuthHeader();
-                return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>($"{_baseUrl}gold/transactions/{userId}");
-            }
-            catch
-            {
-                return new List<GoldTransactionDto>();
-            }
+            AddAuthHeader();
+            return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>(
+                $"{_baseUrl}gold/transactions/{userId}");
         }
-
-        public async Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId)
+        catch
         {
-            try
-            {
-                AddAuthHeader();
-                return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>($"{_baseUrl}gold/physical-history/{userId}");
-            }
-            catch
-            {
-                return new List<GoldTransactionDto>();
-            }
+            return new List<GoldTransactionDto>();
         }
+    }
 
-        public async Task<bool> BuyGoldAsync(GoldActionRequestDto request)
+    public async Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId)
+    {
+        try
         {
-            try
-            {
-                AddAuthHeader();
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}gold/buy", request);
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
+            AddAuthHeader();
+            return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>(
+                $"{_baseUrl}gold/physical-history/{userId}");
         }
-
-        public async Task<bool> SellGoldAsync(GoldActionRequestDto request)
+        catch
         {
-            try
-            {
-                AddAuthHeader();
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}gold/sell", request);
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
+            return new List<GoldTransactionDto>();
+        }
+    }
+
+    public async Task<bool> BuyGoldAsync(GoldActionRequestDto request)
+    {
+        try
+        {
+            AddAuthHeader();
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
+                $"{_baseUrl}gold/buy", request);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> SellGoldAsync(GoldActionRequestDto request)
+    {
+        try
+        {
+            AddAuthHeader();
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
+                $"{_baseUrl}gold/sell", request);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

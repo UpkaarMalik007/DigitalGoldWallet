@@ -1,3 +1,4 @@
+using DigitalGoldWallet.MVC.Filters;
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.ViewModels.Transaction;
 using DigitalGoldWallet.MVC.ViewModels.Vendor;
@@ -14,6 +15,7 @@ public class VendorController : Controller
         _vendorApiService = vendorApiService;
     }
 
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> Dashboard()
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -43,6 +45,7 @@ public class VendorController : Controller
         return View("Details", vendor);
     }
 
+    [RoleSessionAuthorize("User", "Admin")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 6)
     {
         string role = GetCurrentRole();
@@ -67,6 +70,7 @@ public class VendorController : Controller
         return View(vendors);
     }
 
+    [RoleSessionAuthorize("User", "Admin")]
     public async Task<IActionResult> Details(int id)
     {
         if (GetCurrentRole().Equals("Vendor", StringComparison.OrdinalIgnoreCase))
@@ -89,6 +93,7 @@ public class VendorController : Controller
         return View(vendor);
     }
 
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> Branches(int page = 1, int pageSize = 6)
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -133,6 +138,7 @@ public class VendorController : Controller
     }
 
     [HttpGet]
+    [RoleSessionAuthorize("Vendor")]
     public IActionResult AddBranch()
     {
         if (!TryGetVendorSession(out _))
@@ -146,6 +152,7 @@ public class VendorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> AddBranch(AddVendorBranchViewModel viewModel)
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -196,6 +203,7 @@ public class VendorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> UpdatePrice(decimal currentGoldPrice)
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -224,6 +232,7 @@ public class VendorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> UpdateBranchStock(int branchId, decimal quantity)
     {
         if (!TryGetVendorSession(out _))
@@ -257,6 +266,7 @@ public class VendorController : Controller
     }
 
     [HttpGet]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> Edit()
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -281,6 +291,7 @@ public class VendorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> Edit(VendorViewModel viewModel)
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -310,6 +321,7 @@ public class VendorController : Controller
     }
 
     [HttpGet]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> EditContact()
     {
         if (!TryGetVendorSession(out int vendorId))
@@ -334,6 +346,7 @@ public class VendorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RoleSessionAuthorize("Vendor")]
     public async Task<IActionResult> EditContact(VendorViewModel viewModel)
     {
         if (!TryGetVendorSession(out int vendorId))

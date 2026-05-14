@@ -1,9 +1,11 @@
+using DigitalGoldWallet.MVC.Filters;
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.ViewModels.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalGoldWallet.MVC.Controllers;
 
+[RoleSessionAuthorize("User")]
 public class UserController : Controller
 {
     private readonly IUserApiService _userApiService;

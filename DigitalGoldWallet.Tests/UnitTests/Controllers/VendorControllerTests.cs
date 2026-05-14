@@ -15,12 +15,14 @@ namespace DigitalGoldWallet.Tests.UnitTests.Controllers;
 public class VendorControllerTests
 {
     private readonly Mock<IVendorService> _vendorServiceMock;
+    private readonly Mock<IUserService> _userServiceMock;
     private readonly VendorController _vendorController;
 
     public VendorControllerTests()
     {
         _vendorServiceMock = new Mock<IVendorService>();
-        _vendorController = new VendorController(_vendorServiceMock.Object);
+        _userServiceMock = new Mock<IUserService>();
+        _vendorController = new VendorController(_vendorServiceMock.Object, _userServiceMock.Object);
     }
 
 

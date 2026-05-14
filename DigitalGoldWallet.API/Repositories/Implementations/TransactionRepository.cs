@@ -25,6 +25,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<TransactionHistory>> GetByUserIdAsync(int userId)
         {
             return await _context.TransactionHistories
+                .Include(t => t.User)
+                .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
                 .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
@@ -33,6 +36,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<TransactionHistory?> GetByIdAsync(int transactionId)
         {
             return await _context.TransactionHistories
+                .Include(t => t.User)
+                .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
                 .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
         }
 
@@ -44,6 +50,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
             DateTime? toDate)
         {
             var query = _context.TransactionHistories
+                .Include(t => t.User)
+                .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
                 .Where(t => t.UserId == userId)
                 .AsQueryable();
 
@@ -77,6 +86,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
      int pageSize)
         {
             return await _context.TransactionHistories
+                .Include(t => t.User)
+                .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
                 .OrderByDescending(t => t.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -88,6 +100,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
             int year)
         {
             return await _context.TransactionHistories
+                .Include(t => t.User)
+                .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
                 .Where(t => t.CreatedAt.Month == month &&
                             t.CreatedAt.Year == year)
                 .OrderByDescending(t => t.CreatedAt)
@@ -117,6 +132,8 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         {
             return await _context.TransactionHistories
                 .Include(t => t.Branch)
+                    .ThenInclude(b => b!.Vendor)
+                .Include(t => t.User)
                 .Where(t => t.Branch != null &&
                             t.Branch.VendorId == vendorId)
                 .OrderByDescending(t => t.CreatedAt)

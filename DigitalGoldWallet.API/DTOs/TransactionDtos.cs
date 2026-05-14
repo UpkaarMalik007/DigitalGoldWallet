@@ -4,6 +4,8 @@ namespace DigitalGoldWallet.API.DTOs
     {
         public int TransactionId { get; set; }
         public int? UserId { get; set; }
+        public string? Name { get; set; }
+        public string? VendorName { get; set; }
         public int? BranchId { get; set; }
         public decimal Amount { get; set; }
         public decimal Quantity { get; set; }

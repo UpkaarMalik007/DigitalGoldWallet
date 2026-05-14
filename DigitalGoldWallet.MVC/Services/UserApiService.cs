@@ -26,7 +26,8 @@ public class UserApiService : IUserApiService
     {
         HttpClient client = _httpClientFactory.CreateClient("DigitalGoldWalletApi");
 
-        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token");
+        string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+            ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
 
         if (!string.IsNullOrWhiteSpace(token))
         {

@@ -22,8 +22,10 @@
     bool isVendorsActive = currentController.Equals("Admin", StringComparison.OrdinalIgnoreCase)
         && currentAction.Equals("Vendors", StringComparison.OrdinalIgnoreCase);
 
-    bool isTransactionsActive = currentController.Equals("Admin", StringComparison.OrdinalIgnoreCase)
-        && currentAction.Equals("Transactions", StringComparison.OrdinalIgnoreCase);
+    bool isTransactionsActive = currentController.Equals("Transaction", StringComparison.OrdinalIgnoreCase)
+        && (currentAction.Equals("AdminTransactions", StringComparison.OrdinalIgnoreCase)
+            || currentAction.Equals("AdminTransactionDetails", StringComparison.OrdinalIgnoreCase)
+            || currentAction.Equals("MonthlyReport", StringComparison.OrdinalIgnoreCase));
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -137,7 +139,7 @@
                     <span>Vendor Partners</span>
                 </a>
 
-                <a asp-controller="Admin" asp-action="Transactions" class="flex items-center gap-3 px-5 py-3.5 rounded-2xl @(isTransactionsActive ? activeClass : inactiveClass) font-bold transition-all duration-200 no-underline group">
+                <a asp-controller="Transaction" asp-action="AdminTransactions" class="flex items-center gap-3 px-5 py-3.5 rounded-2xl @(isTransactionsActive ? activeClass : inactiveClass) font-bold transition-all duration-200 no-underline group">
                     <span class="material-symbols-outlined @(isTransactionsActive ? "" : "text-[#a58b3d] group-hover:scale-110") transition-transform">history_edu</span>
                     <span>Transactions Ledger</span>
                 </a>
