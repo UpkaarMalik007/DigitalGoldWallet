@@ -1,5 +1,38 @@
 @model DigitalGoldWallet.MVC.ViewModels.Transaction.VendorTransactionSummaryViewModel?
 
+<style>
+    .summary-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #eee;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .summary-card small {
+            display: block;
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card h3 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+</style>
+
 @if (Model == null)
 {
     <div class="alert alert-warning">
@@ -8,7 +41,8 @@
 }
 else
 {
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
+
         <div class="col-md-4">
             <div class="summary-card">
                 <small>Total Transactions</small>
@@ -18,14 +52,14 @@ else
 
         <div class="col-md-4">
             <div class="summary-card">
-                <small>Successful</small>
+                <small>Successful Transactions</small>
                 <h3>@Model.SuccessfulTransactions</h3>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="summary-card">
-                <small>Failed</small>
+                <small>Failed Transactions</small>
                 <h3>@Model.FailedTransactions</h3>
             </div>
         </div>
@@ -33,14 +67,14 @@ else
         <div class="col-md-4">
             <div class="summary-card">
                 <small>Total Buy Amount</small>
-                <h3>₹@Model.TotalSellAmount</h3>
+                <h3>₹@Model.TotalBuyAmount</h3>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="summary-card">
                 <small>Total Sell Amount</small>
-                <h3>₹@Model.TotalBuyAmount</h3>
+                <h3>₹@Model.TotalSellAmount</h3>
             </div>
         </div>
 
@@ -50,5 +84,6 @@ else
                 <h3>₹@Model.TotalRevenue</h3>
             </div>
         </div>
+
     </div>
 }

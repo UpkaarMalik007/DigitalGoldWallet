@@ -60,6 +60,7 @@ namespace DigitalGoldWallet.API.DTOs.Gold
         public string? VendorName { get; set; }
         public string? Address { get; set; }
         public decimal AvailableQuantity { get; set; }
+        public string? ContactPhone { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 

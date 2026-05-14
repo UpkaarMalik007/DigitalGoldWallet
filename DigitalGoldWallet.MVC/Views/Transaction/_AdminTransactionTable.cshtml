@@ -12,14 +12,11 @@ else
         <table class="w-full text-left">
             <thead class="bg-[#fff8e1]">
                 <tr>
-                    <th class="px-6 py-4">ID</th>
-                    <th class="px-6 py-4">User</th>
-                    <th class="px-6 py-4">Branch</th>
+                    <th class="px-6 py-4">Transaction Trace</th>
+                    <th class="px-6 py-4">Initiator</th>
                     <th class="px-6 py-4">Type</th>
-                    <th class="px-6 py-4">Quantity</th>
-                    <th class="px-6 py-4">Amount</th>
                     <th class="px-6 py-4">Status</th>
-                    <th class="px-6 py-4">Date</th>
+                    <th class="px-6 py-4">TimeStamp</th>
                     <th class="px-6 py-4">Action</th>
                 </tr>
             </thead>
@@ -28,12 +25,9 @@ else
                 @foreach (var item in Model)
                 {
                     <tr class="border-t border-line hover:bg-gray-50">
-                        <td class="px-6 py-4 font-bold">#@item.TransactionId</td>
-                        <td class="px-6 py-4">@item.UserId</td>
-                        <td class="px-6 py-4">@item.BranchId</td>
+                        <td class="px-6 py-4 font-bold">#TXN-@item.TransactionId</td>
+                        <td class="px-6 py-4">@item.Name</td>
                         <td class="px-6 py-4">@item.TransactionType</td>
-                        <td class="px-6 py-4">@item.Quantity gm</td>
-                        <td class="px-6 py-4">₹@item.Amount</td>
                         <td class="px-6 py-4">
                             <span class="rounded-full bg-green-100 text-green-700 px-3 py-1 text-sm font-bold">
                                 @item.TransactionStatus

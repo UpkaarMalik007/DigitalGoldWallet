@@ -9,7 +9,21 @@ namespace DigitalGoldWallet.MVC.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        // ================= USER =================
+        public TransactionApiService(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
+        private HttpClient CreateClient(string token)
+        {
+            var client = _httpClientFactory.CreateClient("api");
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            return client;
+        }
+
 
         public async Task<List<UserTransactionViewModel>> GetUserTransactionsAsync(string token)
         {
@@ -88,7 +102,6 @@ namespace DigitalGoldWallet.MVC.Services
             return response.IsSuccessStatusCode;
         }
 
-        // ================= ADMIN =================
 
         public async Task<List<UserTransactionViewModel>> GetAllTransactionsAsync(
             int pageNumber,
@@ -128,20 +141,6 @@ namespace DigitalGoldWallet.MVC.Services
 
             return JsonConvert.DeserializeObject<List<UserTransactionViewModel>>(
                 result.data.ToString())!;
-        }
-        public TransactionApiService(IHttpClientFactory httpClientFactory)
-        {
-            _httpClientFactory = httpClientFactory;
-        }
-
-        private HttpClient CreateClient(string token)
-        {
-            var client = _httpClientFactory.CreateClient("api");
-
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
-            return client;
         }
 
         public async Task<List<VendorTransactionViewModel>> GetVendorTransactionsAsync(string token)

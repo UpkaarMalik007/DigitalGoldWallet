@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using DigitalGoldWallet.API.DTOs.Gold;
@@ -17,12 +18,30 @@ namespace DigitalGoldWallet.MVC.Services
     public class GoldApiService : IGoldApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _baseUrl;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public GoldApiService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
+
+            var baseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5103/";
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
+            if (!baseUrl.EndsWith("api/")) baseUrl += "api/";
+            _baseUrl = baseUrl;
+        }
+
+        private void AddAuthHeader()
+        {
+            string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
+                         ?? _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
             _httpContextAccessor = httpContextAccessor;
             string apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7269/";
             if (!apiBaseUrl.EndsWith("/")) apiBaseUrl += "/";
