@@ -7,6 +7,7 @@ using System.Security.Claims;
 
 namespace DigitalGoldWallet.API.Controllers
 {
+    [Authorize]
     [Route("api/transactions")]
     [ApiController]
     public class TransactionController : ControllerBase

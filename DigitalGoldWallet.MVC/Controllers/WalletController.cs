@@ -7,11 +7,11 @@ namespace DigitalGoldWallet.MVC.Controllers
 {
     public class WalletController : Controller
     {
-        private readonly ApiService _apiService;
+        private readonly IWalletApiService _walletApiService;
 
-        public WalletController(ApiService apiService)
+        public WalletController(IWalletApiService walletApiService)
         {
-            _apiService = apiService;
+            _walletApiService = walletApiService;
         }
 
         private int GetUserId()
@@ -19,31 +19,23 @@ namespace DigitalGoldWallet.MVC.Controllers
             int? sessionUserId = HttpContext.Session.GetInt32("UserId");
 
             if (sessionUserId.HasValue && sessionUserId.Value > 0)
-            {
                 return sessionUserId.Value;
-            }
 
             var userIdClaim = User.FindFirst("UserId")?.Value;
 
             if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
-            {
                 return userId;
-            }
 
-            return 1;
+            throw new Exception("User not logged in properly.");
         }
 
-        // 1. Get wallet balance
+        // dashboard
         public async Task<IActionResult> Index()
         {
             int userId = GetUserId();
-            var balanceData = await _apiService.GetWalletBalance(userId);
-            var history = await _apiService.GetWalletHistory(userId);
 
-            if (!string.IsNullOrWhiteSpace(_apiService.LastErrorMessage))
-            {
-                ViewBag.ApiErrorMessage = _apiService.LastErrorMessage;
-            }
+            var balanceData = await _walletApiService.GetWalletBalance(userId);
+            var history = await _walletApiService.GetWalletHistory(userId);
 
             var model = new WalletDashboardViewModel
             {
@@ -51,82 +43,47 @@ namespace DigitalGoldWallet.MVC.Controllers
                 Name = balanceData.Name,
                 RecentTransactions = history.Take(5).ToList()
             };
+
             return View(model);
         }
 
-        // 2. add money
-        // GET PAGE
+        // add money
         [HttpGet]
         public IActionResult AddMoney()
         {
             return View();
         }
-        // POST FORM
+
         [HttpPost]
         public async Task<IActionResult> AddMoney(WalletAmountModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            var token = HttpContext.Session.GetString("JWToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return Content("JWT Token Missing");
+            }
             model.UserId = GetUserId();
-            await _apiService.AddMoney(model);
+            await _walletApiService.AddMoney(model);
+            TempData["Success"] = "Money successfully added.";
             return RedirectToAction("Index");
         }
 
-        // [HttpGet]
-        // public async Task<IActionResult> TransferMoney()
-        // {
-        //     try
-        //     {
-        //         var model =
-        //             new TransferMoneyModel();
 
-        //         model.Users =
-        //             await _apiService.GetUsers();
-
-        //         return View(model);
-        //     }
-
-        //     catch (Exception ex)
-        //     {
-        //         TempData["Error"] = ex.Message;
-
-        //         return RedirectToAction("Index");
-        //     }
-        // }
-        // [HttpPost]
-        // public async Task<IActionResult> TransferMoney(TransferMoneyModel model)
-        // {
-        //     try
-        //     {
-        //         model.SenderId = 1;
-        //         await _apiService.TransferMoney(model);
-        //         TempData["Success"] = "Money transferred successfully";
-        //         return RedirectToAction("Index");
-        //     }
-
-        //     catch (Exception ex)
-        //     {
-        //         TempData["Error"] = ex.Message;
-        //         model.Users = await _apiService.GetUsers();
-        //         return View(model);
-        //     }
-        // }
-
-
+        // transaction history
         [HttpGet]
         public async Task<IActionResult> TransactionHistory(
             int page = 1,
             DateTime? startDate = null,
             DateTime? endDate = null,
             string status = "",
-            string paymentMethod = "") 
+            string paymentMethod = "")
         {
             int userId = GetUserId();
             int pageSize = 5;
 
-            var allTransactions = await _apiService.GetWalletHistory(userId);
+            var allTransactions = await _walletApiService.GetWalletHistory(userId);
 
-            // DATE FILTER
+            // Filters
             if (startDate.HasValue)
             {
                 allTransactions = allTransactions
@@ -141,7 +98,6 @@ namespace DigitalGoldWallet.MVC.Controllers
                     .ToList();
             }
 
-            // STATUS FILTER
             if (!string.IsNullOrEmpty(status))
             {
                 allTransactions = allTransactions
@@ -149,7 +105,6 @@ namespace DigitalGoldWallet.MVC.Controllers
                     .ToList();
             }
 
-            // PAYMENT METHOD FILTER
             if (!string.IsNullOrEmpty(paymentMethod))
             {
                 allTransactions = allTransactions
@@ -157,7 +112,7 @@ namespace DigitalGoldWallet.MVC.Controllers
                     .ToList();
             }
 
-            // PAGINATION
+            // Pagination
             var totalCount = allTransactions.Count;
 
             var paginated = allTransactions
@@ -168,7 +123,6 @@ namespace DigitalGoldWallet.MVC.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-            // PRESERVE FILTERS
             ViewBag.StartDate = startDate;
             ViewBag.EndDate = endDate;
             ViewBag.Status = status;
@@ -177,22 +131,23 @@ namespace DigitalGoldWallet.MVC.Controllers
             return View(paginated);
         }
 
+        // wallet summary
         [HttpGet]
         public async Task<IActionResult> WalletSummary()
         {
             try
             {
                 int userId = GetUserId();
-                var result = await _apiService.GetWalletSummary(userId);
+
+                var result = await _walletApiService.GetWalletSummary(userId); 
+
                 return View(result);
             }
             catch (Exception ex)
-{
+            {
                 TempData["Error"] = ex.Message;
                 return RedirectToAction("Index");
             }
         }
-        
-
     }
 }

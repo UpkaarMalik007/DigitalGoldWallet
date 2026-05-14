@@ -7,17 +7,27 @@ namespace DigitalGoldWallet.MVC.Controllers;
 public class UserController : Controller
 {
     private readonly IUserApiService _userApiService;
+    private readonly ITransactionApiService _transactionApiService;
 
-    public UserController(IUserApiService userApiService)
+    public UserController(
+        IUserApiService userApiService,
+        ITransactionApiService transactionApiService)
     {
         _userApiService = userApiService;
+        _transactionApiService = transactionApiService;
     }
-
     public async Task<IActionResult> Dashboard()
     {
         if (!TryGetUserSession(out int userId))
         {
             TempData["ErrorMessage"] = "User login session not found. Please login again.";
+            return RedirectToAction("Login", "Account");
+        }
+        string? token = HttpContext.Session.GetString("JWToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            TempData["ErrorMessage"] = "Token not found. Please login again.";
             return RedirectToAction("Login", "Account");
         }
 
@@ -31,6 +41,20 @@ public class UserController : Controller
 
             return RedirectToAction("Index", "Home");
         }
+        var transactions = await _transactionApiService.GetUserTransactionsAsync(token);
+
+        dashboard.RecentTransactions = transactions
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(5)
+            .Select(t => new ViewModels.User.UserTransactionViewModel
+            {
+                TransactionId = t.TransactionId,
+                Type = t.TransactionType,
+                Description = t.TransactionStatus,
+                Amount = t.Amount,
+                TransactionDate = t.CreatedAt
+            })
+            .ToList();
 
         ViewBag.IsUserDashboard = true;
 

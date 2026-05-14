@@ -173,6 +173,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 BranchName = $"Vault Branch {b.BranchId}",
                 VendorName = b.Vendor?.VendorName ?? "Verified Vendor",
                 Address = b.Address != null ? $"{b.Address.Street}, {b.Address.City}, {b.Address.State}" : "Secured Vault Location",
+                ContactPhone = b.Vendor?.ContactPhone ?? "+91 22 2345 6789",
                 AvailableQuantity = b.Quantity,
                 CreatedAt = b.CreatedAt
             };
@@ -219,6 +220,7 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 BranchName = b.Vendor != null ? $"{b.Vendor.VendorName} - Branch {b.BranchId}" : $"Vault Branch {b.BranchId}",
                 VendorName = b.Vendor?.VendorName ?? "Certified Gold Partner",
                 Address = b.Address != null ? $"{b.Address.Street}, {b.Address.City}" : "Secured Facility",
+                ContactPhone = b.Vendor?.ContactPhone ?? "+91 22 2345 6789",
                 AvailableQuantity = b.Quantity,
                 CreatedAt = b.CreatedAt
             }).ToList();

@@ -1,16 +1,29 @@
 using DigitalGoldWallet.MVC.Services;
 using DigitalGoldWallet.MVC.ViewModels.Transaction;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace DigitalGoldWallet.MVC.Controllers;
 
 public class TransactionController : Controller
 {
     private readonly ITransactionApiService _transactionApiService;
+    private readonly IVendorApiService _vendorApiService;
+    private readonly GoldApiService _goldApiService;
+    private readonly IWalletApiService _walletApiService;
+    private readonly IUserApiService _userApiService;
 
-    public TransactionController(ITransactionApiService transactionApiService)
+    
+    public TransactionController(ITransactionApiService transactionApiService, IVendorApiService vendorApiService,
+        GoldApiService goldApiService,
+        IWalletApiService walletApiService,
+        IUserApiService userApiService)
     {
         _transactionApiService = transactionApiService;
+        _vendorApiService = vendorApiService;
+        _goldApiService = goldApiService;
+        _walletApiService = walletApiService;
+        _userApiService = userApiService;   
     }
 
     public async Task<IActionResult> UserTransactions()
@@ -54,6 +67,19 @@ public class TransactionController : Controller
             return RedirectToAction("UserTransactions");
         }
 
+        var vendors = await _vendorApiService.GetAllVendorsAsync();
+
+        foreach (var vendor in vendors)
+        {
+            vendor.Branches = await _vendorApiService.GetVendorBranchesAsync(vendor.VendorId);
+        }
+
+
+        var matchedVendor = vendors.FirstOrDefault(v =>
+            v.Branches.Any(b => b.BranchId == transaction.BranchId));
+
+        transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+
         return View(transaction);
     }
 
@@ -81,25 +107,21 @@ public class TransactionController : Controller
         return View("UserTransactions", pageModel);
     }
 
-    // =========================
-    // USER: WALLET GOLD PAYMENT
-    // =========================
-
     [HttpGet]
-    public IActionResult GoldPayment(
-        int branchId = 1,
-        decimal quantity = 1,
-        decimal amount = 6400,
-        string transactionType = "Buy")
+    public async Task<IActionResult> GoldPayment(
+    int branchId,
+    decimal quantity,
+    decimal amount,
+    string transactionType = "Buy")
     {
         var token = HttpContext.Session.GetString("JWToken");
         var role = HttpContext.Session.GetString("Role");
+        var userId = HttpContext.Session.GetInt32("UserId");
 
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(token) || role != "User" || userId == null)
             return RedirectToAction("Login", "Auth");
 
-        if (role != "User")
-            return RedirectToAction("Login", "Auth");
+        var wallet = await _walletApiService.GetWalletBalance(userId.Value);
 
         var model = new GoldPaymentViewModel
         {
@@ -108,7 +130,7 @@ public class TransactionController : Controller
             Amount = amount,
             TransactionType = transactionType,
             PaymentMethod = "Wallet",
-            WalletBalance = 250000
+            WalletBalance = wallet.Balance
         };
 
         return View(model);
@@ -119,6 +141,7 @@ public class TransactionController : Controller
     {
         var token = HttpContext.Session.GetString("JWToken");
         var role = HttpContext.Session.GetString("Role");
+        var userId = HttpContext.Session.GetInt32("UserId");
 
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
@@ -126,10 +149,18 @@ public class TransactionController : Controller
         if (role != "User")
             return RedirectToAction("Login", "Auth");
 
+        if (userId == null)
+            return RedirectToAction("Login", "Auth");
+
+        // REAL WALLET BALANCE
+        var walletData = await _walletApiService.GetWalletBalance(userId.Value);
+
+        model.WalletBalance = walletData.Balance;
+
         if (model.Amount <= 0 || model.Quantity <= 0 || model.BranchId <= 0)
         {
             TempData["Error"] = "Invalid payment details.";
-            return RedirectToAction("GoldPayment");
+            return View("GoldPayment", model);
         }
 
         if (model.WalletBalance < model.Amount)
@@ -140,6 +171,7 @@ public class TransactionController : Controller
 
         var transaction = new CreateTransactionViewModel
         {
+            UserId = userId.Value,
             BranchId = model.BranchId,
             Quantity = model.Quantity,
             Amount = model.Amount,
@@ -147,9 +179,8 @@ public class TransactionController : Controller
             TransactionStatus = "Success"
         };
 
-        var success = await _transactionApiService.CreateTransactionAsync(
-            transaction,
-            token);
+        var success = await _transactionApiService
+            .CreateTransactionAsync(transaction, token);
 
         if (!success)
         {
@@ -157,18 +188,16 @@ public class TransactionController : Controller
             return View("GoldPayment", model);
         }
 
-        TempData["Success"] = "Payment successful. Gold transaction added successfully.";
+        TempData["Success"] = "Payment successful.";
 
         return RedirectToAction("UserTransactions");
     }
 
-    // =========================
-    // ADMIN: ALL TRANSACTIONS
-    // =========================
+
 
     public async Task<IActionResult> AdminTransactions(
-        int pageNumber = 1,
-        int pageSize = 10)
+    int pageNumber = 1,
+    int pageSize = 10)
     {
         var token = HttpContext.Session.GetString("JWToken");
         var role = HttpContext.Session.GetString("Role");
@@ -183,6 +212,37 @@ public class TransactionController : Controller
             pageNumber,
             pageSize,
             token);
+
+        // Vendor + User Name Mapping
+        var vendors = await _vendorApiService.GetAllVendorsAsync();
+
+        foreach (var vendor in vendors)
+        {
+            vendor.Branches = await _vendorApiService
+                .GetVendorBranchesAsync(vendor.VendorId);
+        }
+
+        foreach (var transaction in transactions)
+        {
+            // Vendor Name
+            var matchedVendor = vendors.FirstOrDefault(v =>
+                v.Branches.Any(b => b.BranchId == transaction.BranchId));
+
+            transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+
+            // User Name
+            if (transaction.UserId.HasValue)
+            {
+                var user = await _userApiService
+                    .GetUserByIdAsync(transaction.UserId.Value);
+
+                transaction.Name = user?.Name ?? "N/A";
+            }
+            else
+            {
+                transaction.Name = "N/A";
+            }
+        }
 
         var pageModel = new TransactionListPageViewModel
         {
@@ -200,16 +260,10 @@ public class TransactionController : Controller
         var token = HttpContext.Session.GetString("JWToken");
         var role = HttpContext.Session.GetString("Role");
 
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(token) || role != "Admin")
             return RedirectToAction("Login", "Auth");
 
-        if (role != "Admin")
-            return RedirectToAction("Login", "Auth");
-
-        var transactions = await _transactionApiService.GetAllTransactionsAsync(
-            1,
-            100,
-            token);
+        var transactions = await _transactionApiService.GetAllTransactionsAsync(1, 100, token);
 
         var transaction = transactions.FirstOrDefault(t => t.TransactionId == id);
 
@@ -219,9 +273,31 @@ public class TransactionController : Controller
             return RedirectToAction("AdminTransactions");
         }
 
+        var vendors = await _vendorApiService.GetAllVendorsAsync();
+
+        foreach (var vendor in vendors)
+        {
+            vendor.Branches = await _vendorApiService.GetVendorBranchesAsync(vendor.VendorId);
+        }
+
+        var matchedVendor = vendors.FirstOrDefault(v =>
+            v.Branches != null &&
+            v.Branches.Any(b => b.BranchId == transaction.BranchId));
+
+        transaction.VendorName = matchedVendor?.VendorName ?? "N/A";
+
+        if (transaction.UserId.HasValue)
+        {
+            var user = await _userApiService.GetUserByIdAsync(transaction.UserId.Value);
+            transaction.Name = user?.Name ?? "N/A";
+        }
+        else
+        {
+            transaction.Name = "N/A";
+        }
+
         return View(transaction);
     }
-
     public async Task<IActionResult> MonthlyReport(
         int month = 0,
         int year = 0)
@@ -271,8 +347,31 @@ public class TransactionController : Controller
         var transactions = await _transactionApiService
             .GetVendorTransactionsAsync(token);
 
-        // fetch summary for partial
-        var summary = await _transactionApiService.GetVendorTransactionSummaryAsync(token);
+        foreach (var transaction in transactions)
+        {
+            if (transaction.UserId != null)
+            {
+                var user = await _userApiService
+                    .GetUserByIdAsync(transaction.UserId.Value);
+
+                if (user != null)
+                {
+                    transaction.Name = user.Name;
+                }
+                else
+                {
+                    transaction.Name = "User Not Found";
+                }
+            }
+            else
+            {
+                transaction.Name = "No UserId";
+            }
+        }
+
+        var summary = await _transactionApiService
+            .GetVendorTransactionSummaryAsync(token);
+
         ViewBag.VendorSummary = summary;
 
         return View(transactions);

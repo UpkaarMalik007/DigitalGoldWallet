@@ -10,6 +10,6 @@
         public string PaymentMethod { get; set; } = "Wallet";
 
         // For UI only
-        public decimal WalletBalance { get; set; } = 250000;
+        public decimal WalletBalance { get; set; }
     }
 }

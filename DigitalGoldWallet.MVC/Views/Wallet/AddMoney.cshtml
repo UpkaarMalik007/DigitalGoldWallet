@@ -11,16 +11,16 @@
         <h2 class="mb-0">Add Money</h2>
 
         <a asp-controller="Wallet"
-        asp-action="Index"
-        class="btn btn-outline-secondary">
+               asp-action="Index"
+               class="btn btn-outline-secondary">
 
             ← Back to Dashboard
 
         </a>
     </div>
 
-    <form asp-action="AddMoney"
-          method="post">
+     @* <form asp-controller="Wallet" asp-action="AddMoney" method="post"> *@
+        <form action="/Wallet/AddMoney" method="post">
 
         <div class="mb-3">
 
@@ -53,11 +53,11 @@
         <button type="submit"
                 class="btn"
                 style="
-                    background-color:#d4af37;
-                    color:white;
-                    padding:10px 30px;
-                    border-radius:10px;
-                ">
+            background-color:#d4af37;
+            color:white;
+            padding:10px 30px;
+            border-radius:10px;
+            ">
 
             Add Money
 
@@ -65,12 +65,4 @@
 
     </form>
 
-</div>
-@{
-    ViewData["Title"] = "Page";
-    ViewData["PageHeader"] = "Digital Gold Wallet";
-}
-<div class="rounded-2xl border border-line bg-white p-10 shadow-soft">
-    <h2 class="text-3xl font-extrabold">Page available</h2>
-    <p class="mt-3 text-muted">This MVC page route is working. Connect this page to its API module when that module is ready.</p>
 </div>

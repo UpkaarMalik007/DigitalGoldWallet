@@ -2,7 +2,7 @@
 
 @{
     Layout = "~/Views/Shared/_PaymentLayout.cshtml";
-   
+
     ViewData["Title"] = "Wallet Gold Payment";
 }
 
@@ -22,48 +22,90 @@
         </div>
     }
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="rounded-2xl border border-green-300 bg-green-50 px-5 py-4 text-green-800 font-bold">
+            @TempData["Success"]
+        </div>
+    }
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+        <!-- LEFT -->
         <section class="rounded-2xl border border-line bg-white shadow-soft p-7">
-            <h3 class="text-2xl font-extrabold mb-6">Gold Details</h3>
+
+            <h3 class="text-2xl font-extrabold mb-6">
+                Gold Details
+            </h3>
 
             <div class="space-y-5">
+
                 <div class="flex justify-between">
-                    <span class="text-muted font-bold">Branch ID</span>
-                    <span class="font-extrabold">#@Model.BranchId</span>
+                    <span class="text-muted font-bold">
+                        Branch ID
+                    </span>
+
+                    <span class="font-extrabold">
+                        #@Model.BranchId
+                    </span>
                 </div>
 
                 <div class="flex justify-between">
-                    <span class="text-muted font-bold">Transaction Type</span>
-                    <span class="font-extrabold">@Model.TransactionType</span>
+                    <span class="text-muted font-bold">
+                        Transaction Type
+                    </span>
+
+                    <span class="font-extrabold">
+                        @Model.TransactionType
+                    </span>
                 </div>
 
                 <div class="flex justify-between">
-                    <span class="text-muted font-bold">Quantity</span>
-                    <span class="font-extrabold">@Model.Quantity gm</span>
+                    <span class="text-muted font-bold">
+                        Quantity
+                    </span>
+
+                    <span class="font-extrabold">
+                        @Model.Quantity gm
+                    </span>
                 </div>
 
                 <div class="border-t border-line pt-5 flex justify-between text-xl">
-                    <span class="font-extrabold">Payable Amount</span>
-                    <span class="font-extrabold text-yellow-700">₹@Model.Amount</span>
+
+                    <span class="font-extrabold">
+                        Payable Amount
+                    </span>
+
+                    <span class="font-extrabold text-yellow-700">
+                        ₹@Model.Amount
+                    </span>
+
                 </div>
             </div>
         </section>
 
+        <!-- RIGHT -->
         <section class="rounded-2xl border border-line bg-white shadow-soft p-7">
-            <h3 class="text-2xl font-extrabold mb-6">Pay From Wallet</h3>
+
+            <h3 class="text-2xl font-extrabold mb-6">
+                Pay From Wallet
+            </h3>
 
             <div class="rounded-2xl bg-[#fff8e1] border border-yellow-200 p-5 mb-6">
-                <p class="text-muted font-bold">Available Wallet Balance</p>
+
+                <p class="text-muted font-bold">
+                    Available Wallet Balance
+                </p>
+
                 <h4 class="text-3xl font-extrabold text-[#554300] mt-2">
                     ₹@Model.WalletBalance
                 </h4>
+
             </div>
 
             <form asp-controller="Transaction"
                   asp-action="PayGold"
-                  method="post"
-                  onsubmit="return showPaymentSuccess();">
+                  method="post">
 
                 <input type="hidden" asp-for="BranchId" />
                 <input type="hidden" asp-for="Quantity" />
@@ -73,13 +115,21 @@
                 <input type="hidden" asp-for="WalletBalance" />
 
                 <div class="rounded-2xl border border-line p-5 mb-6">
+
                     <div class="flex items-center gap-3">
+
                         <input type="radio" checked readonly />
+
                         <div>
-                            <p class="font-extrabold text-lg">Wallet</p>
+
+                            <p class="font-extrabold text-lg">
+                                Wallet
+                            </p>
+
                             <p class="text-muted text-sm">
                                 Amount will be deducted from wallet balance.
                             </p>
+
                         </div>
                     </div>
                 </div>
@@ -89,24 +139,25 @@
                     <button type="button"
                             disabled
                             class="w-full rounded-xl bg-gray-300 px-6 py-4 font-extrabold text-gray-600 cursor-not-allowed">
+
                         Insufficient Wallet Balance
+
                     </button>
                 }
                 else
                 {
                     <button type="submit"
                             class="w-full rounded-xl bg-yellow-400 px-6 py-4 font-extrabold text-[#554300] hover:bg-yellow-500">
+
                         Pay ₹@Model.Amount From Wallet
+
                     </button>
                 }
-            </form>
-        </section>
-    </div>
-</div>
 
-<script>
-    function showPaymentSuccess() {
-        alert("Payment successful! Transaction will be added to your history.");
-        return true;
-    }
-</script>
+            </form>
+
+        </section>
+
+    </div>
+
+</div>
