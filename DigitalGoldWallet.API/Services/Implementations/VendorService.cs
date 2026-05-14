@@ -41,10 +41,10 @@ public class VendorService : IVendorService
         _vendorBranchValidator = vendorBranchValidator;
     }
 
-    public async Task<List<VendorDto>> GetAllVendorsAsync()
+    public async Task<List<VendorDto>> GetAllVendorsAsync(int pageNumber = 1, int pageSize = 10)
     {
-        List<Vendor> vendors = await _vendorRepository.GetAllVendorsAsync();
-
+        List<Vendor> vendors = await _vendorRepository.GetAllVendorsAsync(pageNumber, pageSize);
+ 
         return _mapper.Map<List<VendorDto>>(vendors);
     }
 
@@ -134,6 +134,11 @@ public class VendorService : IVendorService
         vendor.ContactEmail = dto.ContactEmail?.Trim();
         vendor.ContactPhone = dto.ContactPhone?.Trim();
         vendor.WebsiteUrl = dto.WebsiteUrl?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+        {
+            vendor.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+        }
 
         _vendorRepository.UpdateVendor(vendor);
         await _vendorRepository.SaveChangesAsync();

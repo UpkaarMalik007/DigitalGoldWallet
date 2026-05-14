@@ -33,9 +33,11 @@ public class AccountController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        int? userId = HttpContext.Session.GetInt32("UserId");
+
+        if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase) || userId == 1)
         {
-            return RedirectToAction("Index", "Vendor");
+            return RedirectToAction("Dashboard", "Admin");
         }
 
         if (role.Equals("User", StringComparison.OrdinalIgnoreCase))

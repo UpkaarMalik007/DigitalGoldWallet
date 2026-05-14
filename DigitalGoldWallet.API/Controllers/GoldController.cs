@@ -19,7 +19,7 @@ namespace DigitalGoldWallet.API.Controllers
 
 
         [HttpPost("buy")]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> BuyGold(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Buy;
@@ -28,7 +28,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpPost("sell")]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> SellGold(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Sell;
@@ -55,7 +55,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         [HttpPost("convert-to-physical")]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> ConvertToPhysical(GoldActionRequestDto dto)
         {
             dto.ActionType = GoldActionType.Convert;

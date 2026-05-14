@@ -23,6 +23,7 @@ public class VendorApiService : IVendorApiService
     }
 
     public string? LastErrorMessage { get; private set; }
+    public int TotalCount { get; private set; }
 
     private HttpClient CreateClient()
     {
@@ -41,8 +42,36 @@ public class VendorApiService : IVendorApiService
     private async Task<T?> ReadSuccessDataAsync<T>(HttpResponseMessage response)
     {
         string json = await response.Content.ReadAsStringAsync();
-        ApiResponse<T>? apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
-        return apiResponse == null ? default : apiResponse.Data;
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return default;
+        }
+
+        try
+        {
+            ApiResponse<T>? apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
+
+            if (apiResponse is not null && apiResponse.Data is not null)
+            {
+                TotalCount = apiResponse.TotalCount;
+                return apiResponse.Data;
+            }
+        }
+        catch
+        {
+            // API may return the model directly instead of ApiResponse<T>.
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+        }
+        catch
+        {
+            LastErrorMessage = "Unable to read API response.";
+            return default;
+        }
     }
 
     private async Task SetErrorAsync(HttpResponseMessage response)
@@ -68,10 +97,10 @@ public class VendorApiService : IVendorApiService
         }
     }
 
-    public async Task<List<VendorViewModel>> GetAllVendorsAsync()
+    public async Task<List<VendorViewModel>> GetAllVendorsAsync(int pageNumber = 1, int pageSize = 10)
     {
         LastErrorMessage = null;
-        HttpResponseMessage response = await CreateClient().GetAsync("vendors");
+        HttpResponseMessage response = await CreateClient().GetAsync($"vendors?pageNumber={pageNumber}&pageSize={pageSize}");
 
         if (!response.IsSuccessStatusCode)
         {
@@ -137,14 +166,29 @@ public class VendorApiService : IVendorApiService
 
         string json = await response.Content.ReadAsStringAsync();
 
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
         try
         {
             using JsonDocument document = JsonDocument.Parse(json);
-            if (document.RootElement.TryGetProperty("data", out JsonElement data)
-                && data.TryGetProperty("currentGoldPrice", out JsonElement priceElement)
-                && priceElement.TryGetDecimal(out decimal price))
+            JsonElement root = document.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Number && root.TryGetDecimal(out decimal directPrice))
             {
-                return price;
+                return directPrice;
+            }
+
+            if (TryReadPrice(root, out decimal rootPrice))
+            {
+                return rootPrice;
+            }
+
+            if (root.TryGetProperty("data", out JsonElement data) && TryReadPrice(data, out decimal wrappedPrice))
+            {
+                return wrappedPrice;
             }
         }
         catch
@@ -153,6 +197,32 @@ public class VendorApiService : IVendorApiService
         }
 
         return null;
+    }
+
+    private static bool TryReadPrice(JsonElement element, out decimal price)
+    {
+        price = 0;
+
+        if (element.ValueKind == JsonValueKind.Number)
+        {
+            return element.TryGetDecimal(out price);
+        }
+
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (string propertyName in new[] { "currentGoldPrice", "price", "goldPrice", "rate" })
+        {
+            if (element.TryGetProperty(propertyName, out JsonElement priceElement)
+                && priceElement.TryGetDecimal(out price))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public async Task<bool> CreateVendorAsync(VendorViewModel viewModel)

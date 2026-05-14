@@ -12,7 +12,15 @@ namespace DigitalGoldWallet.API.Helpers
 
         public static bool VerifyPassword(string plainPassword, string hashedPassword)
         {
-            return BCrypt.Net.BCrypt.Verify(plainPassword, hashedPassword);
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(plainPassword, hashedPassword);
+            }
+            catch
+            {
+                // Fallback for plain text comparison if the stored password is not a valid hash
+                return plainPassword == hashedPassword;
+            }
         }
     }
 }

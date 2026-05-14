@@ -14,11 +14,13 @@ public class VendorRepository : IVendorRepository
         _context = context;
     }
 
-    public async Task<List<Vendor>> GetAllVendorsAsync()
+    public async Task<List<Vendor>> GetAllVendorsAsync(int pageNumber = 1, int pageSize = 10)
     {
         return await _context.Vendors
             .AsNoTracking()
             .OrderBy(vendor => vendor.VendorName)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
 

@@ -16,17 +16,22 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
 
         public async Task<Vendor?> GetVendorByEmailAsync(string email)
         {
+            string normalizedEmail = email.Trim().ToLower();
+
             return await _context.Vendors
-                .FirstOrDefaultAsync(u => u.ContactEmail == email);
+                .FirstOrDefaultAsync(u => u.ContactEmail != null && u.ContactEmail.ToLower() == normalizedEmail);
         }
         public async Task<User?> GetUserByEmailAsync(string email)
         {
+            string normalizedEmail = email.Trim().ToLower();
+
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
         }
 
         public async Task RegisterUserAsync(User user)
         {
+            user.Email = user.Email.Trim().ToLower();
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }

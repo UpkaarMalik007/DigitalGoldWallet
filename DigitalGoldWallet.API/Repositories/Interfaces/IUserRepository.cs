@@ -8,7 +8,7 @@ public interface IUserRepository
     Task<AdminDashboardDto> GetDashboardDataAsync();
     Task<User?> GetUserByEmailAsync(string email);
 
-    Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber = 1, int pageSize = 10);
 
     Task<User?> GetUserByIdAsync(int id);
 

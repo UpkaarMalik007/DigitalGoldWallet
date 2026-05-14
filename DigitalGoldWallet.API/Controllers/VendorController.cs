@@ -12,27 +12,36 @@ namespace DigitalGoldWallet.API.Controllers;
 public class VendorController : ControllerBase
 {
     private readonly IVendorService _vendorService;
+    private readonly IUserService _userService;
 
-    public VendorController(IVendorService vendorService)
+    public VendorController(IVendorService vendorService, IUserService userService)
     {
         _vendorService = vendorService;
+        _userService = userService;
     }
 
     [HttpGet]
     [Authorize(Roles = "Admin,User,Vendor")]
-    public async Task<IActionResult> GetAllVendors()
+    public async Task<IActionResult> GetAllVendors(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        List<VendorDto> vendors = await _vendorService.GetAllVendorsAsync();
+        List<VendorDto> vendors = await _vendorService.GetAllVendorsAsync(pageNumber, pageSize);
 
         if (!vendors.Any())
         {
             throw new NotFoundException("No vendors found.");
         }
 
+        var dashboard = await _userService.GetDashboardDataAsync();
+
         return Ok(new
         {
             statusCode = StatusCodes.Status200OK,
             message = "Vendors fetched successfully.",
+            totalCount = dashboard.TotalVendors,
+            pageNumber = pageNumber,
+            pageSize = pageSize,
             data = vendors
         });
     }
@@ -125,7 +134,7 @@ public class VendorController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Vendor")]
+    [Authorize(Roles = "Vendor,Admin")]
     public async Task<IActionResult> UpdateVendor(int id, [FromBody] VendorDto dto)
     {
         VendorDto updatedVendor = await _vendorService.UpdateVendorAsync(id, dto, User);
@@ -139,7 +148,7 @@ public class VendorController : ControllerBase
     }
 
     [HttpPatch("{id:int}/contact")]
-    [Authorize(Roles = "Vendor")]
+    [Authorize(Roles = "Vendor,Admin")]
     public async Task<IActionResult> UpdateVendorContact(int id, [FromBody] VendorDto dto)
     {
         await _vendorService.UpdateVendorContactAsync(id, dto, User);
@@ -152,7 +161,7 @@ public class VendorController : ControllerBase
     }
 
     [HttpPut("{id:int}/price")]
-    [Authorize(Roles = "Vendor")]
+    [Authorize(Roles = "Vendor,Admin")]
     public async Task<IActionResult> UpdateVendorPrice(int id, [FromBody] decimal currentGoldPrice)
     {
         await _vendorService.UpdateVendorPriceAsync(id, currentGoldPrice, User);
@@ -165,7 +174,7 @@ public class VendorController : ControllerBase
     }
 
     [HttpPost("{id:int}/branches")]
-    [Authorize(Roles = "Vendor")]
+    [Authorize(Roles = "Vendor,Admin")]
     public async Task<IActionResult> AddVendorBranch(int id, [FromBody] VendorBranchDto dto)
     {
         VendorBranchDto createdBranch = await _vendorService.AddVendorBranchAsync(id, dto, User);
@@ -179,7 +188,7 @@ public class VendorController : ControllerBase
     }
 
     [HttpPut("branches/{branchId:int}/stock")]
-    [Authorize(Roles = "Vendor")]
+    [Authorize(Roles = "Vendor,Admin")]
     public async Task<IActionResult> UpdateBranchStock(int branchId, [FromBody] decimal quantity)
     {
         await _vendorService.UpdateBranchStockAsync(branchId, quantity, User);
@@ -196,11 +205,6 @@ public class VendorController : ControllerBase
     public async Task<IActionResult> GetVendorInventory(int id)
     {
         VendorDto inventory = await _vendorService.GetVendorInventoryAsync(id, User);
-
-        if (inventory.Branches == null || !inventory.Branches.Any())
-        {
-            throw new NotFoundException("No inventory found for this vendor.");
-        }
 
         return Ok(new
         {

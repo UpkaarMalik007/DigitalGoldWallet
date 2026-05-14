@@ -12,14 +12,16 @@ namespace DigitalGoldWallet.API.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionService _transactionService;
+        private readonly IUserService _userService;
 
-        public TransactionController(ITransactionService transactionService)
+        public TransactionController(ITransactionService transactionService, IUserService userService)
         {
             _transactionService = transactionService;
+            _userService = userService;
         }
 
         // USER: Get own transaction history
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("payment-history")]
         public async Task<IActionResult> GetHistory()
         {
@@ -39,7 +41,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Get own transaction by id
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("{transactionId}")]
         public async Task<IActionResult> GetTransactionById(int transactionId)
         {
@@ -58,7 +60,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Filter own transactions
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("filter")]
         public async Task<IActionResult> Filter(FilterTransactionsDto dto)
         {
@@ -78,7 +80,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Create Razorpay order
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("create-order")]
         public async Task<IActionResult> CreateOrder(
             [FromQuery] int branchId,
@@ -99,7 +101,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Create transaction
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction(CreateTransactionDto dto)
         {
@@ -133,10 +135,13 @@ namespace DigitalGoldWallet.API.Controllers
             if (!result.Any())
                 throw new NotFoundException("No transactions found.");
 
+            var dashboard = await _userService.GetDashboardDataAsync();
+
             return Ok(new
             {
                 StatusCode = 200,
                 Message = "All transactions retrieved successfully.",
+                TotalCount = dashboard.TotalGoldTransactions,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 Data = result

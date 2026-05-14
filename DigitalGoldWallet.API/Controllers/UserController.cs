@@ -37,9 +37,11 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAllUsers()
+    public async Task<IActionResult> GetAllUsers(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _service.GetAllUsersAsync();
+        var result = await _service.GetAllUsersAsync(pageNumber, pageSize);
 
         if (result == null)
         {
@@ -47,10 +49,15 @@ public class UsersController : ControllerBase
                 "Controller failed to receive users data");
         }
 
+        var dashboard = await _service.GetDashboardDataAsync();
+
         return Ok(new
         {
             StatusCode = 200,
             Message = "Users fetched successfully",
+            TotalCount = dashboard.TotalUsers,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
             Data = result
         });
     }
@@ -246,7 +253,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("dashboard/{userId}")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetDashboard(
         int userId)
     {

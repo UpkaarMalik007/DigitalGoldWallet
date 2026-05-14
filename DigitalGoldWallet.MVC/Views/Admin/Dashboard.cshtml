@@ -1,0 +1,209 @@
+@model DigitalGoldWallet.MVC.ViewModels.Admin.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_AdminLayout";
+
+    string loggedInName = Context.Session.GetString("UserName")
+        ?? Context.Session.GetString("Name")
+        ?? "Admin";
+}
+
+<div class="space-y-12">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div>
+            <h1 class="text-4xl font-black text-[#1f1b13] tracking-tight">System Performance</h1>
+            <p class="text-[#6c757d] text-lg mt-2">Real-time metrics and administrative controls for your digital gold platform.</p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+            <a asp-action="Users" class="px-8 py-4 bg-[#d4af37] text-[#554300] font-black rounded-2xl shadow-lg shadow-[#d4af37]/20 hover:scale-[1.02] active:scale-[0.98] transition-all no-underline flex items-center gap-2">
+                <span class="material-symbols-outlined">person_add</span>
+                Manage Users
+            </a>
+            <a asp-action="Vendors" class="px-8 py-4 bg-white border-2 border-[#efe7da] text-[#4d4635] font-black rounded-2xl hover:bg-gray-50 transition-all no-underline flex items-center gap-2">
+                <span class="material-symbols-outlined">storefront</span>
+                Vendor Hub
+            </a>
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-2xl shadow-sm animate-pulse">
+            <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-red-500 text-3xl">report</span>
+                <p class="text-red-700 font-bold">@ViewBag.Error</p>
+            </div>
+        </div>
+    }
+
+    <!-- Summary Statistics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+        <!-- Metric Card: Total Users -->
+        <div class="bg-white p-10 rounded-[32px] border border-[#efe7da] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group">
+            <div class="flex flex-col h-full gap-8">
+                <div class="flex justify-between items-center">
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                        <span class="material-symbols-outlined text-3xl">groups_3</span>
+                    </div>
+                    <div class="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-black tracking-widest uppercase">
+                        +12% Grow
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-[#a58b3d] uppercase tracking-[0.2em] mb-1">Total Users</h3>
+                    <p class="text-5xl font-black text-[#1f1b13]">@Model.TotalUsers</p>
+                    <p class="text-sm text-[#6c757d] mt-2">Active accounts across platform</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Card: Total Vendors -->
+        <div class="bg-white p-10 rounded-[32px] border border-[#efe7da] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group">
+            <div class="flex flex-col h-full gap-8">
+                <div class="flex justify-between items-center">
+                    <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
+                        <span class="material-symbols-outlined text-3xl">partner_exchange</span>
+                    </div>
+                    <div class="px-3 py-1 bg-[#fdf9f0] text-[#735c00] rounded-full text-[10px] font-black tracking-widest uppercase">
+                        Verified
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-[#a58b3d] uppercase tracking-[0.2em] mb-1">Active Vendors</h3>
+                    <p class="text-5xl font-black text-[#1f1b13]">@Model.TotalVendors</p>
+                    <p class="text-sm text-[#6c757d] mt-2">Strategic partners in supply</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Card: Total Gold Transactions -->
+        <div class="bg-[#1f1b13] p-10 rounded-[32px] shadow-2xl relative overflow-hidden group">
+            <!-- Decorative Background Element -->
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-[#d4af37]/10 rounded-full blur-3xl"></div>
+            
+            <div class="flex flex-col h-full gap-8 relative z-10">
+                <div class="flex justify-between items-center">
+                    <div class="w-14 h-14 bg-[#d4af37] rounded-2xl flex items-center justify-center text-[#554300] shadow-lg shadow-[#d4af37]/20">
+                        <span class="material-symbols-outlined text-3xl">account_balance</span>
+                    </div>
+                    <span class="text-[10px] font-black text-[#d4af37] uppercase tracking-[0.2em]">High Volume</span>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-[#a58b3d] uppercase tracking-[0.2em] mb-1">Total Operations</h3>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-5xl font-black text-white">@Model.TotalGoldTransactions</p>
+                        <span class="text-gold-primary font-black text-xl">Txns</span>
+                    </div>
+                    <p class="text-sm text-[#888] mt-2">Total buy/sell cycles processed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Performance Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
+        <!-- Metric Card: Successful Payments -->
+        <div class="bg-white p-8 rounded-[32px] border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                </div>
+                <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authorized</span>
+            </div>
+            <h3 class="text-xs font-bold text-[#a58b3d] uppercase tracking-widest mb-1">Total Successful</h3>
+            <p class="text-4xl font-black text-[#1f1b13]">@Model.SuccessfulPayments</p>
+            <p class="text-xs text-[#6c757d] mt-2">Verified asset transfers</p>
+        </div>
+
+        <!-- Metric Card: Failed Payments -->
+        <div class="bg-white p-8 rounded-[32px] border border-red-100 shadow-sm hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
+                    <span class="material-symbols-outlined text-2xl">cancel</span>
+                </div>
+                <span class="text-[10px] font-black text-red-600 uppercase tracking-widest">Declined</span>
+            </div>
+            <h3 class="text-xs font-bold text-[#a58b3d] uppercase tracking-widest mb-1">Total Failed</h3>
+            <p class="text-4xl font-black text-[#1f1b13]">@Model.FailedPayments</p>
+            <p class="text-xs text-[#6c757d] mt-2">Unsuccessful system cycles</p>
+        </div>
+    </div>
+
+    <!-- Recent Activity Table Section -->
+    <div class="bg-white rounded-[40px] border border-[#efe7da] shadow-sm overflow-hidden mt-8">
+        <div class="px-12 py-10 border-b border-[#efe7da]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div>
+                <h3 class="text-3xl font-black text-[#1f1b13] tracking-tight">Platform Activity Feed</h3>
+                <p class="text-[#6c757d] mt-1 font-medium">Monitoring latest platform interactions</p>
+            </div>
+            <a asp-action="Transactions" class="px-6 py-3 bg-[#fdf9f0] text-[#735c00] font-black rounded-xl hover:bg-[#efe7da] transition-all no-underline flex items-center gap-2">
+                View Transaction Ledger
+                <span class="material-symbols-outlined text-lg">arrow_forward</span>
+            </a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-[#fbf3e5]/50">
+                        <th class="px-12 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Transaction Type</th>
+                        <th class="px-12 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">System Log</th>
+                        <th class="px-12 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em]">Execution Time</th>
+                        <th class="px-12 py-5 text-[11px] font-black text-[#735c00] uppercase tracking-[0.2em] text-right">Settlement</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#fbf3e5]">
+                    @foreach (var txn in Model.RecentTransactions)
+                    {
+                        <tr class="hover:bg-[#fdf9f0]/30 transition-colors group">
+                            <td class="px-12 py-8">
+                                <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest @(txn.TransactionType.Equals("Buy", StringComparison.OrdinalIgnoreCase) ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700")">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="px-12 py-8">
+                                <div class="font-bold text-[#1f1b13]">System Operation</div>
+                                <div class="text-xs text-[#6c757d] mt-0.5">Asset cycle processed successfully</div>
+                            </td>
+                            <td class="px-12 py-8 text-sm font-semibold text-[#4d4635]">@txn.CreatedAt.ToString("MMM dd, hh:mm tt")</td>
+                            <td class="px-12 py-8 text-right">
+                                <span class="text-xl font-black text-[#1f1b13]">₹@txn.Amount.ToString("N2")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="p-12 text-center bg-[#fdf9f0]/20">
+            <div class="flex flex-col items-center gap-3">
+                <span class="material-symbols-outlined text-[#efe7da] text-5xl">history</span>
+                <p class="text-[#6c757d] font-bold">End of current live feed. Visit ledger for archive.</p>
+            </div>
+        </div>
+        
+        <!-- Pagination for Activity Feed -->
+        <div class="px-12 py-6 border-t border-[#efe7da]/50 flex items-center justify-between">
+            <p class="text-xs text-[#6c757d] font-bold">
+                Showing @Model.RecentTransactions.Count cycles
+            </p>
+            <div class="flex gap-2">
+                @if (ViewBag.Page > 1)
+                {
+                    <a asp-action="Dashboard" asp-route-page="@(ViewBag.Page - 1)" class="px-3 py-1.5 bg-white border border-[#efe7da] text-[#4d4635] text-[11px] font-black rounded-lg hover:border-[#d4af37] transition no-underline">
+                        PREV
+                    </a>
+                }
+                <span class="px-3 py-1.5 bg-[#fdf9f0] border border-[#d4af37] text-[#735c00] text-[11px] font-black rounded-lg">
+                    PAGE @ViewBag.Page
+                </span>
+                @if (Model.RecentTransactions.Count == 5)
+                {
+                    <a asp-action="Dashboard" asp-route-page="@(ViewBag.Page + 1)" class="px-3 py-1.5 bg-white border border-[#efe7da] text-[#4d4635] text-[11px] font-black rounded-lg hover:border-[#d4af37] transition no-underline">
+                        NEXT
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

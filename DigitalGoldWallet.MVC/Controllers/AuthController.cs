@@ -35,7 +35,9 @@ public class AuthController : Controller
             return View(model);
         }
 
-        JObject? response = model.LoginType.Equals("Vendor", StringComparison.OrdinalIgnoreCase)
+        bool isVendorLogin = model.LoginType.Equals("Vendor", StringComparison.OrdinalIgnoreCase);
+
+        JObject? response = isVendorLogin
             ? await _apiService.LoginVendorAsync(model)
             : await _apiService.LoginUserAsync(model);
 
@@ -45,7 +47,7 @@ public class AuthController : Controller
             return View(model);
         }
 
-        JObject? data = response["data"] as JObject;
+        JObject? data = GetLoginData(response);
 
         if (data is null)
         {
@@ -53,7 +55,8 @@ public class AuthController : Controller
             return View(model);
         }
 
-        string? token = GetString(data, "token", "jwtToken", "accessToken");
+        string? token = GetString(data, "token", "jwtToken", "accessToken")
+            ?? GetString(response, "token", "jwtToken", "accessToken");
 
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -61,51 +64,79 @@ public class AuthController : Controller
             return View(model);
         }
 
-        string role = GetString(data, "role", "roleName")
-            ?? GetClaimValue(token, "role", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
-            ?? model.LoginType;
+        // IMPORTANT: if the Vendor tab was selected, force MVC session role as Vendor.
+        // Otherwise VendorController.TryGetVendorSession() will reject the dashboard request.
+        string role = isVendorLogin
+            ? "Vendor"
+            : GetString(data, "role", "roleName", "userRole")
+                ?? GetClaimValue(token,
+                    "role",
+                    "Role",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role")
+                ?? model.LoginType;
 
         string userName = GetString(data, "name", "userName", "vendorName", "fullName")
+            ?? GetNestedString(data, "vendor", "name", "vendorName")
+            ?? GetNestedString(data, "user", "name", "userName")
             ?? GetClaimValue(token, "name", "unique_name")
             ?? model.Email;
 
         string userEmail = GetString(data, "email", "userEmail")
-    ?? GetClaimValue(token, "email", "Email")
-    ?? model.Email;
+            ?? GetNestedString(data, "vendor", "email", "vendorEmail")
+            ?? GetNestedString(data, "user", "email", "userEmail")
+            ?? GetClaimValue(token, "email", "Email")
+            ?? model.Email;
 
         HttpContext.Session.SetString("Token", token);
-        HttpContext.Session.SetString("UserName", userName);
-        HttpContext.Session.SetString("UserEmail", userEmail);
-        HttpContext.Session.SetString("UserRole", role);
-
-        // Keep old keys too, so any teammate code using them still works.
         HttpContext.Session.SetString("JWToken", token);
+        HttpContext.Session.SetString("UserName", userName);
         HttpContext.Session.SetString("Name", userName);
         HttpContext.Session.SetString("UserEmail", userEmail);
+        HttpContext.Session.SetString("UserRole", role);
         HttpContext.Session.SetString("Role", role);
 
-        if (role.Equals("Vendor", StringComparison.OrdinalIgnoreCase))
+        if (isVendorLogin)
         {
-            int? vendorId = GetInt(data, "vendorId", "id")
-                ?? GetClaimInt(token, "vendorId", "VendorId", "nameid", "sub", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+            int? vendorId = GetInt(data, "vendorId", "vendor_id", "id")
+                ?? GetNestedInt(data, "vendor", "vendorId", "vendor_id", "id")
+                ?? GetNestedInt(data, "vendorData", "vendorId", "vendor_id", "id")
+                ?? GetClaimInt(token,
+                    "vendorId",
+                    "VendorId",
+                    "vendor_id",
+                    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/nameidentifier",
+                    "nameid",
+                    "sub");
 
             if (!vendorId.HasValue || vendorId.Value <= 0)
             {
+                HttpContext.Session.Clear();
                 ViewBag.Error = "Vendor login succeeded, but VendorId was not found in the API response/token.";
                 return View(model);
             }
 
             HttpContext.Session.SetInt32("VendorId", vendorId.Value);
-        }
-        else
-        {
-            int? userId = GetInt(data, "userId", "id")
-                ?? GetClaimInt(token, "userId", "UserId", "nameid", "sub", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
 
-            if (userId.HasValue && userId.Value > 0)
-            {
-                HttpContext.Session.SetInt32("UserId", userId.Value);
-            }
+            // Direct redirect avoids losing the Vendor route through a wrong generic role redirect.
+            return RedirectToAction("Dashboard", "Vendor");
+        }
+
+        int? userId = GetInt(data, "userId", "user_id", "id")
+            ?? GetNestedInt(data, "user", "userId", "user_id", "id")
+            ?? GetClaimInt(token,
+                "userId",
+                "UserId",
+                "user_id",
+                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/nameidentifier",
+                "nameid",
+                "sub");
+
+        if (userId.HasValue && userId.Value > 0)
+        {
+            HttpContext.Session.SetInt32("UserId", userId.Value);
         }
 
         return RedirectToAction("RedirectAfterLogin", "Account");
@@ -144,6 +175,30 @@ public class AuthController : Controller
         return RedirectToAction(nameof(Login));
     }
 
+    private static JObject? GetLoginData(JObject response)
+    {
+        JToken? dataToken = response.GetValue("data", StringComparison.OrdinalIgnoreCase);
+
+        if (dataToken is JObject wrappedData)
+        {
+            return wrappedData;
+        }
+
+        return response;
+    }
+
+    private static int? GetNestedInt(JObject data, string objectName, params string[] names)
+    {
+        JObject? nestedObject = data.GetValue(objectName, StringComparison.OrdinalIgnoreCase) as JObject;
+        return nestedObject is null ? null : GetInt(nestedObject, names);
+    }
+
+    private static string? GetNestedString(JObject data, string objectName, params string[] names)
+    {
+        JObject? nestedObject = data.GetValue(objectName, StringComparison.OrdinalIgnoreCase) as JObject;
+        return nestedObject is null ? null : GetString(nestedObject, names);
+    }
+
     private static string? GetString(JObject data, params string[] names)
     {
         foreach (string name in names)
@@ -176,18 +231,25 @@ public class AuthController : Controller
 
     private static string? GetClaimValue(string jwtToken, params string[] claimTypes)
     {
-        JwtSecurityToken token = new JwtSecurityTokenHandler().ReadJwtToken(jwtToken);
-
-        foreach (string claimType in claimTypes)
+        try
         {
-            string? value = token.Claims
-                .FirstOrDefault(claim => claim.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase))
-                ?.Value;
+            JwtSecurityToken token = new JwtSecurityTokenHandler().ReadJwtToken(jwtToken);
 
-            if (!string.IsNullOrWhiteSpace(value))
+            foreach (string claimType in claimTypes)
             {
-                return value;
+                string? value = token.Claims
+                    .FirstOrDefault(claim => claim.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase))
+                    ?.Value;
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
             }
+        }
+        catch
+        {
+            // Invalid token format. Login flow will show a controlled error instead of crashing.
         }
 
         return null;
@@ -196,7 +258,6 @@ public class AuthController : Controller
     private static int? GetClaimInt(string jwtToken, params string[] claimTypes)
     {
         string? value = GetClaimValue(jwtToken, claimTypes);
-
         return int.TryParse(value, out int id) ? id : null;
     }
 }

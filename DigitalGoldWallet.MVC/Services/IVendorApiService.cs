@@ -6,8 +6,9 @@ namespace DigitalGoldWallet.MVC.Services;
 public interface IVendorApiService
 {
     string? LastErrorMessage { get; }
+    int TotalCount { get; }
 
-    Task<List<VendorViewModel>> GetAllVendorsAsync();
+    Task<List<VendorViewModel>> GetAllVendorsAsync(int pageNumber = 1, int pageSize = 10);
 
     Task<VendorViewModel?> GetVendorByIdAsync(int id);
 
