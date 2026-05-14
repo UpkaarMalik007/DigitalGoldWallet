@@ -99,34 +99,7 @@
         </div>
     </div>
 
-    <!-- Payment Performance Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
-        <!-- Metric Card: Successful Payments -->
-        <div class="bg-white p-8 rounded-[32px] border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
-                    <span class="material-symbols-outlined text-2xl">check_circle</span>
-                </div>
-                <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authorized</span>
-            </div>
-            <h3 class="text-xs font-bold text-[#a58b3d] uppercase tracking-widest mb-1">Total Successful</h3>
-            <p class="text-4xl font-black text-[#1f1b13]">@Model.SuccessfulPayments</p>
-            <p class="text-xs text-[#6c757d] mt-2">Verified asset transfers</p>
-        </div>
-
-        <!-- Metric Card: Failed Payments -->
-        <div class="bg-white p-8 rounded-[32px] border border-red-100 shadow-sm hover:shadow-lg transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
-                    <span class="material-symbols-outlined text-2xl">cancel</span>
-                </div>
-                <span class="text-[10px] font-black text-red-600 uppercase tracking-widest">Declined</span>
-            </div>
-            <h3 class="text-xs font-bold text-[#a58b3d] uppercase tracking-widest mb-1">Total Failed</h3>
-            <p class="text-4xl font-black text-[#1f1b13]">@Model.FailedPayments</p>
-            <p class="text-xs text-[#6c757d] mt-2">Unsuccessful system cycles</p>
-        </div>
-    </div>
+    
 
     <!-- Recent Activity Table Section -->
     <div class="bg-white rounded-[40px] border border-[#efe7da] shadow-sm overflow-hidden mt-8">

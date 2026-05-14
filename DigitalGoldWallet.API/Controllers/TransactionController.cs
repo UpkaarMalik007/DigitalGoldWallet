@@ -42,7 +42,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Get own transaction by id
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "User")]
         [HttpGet("{transactionId}")]
         public async Task<IActionResult> GetTransactionById(int transactionId)
         {
@@ -61,7 +61,7 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
         // USER: Filter own transactions
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "User")]
         [HttpPost("filter")]
         public async Task<IActionResult> Filter(FilterTransactionsDto dto)
         {
@@ -80,29 +80,9 @@ namespace DigitalGoldWallet.API.Controllers
             });
         }
 
-        // USER: Create Razorpay order
-        [Authorize(Roles = "User,Admin")]
-        [HttpPost("create-order")]
-        public async Task<IActionResult> CreateOrder(
-            [FromQuery] int branchId,
-            [FromQuery] decimal quantity)
-        {
-            GetLoggedInUserIdFromToken();
-
-            var result = await _transactionService.CreateOrderAsync(
-                branchId,
-                quantity);
-
-            return StatusCode(201, new
-            {
-                StatusCode = 201,
-                Message = "Order created successfully.",
-                Data = result
-            });
-        }
 
         // USER: Create transaction
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "User")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction(CreateTransactionDto dto)
         {

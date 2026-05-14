@@ -119,30 +119,7 @@ namespace DigitalGoldWallet.API.Controllers
             }
         }
 
-        // // 5. Transfer Money
-        // // [Authorize(Roles = "User")]
-        // [HttpPost("transfer")]
-        // public async Task<IActionResult> TransferMoney(TransferMoneyDTO dto)
-        // {
-        //     try
-        //     {
-        //         var result =await _walletService.TransferMoney(dto);
-        //         return Ok(result);
-        //     }
-        //     catch (NotFoundException)
-        //     {
-        //         return NotFound();
-        //     }
-        //     catch (BadRequestException)
-        //     {
-        //         return BadRequest();
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return StatusCode(500, ex.Message);
-        //     }
-        // }
-
+        
         // 6. Get Last Transaction
         [Authorize(Roles = "User,Admin")]
         [HttpGet("last-transaction/{userId:int}")]
