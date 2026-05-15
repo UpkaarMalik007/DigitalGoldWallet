@@ -4,7 +4,7 @@ using DigitalGoldWallet.API.Services.Interfaces;
 using DigitalGoldWallet.Tests.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,13 +19,19 @@ namespace DigitalGoldWallet.Tests.UnitTests
         {
             _mockGoldService = new Mock<IGoldService>();
             _goldController = new GoldController(_mockGoldService.Object);
-        } 
+        }
+
+
+        //POSITIVE TEST CASES
 
         [Fact]
         public async Task BuyGold_ReturnsOk_WhenSuccessful()
         {
             var dto = TestDataFactory.GetValidBuyGoldDto();
-            _mockGoldService.Setup(s => s.BuyGold(dto)).Returns(Task.CompletedTask);
+
+            _mockGoldService
+                .Setup(s => s.BuyGold(dto))
+                .Returns(Task.CompletedTask);
 
             var result = await _goldController.BuyGold(dto);
 
@@ -36,7 +42,8 @@ namespace DigitalGoldWallet.Tests.UnitTests
         [Fact]
         public async Task SellGold_ReturnsOk_WhenSuccessful()
         {
-            var dto = GoldTestDataFactory.SellGoldDto(); 
+            var dto = GoldTestDataFactory.SellGoldDto();
+
             _mockGoldService
                 .Setup(s => s.SellGold(dto))
                 .Returns(Task.CompletedTask);
@@ -52,7 +59,10 @@ namespace DigitalGoldWallet.Tests.UnitTests
         {
             int userId = 1;
             var expectedData = TestDataFactory.GetValidGoldHoldingDto();
-            _mockGoldService.Setup(s => s.GetHoldings(userId)).ReturnsAsync(expectedData);
+
+            _mockGoldService
+                .Setup(s => s.GetHoldings(userId))
+                .ReturnsAsync(expectedData);
 
             var result = await _goldController.GetHoldings(userId);
 
@@ -64,7 +74,10 @@ namespace DigitalGoldWallet.Tests.UnitTests
         public async Task GetCurrentPrice_ReturnsOk_WithData()
         {
             var expectedData = TestDataFactory.GetValidGoldPriceDto();
-            _mockGoldService.Setup(s => s.GetCurrentPrice()).ReturnsAsync(expectedData);
+
+            _mockGoldService
+                .Setup(s => s.GetCurrentPrice())
+                .ReturnsAsync(expectedData);
 
             var result = await _goldController.GetCurrentPrice();
 
@@ -72,14 +85,20 @@ namespace DigitalGoldWallet.Tests.UnitTests
             Assert.Equal(expectedData, okResult.Value);
         }
 
+        //  NEGATIVE TEST CASES 
 
         [Fact]
         public async Task GetHoldings_ThrowsException_WhenNull()
         {
             int userId = 99;
-            _mockGoldService.Setup(s => s.GetHoldings(userId)).ReturnsAsync((GoldPortfolioDto?)null!);
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => _goldController.GetHoldings(userId));
+            _mockGoldService
+                .Setup(s => s.GetHoldings(userId))
+                .ReturnsAsync((GoldPortfolioDto?)null!);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                _goldController.GetHoldings(userId));
+
             Assert.Equal("Holdings not found for the user.", ex.Message);
         }
 
@@ -88,17 +107,24 @@ namespace DigitalGoldWallet.Tests.UnitTests
         {
             decimal amount = 0;
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => _goldController.CalculateGold(amount));
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                _goldController.CalculateGold(amount));
+
             Assert.Equal("Amount should be greater than zero.", ex.Message);
         }
 
         [Fact]
-        public async Task GetTransactions_ThrowsException_WhenEmpty()
+        public async Task GetTransactions_ThrowsException_WhenServiceThrows()
         {
             int userId = 1;
-            _mockGoldService.Setup(s => s.GetTransactions(userId)).ReturnsAsync(new List<GoldTransactionDto>());
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => _goldController.GetTransactions(userId));
+            _mockGoldService
+                .Setup(s => s.GetTransactions(userId))
+                .ThrowsAsync(new Exception("No transactions found."));
+
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                _goldController.GetTransactions(userId));
+
             Assert.Equal("No transactions found.", ex.Message);
         }
 
@@ -106,9 +132,14 @@ namespace DigitalGoldWallet.Tests.UnitTests
         public async Task GetPortfolio_ThrowsException_WhenNull()
         {
             int userId = 99;
-            _mockGoldService.Setup(s => s.GetPortfolio(userId)).ReturnsAsync((GoldPortfolioDto?)null!);
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => _goldController.GetPortfolio(userId));
+            _mockGoldService
+                .Setup(s => s.GetPortfolio(userId))
+                .ReturnsAsync((GoldPortfolioDto?)null!);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                _goldController.GetPortfolio(userId));
+
             Assert.Equal("Portfolio not found.", ex.Message);
         }
     }
