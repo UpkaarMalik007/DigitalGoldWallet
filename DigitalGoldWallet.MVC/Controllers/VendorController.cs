@@ -358,7 +358,6 @@ public class VendorController : Controller
         viewModel.VendorId = vendorId;
         viewModel.Password = null;
 
-        // PATCH endpoint updates only contact fields. Remove validation errors for full-profile-only fields.
         ModelState.Remove(nameof(VendorViewModel.VendorName));
         ModelState.Remove(nameof(VendorViewModel.Description));
         ModelState.Remove(nameof(VendorViewModel.CurrentGoldPrice));

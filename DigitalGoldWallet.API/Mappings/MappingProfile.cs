@@ -9,7 +9,6 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        // ENTITY -> DTO
 
         CreateMap<User, UserDto>();
 
@@ -26,7 +25,6 @@ public class MappingProfile : Profile
             PhysicalGoldHoldingDto>();
 
 
-        // DTO -> ENTITY
 
         CreateMap<CreateUserDto, User>()
 
@@ -93,7 +91,6 @@ public class MappingProfile : Profile
                      !string.IsNullOrWhiteSpace(value))));
 
 
-        // TUPLE -> DASHBOARD DTO
 
         CreateMap<
             (decimal walletBalance,

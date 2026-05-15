@@ -22,50 +22,15 @@ public class UserService : IUserService
 
     public async Task<AdminDashboardDto> GetDashboardDataAsync()
     {
-        var dashboard =
-            await _repository.GetDashboardDataAsync();
-
-        if (dashboard == null)
+        var dashboard = new AdminDashboardDto
         {
-            throw new NotFoundException(
-                "Admin dashboard data not found");
-        }
-
-        if (dashboard.TotalUsers < 0)
-        {
-            throw new Exception(
-                "Invalid total users count");
-        }
-
-        if (dashboard.TotalVendors < 0)
-        {
-            throw new Exception(
-                "Invalid total vendors count");
-        }
-
-        if (dashboard.TotalPayments < 0)
-        {
-            throw new Exception(
-                "Invalid total payments count");
-        }
-
-        if (dashboard.SuccessfulPayments < 0)
-        {
-            throw new Exception(
-                "Invalid successful payments count");
-        }
-
-        if (dashboard.FailedPayments < 0)
-        {
-            throw new Exception(
-                "Invalid failed payments count");
-        }
-
-        if (dashboard.TotalGoldTransactions < 0)
-        {
-            throw new Exception(
-                "Invalid gold transactions count");
-        }
+            TotalUsers = await _repository.GetTotalUsersAsync(),
+            TotalVendors = await _repository.GetTotalVendorsAsync(),
+            TotalPayments = await _repository.GetTotalPaymentsAsync(),
+            SuccessfulPayments = await _repository.GetSuccessfulPaymentsAsync(),
+            FailedPayments = await _repository.GetFailedPaymentsAsync(),
+            TotalGoldTransactions = await _repository.GetTotalGoldTransactionsAsync()
+        };
 
         return dashboard;
     }
@@ -228,7 +193,7 @@ public class UserService : IUserService
 
         var totalGoldHoldings =
             await _repository.GetTotalGoldHoldingsAsync(userId);
-        
+
         if (totalGoldHoldings < 0)
         {
             throw new Exception(

@@ -15,9 +15,9 @@ namespace DigitalGoldWallet.MVC.ViewModels.Gold
     {
         public string? TransactionId { get; set; }
         public DateTime Date { get; set; }
-        public string? Type { get; set; } // Buy, Sell, Convert
+        public string? Type { get; set; } 
         public decimal Quantity { get; set; }
         public decimal Amount { get; set; }
-        public string? Status { get; set; } // Completed, In Progress, Failed
+        public string? Status { get; set; } 
     }
 }

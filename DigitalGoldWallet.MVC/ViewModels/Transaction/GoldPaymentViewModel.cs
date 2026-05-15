@@ -8,8 +8,6 @@
         public string TransactionType { get; set; } = "Buy";
 
         public string PaymentMethod { get; set; } = "Wallet";
-
-        // For UI only
         public decimal WalletBalance { get; set; }
     }
 }

@@ -18,7 +18,6 @@ namespace DigitalGoldWallet.API.Helpers
             }
             catch
             {
-                // Fallback for plain text comparison if the stored password is not a valid hash
                 return plainPassword == hashedPassword;
             }
         }

@@ -40,9 +40,7 @@ namespace DigitalGoldWallet.Tests
             };
         }
 
-        // =========================
         // POSITIVE TESTS
-        // =========================
 
         [Fact]
         public async Task GetHistory_ReturnsOkResult()
@@ -92,29 +90,24 @@ namespace DigitalGoldWallet.Tests
 
             Assert.Equal(201, objectResult.StatusCode);
         }
-
         [Fact]
-        public async Task CreateOrder_ReturnsCreatedResult()
+        public async Task Filter_ReturnsOkResult()
         {
             SetUser(1, "User");
 
+            var filterDto = TransactionTestDataFactory.FilterTransactionsDto();
+
             _transactionServiceMock
-                .Setup(x => x.CreateOrderAsync(1, 2))
-                .ReturnsAsync(new
-                {
-                    OrderId = "order_123"
-                });
+                .Setup(x => x.GetFilteredAsync(1, filterDto))
+                .ReturnsAsync(
+                    TransactionTestDataFactory.TransactionHistoryDtoList());
 
-            var result = await _controller.CreateOrder(1, 2);
+            var result = await _controller.Filter(filterDto);
 
-            var objectResult = Assert.IsType<ObjectResult>(result);
-
-            Assert.Equal(201, objectResult.StatusCode);
+            Assert.IsType<OkObjectResult>(result);
         }
 
-        // =========================
         // NEGATIVE TESTS
-        // =========================
 
         [Fact]
         public async Task GetHistory_EmptyList_ThrowsNotFoundException()
@@ -144,19 +137,22 @@ namespace DigitalGoldWallet.Tests
         }
 
         [Fact]
-        public async Task CreateOrder_InvalidBranch_ThrowsBadRequestException()
+        public async Task CreateTransaction_InvalidData_ThrowsBadRequestException()
         {
+
             SetUser(1, "User");
 
             _transactionServiceMock
-                .Setup(x => x.CreateOrderAsync(0, 2))
+                .Setup(x => x.CreateTransactionAsync(
+                    It.IsAny<CreateTransactionDto>()))
                 .ThrowsAsync(
-                    new BadRequestException("Invalid branch"));
+                    new BadRequestException("Invalid transaction data"));
+
 
             await Assert.ThrowsAsync<BadRequestException>(() =>
-                _controller.CreateOrder(0, 2));
+                _controller.CreateTransaction(
+                    TransactionTestDataFactory.CreateTransactionDto()));
         }
-
         [Fact]
         public async Task UnauthorizedUser_ThrowsUnauthorizedException()
         {

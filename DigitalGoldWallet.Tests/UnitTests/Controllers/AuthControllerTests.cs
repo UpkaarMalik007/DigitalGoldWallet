@@ -22,9 +22,7 @@ namespace DigitalGoldWallet.Tests
             _controller = new AuthController(_authServiceMock.Object);
         }
 
-        // =========================
         // POSITIVE TESTS
-        // =========================
 
         [Fact]
         public async Task LoginUser_ReturnsOkResult()
@@ -80,10 +78,8 @@ namespace DigitalGoldWallet.Tests
             Assert.NotNull(okResult.Value);
         }
 
-        // =========================
         // NEGATIVE TESTS
-        // =========================
-
+      
         [Fact]
         public async Task LoginUser_InvalidCredentials_ThrowsUnauthorizedException()
         {

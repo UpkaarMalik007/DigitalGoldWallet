@@ -8,7 +8,6 @@ namespace DigitalGoldWallet.API.Mappings
     {
         public TransactionProfile()
         {
-            // Entity -> DTO
             CreateMap<TransactionHistory, TransactionHistoryDto>()
                 .ForMember(dest => dest.Name,
                     opt => opt.MapFrom(src => src.User != null ? src.User.Name : null))
@@ -18,7 +17,6 @@ namespace DigitalGoldWallet.API.Mappings
                             ? src.Branch.Vendor.VendorName
                             : null));
 
-            // DTO -> Entity
             CreateMap<CreateTransactionDto, TransactionHistory>();
         }
     }

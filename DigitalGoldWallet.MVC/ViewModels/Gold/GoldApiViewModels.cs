@@ -1,6 +1,6 @@
 namespace DigitalGoldWallet.MVC.ViewModels.Gold;
 
-public class GoldActionRequestDto
+public class GoldActionRequestViewModel
 {
     public int UserId { get; set; }
     public int? BranchId { get; set; }
@@ -17,7 +17,7 @@ public enum GoldActionType
     Convert
 }
 
-public class GoldTransactionDto
+public class GoldTransactionViewModel
 {
     public int TransactionId { get; set; }
     public int UserId { get; set; }
@@ -30,7 +30,7 @@ public class GoldTransactionDto
     public DateTime CreatedAt { get; set; }
 }
 
-public class GoldPortfolioDto
+public class GoldPortfolioViewModel
 {
     public int UserId { get; set; }
     public decimal TotalGold { get; set; }
@@ -41,14 +41,14 @@ public class GoldPortfolioDto
     public decimal ProfitLoss { get; set; }
 }
 
-public class GoldCalculationDto
+public class GoldCalculationViewModel
 {
     public decimal Amount { get; set; }
     public decimal GoldPrice { get; set; }
     public decimal Quantity { get; set; }
 }
 
-public class BranchDetailDto
+public class GoldBranchViewModel
 {
     public int BranchId { get; set; }
     public int? VendorId { get; set; }

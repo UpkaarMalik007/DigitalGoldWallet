@@ -50,11 +50,9 @@ public class AdminController : Controller
             dashboardData = new DigitalGoldWallet.MVC.ViewModels.Admin.AdminDashboardViewModel();
         }
 
-        // Fetch transactions for the activity feed (paged)
         var allTransactions = await _adminApiService.GetAllTransactionsAsync(page, 5);
         dashboardData.RecentTransactions = allTransactions;
         
-        // Calculate metrics if not provided by service
         if (dashboardData.SuccessfulPayments == 0 && allTransactions.Any())
         {
             dashboardData.SuccessfulPayments = allTransactions.Count(t => t.TransactionStatus.Equals("Success", StringComparison.OrdinalIgnoreCase) || t.TransactionStatus.Equals("Completed", StringComparison.OrdinalIgnoreCase));

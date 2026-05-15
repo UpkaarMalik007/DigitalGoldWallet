@@ -22,7 +22,6 @@ namespace DigitalGoldWallet.API.Controllers
 
 
         // 1. get wallet balance
-        // [AllowAnonymous]
         [Authorize(Roles = "User,Admin")]
         [HttpGet("balance/{userId:int}")]
         public async Task<IActionResult> GetWalletBalance(
@@ -51,7 +50,6 @@ namespace DigitalGoldWallet.API.Controllers
         // 2. Add money
         [Authorize(Roles = "User,Admin")]
         [HttpPost("add-money")]
-        // [AllowAnonymous]
         public async Task<IActionResult> AddMoney(WalletAmountDTO dto)
         {
             try
@@ -212,7 +210,6 @@ namespace DigitalGoldWallet.API.Controllers
         // 11. get all users
         [Authorize(Roles = "User")]
         [HttpGet("users")]
-        // [AllowAnonymous]
         public async Task<IActionResult> GetUsers()
         {
             try

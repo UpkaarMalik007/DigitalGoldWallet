@@ -12,8 +12,6 @@ namespace DigitalGoldWallet.API.Services.Interfaces
 
         Task<TransactionHistoryDto> CreateTransactionAsync(CreateTransactionDto dto);
 
-        //Task<object> CreateOrderAsync(int branchId, decimal quantity);
-
         Task<List<TransactionHistoryDto>> GetAllTransactionsAsync(int pageNumber, int pageSize);
 
         Task<List<TransactionHistoryDto>> GetMonthlyReportAsync(int month, int year);

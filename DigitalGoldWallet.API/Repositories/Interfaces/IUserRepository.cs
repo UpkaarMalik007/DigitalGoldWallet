@@ -5,7 +5,7 @@ namespace DigitalGoldWallet.API.Repositories.Interfaces;
 
 public interface IUserRepository
 {
-    Task<AdminDashboardDto> GetDashboardDataAsync();
+
     Task<User?> GetUserByEmailAsync(string email);
 
     Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber = 1, int pageSize = 10);
@@ -33,4 +33,10 @@ public interface IUserRepository
     Task<IEnumerable<VirtualGoldHolding>> GetVirtualGoldHoldingsAsync(int userId);
 
     Task<IEnumerable<PhysicalGoldTransaction>> GetPhysicalGoldHoldingsAsync(int userId);
+    Task<int> GetTotalUsersAsync();
+    Task<int> GetTotalVendorsAsync();
+    Task<int> GetTotalPaymentsAsync();
+    Task<int> GetSuccessfulPaymentsAsync();
+    Task<int> GetFailedPaymentsAsync();
+    Task<int> GetTotalGoldTransactionsAsync();
 }

@@ -6,12 +6,14 @@ namespace DigitalGoldWallet.MVC.Services;
 
 public interface IGoldApiService
 {
-    Task<GoldPortfolioDto?> GetPortfolioAsync(int userId);
-    Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId);
-    Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId);
-    Task<List<BranchDetailDto>?> GetAllBranchesAsync();
-    Task<bool> BuyGoldAsync(GoldActionRequestDto request);
-    Task<bool> SellGoldAsync(GoldActionRequestDto request);
+    Task<GoldPortfolioViewModel?> GetPortfolioAsync(int userId);
+    Task<List<GoldTransactionViewModel>> GetTransactionsAsync(int userId);
+    Task<List<GoldTransactionViewModel>> GetPhysicalHistoryAsync(int userId);
+    Task<List<GoldBranchViewModel>> GetAllBranchesAsync();
+    Task<bool> BuyGoldAsync(GoldActionRequestViewModel request);
+    Task<bool> SellGoldAsync(GoldActionRequestViewModel request);
+    Task<bool> ConvertToPhysicalAsync(GoldActionRequestViewModel request);
+    string? LastErrorMessage { get; }
 }
 
 public class GoldApiService : IGoldApiService
@@ -42,6 +44,8 @@ public class GoldApiService : IGoldApiService
         _baseUrl = baseUrl;
     }
 
+    public string? LastErrorMessage { get; private set; }
+
     private void AddAuthHeader()
     {
         string? token = _httpContextAccessor.HttpContext?.Session.GetString("Token")
@@ -54,91 +58,83 @@ public class GoldApiService : IGoldApiService
         }
     }
 
-    public async Task<GoldPortfolioDto?> GetPortfolioAsync(int userId)
+    private async Task SetErrorAsync(HttpResponseMessage response, string fallbackMessage)
     {
+        string body = await response.Content.ReadAsStringAsync();
+        LastErrorMessage = string.IsNullOrWhiteSpace(body)
+            ? fallbackMessage
+            : body;
+    }
+
+    private async Task<T?> GetAsync<T>(string relativeUrl)
+    {
+        LastErrorMessage = null;
         try
         {
             AddAuthHeader();
-            return await _httpClient.GetFromJsonAsync<GoldPortfolioDto>(
-                $"{_baseUrl}gold/portfolio/{userId}");
+            return await _httpClient.GetFromJsonAsync<T>($"{_baseUrl}{relativeUrl}");
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            LastErrorMessage = ex.Message;
+            return default;
         }
     }
 
-    public async Task<List<BranchDetailDto>?> GetAllBranchesAsync()
+    private async Task<bool> PostAsync(string relativeUrl, GoldActionRequestViewModel request, string fallbackMessage)
     {
+        LastErrorMessage = null;
         try
         {
             AddAuthHeader();
-            return await _httpClient.GetFromJsonAsync<List<BranchDetailDto>>(
-                $"{_baseUrl}gold/branches");
-        }
-        catch
-        {
-            return new List<BranchDetailDto>();
-        }
-    }
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"{_baseUrl}{relativeUrl}", request);
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
 
-    public async Task<List<GoldTransactionDto>?> GetTransactionsAsync(int userId)
-    {
-        try
-        {
-            AddAuthHeader();
-            return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>(
-                $"{_baseUrl}gold/transactions/{userId}");
+            await SetErrorAsync(response, fallbackMessage);
+            return false;
         }
-        catch
+        catch (Exception ex)
         {
-            return new List<GoldTransactionDto>();
-        }
-    }
-
-    public async Task<List<GoldTransactionDto>?> GetPhysicalHistoryAsync(int userId)
-    {
-        try
-        {
-            AddAuthHeader();
-            return await _httpClient.GetFromJsonAsync<List<GoldTransactionDto>>(
-                $"{_baseUrl}gold/physical-history/{userId}");
-        }
-        catch
-        {
-            return new List<GoldTransactionDto>();
-        }
-    }
-
-    public async Task<bool> BuyGoldAsync(GoldActionRequestDto request)
-    {
-        try
-        {
-            AddAuthHeader();
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
-                $"{_baseUrl}gold/buy", request);
-
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
+            LastErrorMessage = ex.Message;
             return false;
         }
     }
 
-    public async Task<bool> SellGoldAsync(GoldActionRequestDto request)
+    public async Task<GoldPortfolioViewModel?> GetPortfolioAsync(int userId)
     {
-        try
-        {
-            AddAuthHeader();
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
-                $"{_baseUrl}gold/sell", request);
+        return await GetAsync<GoldPortfolioViewModel>($"gold/portfolio/{userId}");
+    }
 
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
+    public async Task<List<GoldBranchViewModel>> GetAllBranchesAsync()
+    {
+        return await GetAsync<List<GoldBranchViewModel>>("gold/branches") ?? new List<GoldBranchViewModel>();
+    }
+
+    public async Task<List<GoldTransactionViewModel>> GetTransactionsAsync(int userId)
+    {
+        return await GetAsync<List<GoldTransactionViewModel>>($"gold/transactions/{userId}") ?? new List<GoldTransactionViewModel>();
+    }
+
+    public async Task<List<GoldTransactionViewModel>> GetPhysicalHistoryAsync(int userId)
+    {
+        return await GetAsync<List<GoldTransactionViewModel>>($"gold/physical-history/{userId}") ?? new List<GoldTransactionViewModel>();
+    }
+
+    public async Task<bool> BuyGoldAsync(GoldActionRequestViewModel request)
+    {
+        return await PostAsync("gold/buy", request, "Failed to purchase gold.");
+    }
+
+    public async Task<bool> SellGoldAsync(GoldActionRequestViewModel request)
+    {
+        return await PostAsync("gold/sell", request, "Failed to sell gold.");
+    }
+
+    public async Task<bool> ConvertToPhysicalAsync(GoldActionRequestViewModel request)
+    {
+        return await PostAsync("gold/convert-to-physical", request, "Failed to convert gold to physical.");
     }
 }

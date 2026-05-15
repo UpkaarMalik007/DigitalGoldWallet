@@ -9,10 +9,14 @@ namespace DigitalGoldWallet.MVC.Controllers;
 public class GoldController : Controller
 {
     private readonly GoldApiService _goldApiService;
+    private readonly IUserApiService _userApiService;
 
-    public GoldController(GoldApiService goldApiService)
+    public GoldController(
+        GoldApiService goldApiService,
+        IUserApiService userApiService)
     {
         _goldApiService = goldApiService;
+        _userApiService = userApiService;
     }
 
     private bool TryGetUserSession(out int userId)
@@ -37,9 +41,9 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
-        List<GoldTransactionDto> allTransactions =
-            await _goldApiService.GetTransactionsAsync(userId) ?? new List<GoldTransactionDto>();
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        List<GoldTransactionViewModel> allTransactions =
+            await _goldApiService.GetTransactionsAsync(userId) ?? new List<GoldTransactionViewModel>();
 
         DashboardViewModel viewModel = new()
         {
@@ -76,9 +80,9 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
-        List<BranchDetailDto> branches =
-            await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        List<GoldBranchViewModel> branches =
+            await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
 
         BuyGoldViewModel viewModel = new()
         {
@@ -101,11 +105,11 @@ public class GoldController : Controller
         if (model.Amount <= 0)
         {
             ModelState.AddModelError(nameof(model.Amount), "Please enter a valid amount.");
-            model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+            model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
             return View(model);
         }
 
-        GoldActionRequestDto request = new()
+        GoldActionRequestViewModel request = new()
         {
             UserId = userId,
             Amount = model.Amount,
@@ -119,7 +123,7 @@ public class GoldController : Controller
             return RedirectToAction(nameof(Dashboard));
         }
 
-        model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+        model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
         ModelState.AddModelError(string.Empty, "Failed to purchase gold. Please try again.");
         return View(model);
     }
@@ -132,9 +136,9 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
-        List<BranchDetailDto> branches =
-            await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        List<GoldBranchViewModel> branches =
+            await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
 
         SellGoldViewModel viewModel = new()
         {
@@ -162,7 +166,7 @@ public class GoldController : Controller
             return View(model);
         }
 
-        GoldActionRequestDto request = new()
+        GoldActionRequestViewModel request = new()
         {
             UserId = userId,
             Quantity = model.Quantity,
@@ -189,8 +193,8 @@ public class GoldController : Controller
         }
 
         const int pageSize = 5;
-        List<GoldTransactionDto> allTransactions =
-            await _goldApiService.GetTransactionsAsync(userId) ?? new List<GoldTransactionDto>();
+        List<GoldTransactionViewModel> allTransactions =
+            await _goldApiService.GetTransactionsAsync(userId) ?? new List<GoldTransactionViewModel>();
 
         int totalCount = allTransactions.Count;
         int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -221,6 +225,7 @@ public class GoldController : Controller
         return View(viewModel);
     }
 
+    [HttpGet]
     public async Task<IActionResult> ConvertToPhysical()
     {
         if (!TryGetUserSession(out int userId))
@@ -228,28 +233,56 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
-        List<BranchDetailDto> branches =
-            await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
-
-        if (branches.Count == 0)
-        {
-            branches.Add(new BranchDetailDto
-            {
-                BranchId = 1,
-                BranchName = "Main Vault (Fallback)",
-                VendorName = "Verified Partner",
-                Address = "Secure Storage Facility"
-            });
-        }
-
-        ConvertToPhysicalViewModel viewModel = new()
-        {
-            GoldBalance = portfolio?.TotalGold ?? 0,
-            Branches = branches
-        };
+        ConvertToPhysicalViewModel viewModel = new();
+        await PopulateConvertToPhysicalViewModelAsync(viewModel, userId);
 
         return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConvertToPhysical(ConvertToPhysicalViewModel model)
+    {
+        if (!TryGetUserSession(out int userId))
+        {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        await PopulateConvertToPhysicalViewModelAsync(model, userId);
+
+        if (model.QuantityInGrams > model.GoldBalance)
+        {
+            ModelState.AddModelError(nameof(model.QuantityInGrams), "Quantity cannot be greater than your virtual gold balance.");
+        }
+
+        if (!model.DeliveryAddressId.HasValue || model.DeliveryAddressId.Value <= 0)
+        {
+            ModelState.AddModelError(string.Empty, "Please add your address in Profile before converting to physical gold.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        GoldActionRequestViewModel request = new()
+        {
+            UserId = userId,
+            BranchId = model.BranchId,
+            Quantity = model.QuantityInGrams,
+            DeliveryAddressId = model.DeliveryAddressId,
+            ActionType = GoldActionType.Convert
+        };
+
+        bool success = await _goldApiService.ConvertToPhysicalAsync(request);
+        if (success)
+        {
+            TempData["SuccessMessage"] = $"Conversion request created for {model.QuantityInGrams:N3} gm of gold.";
+            return RedirectToAction(nameof(PhysicalHistory));
+        }
+
+        ModelState.AddModelError(string.Empty, _goldApiService.LastErrorMessage ?? "Failed to create conversion request. Please try again.");
+        return View(model);
     }
 
     public async Task<IActionResult> PhysicalHistory()
@@ -259,8 +292,8 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        List<GoldTransactionDto> history =
-            await _goldApiService.GetPhysicalHistoryAsync(userId) ?? new List<GoldTransactionDto>();
+        List<GoldTransactionViewModel> history =
+            await _goldApiService.GetPhysicalHistoryAsync(userId) ?? new List<GoldTransactionViewModel>();
 
         PhysicalHistoryViewModel viewModel = new()
         {
@@ -285,7 +318,7 @@ public class GoldController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
         return View(new GoldValueCalculatorViewModel
         {
             CurrentPricePerGram = portfolio?.CurrentGoldPrice ?? 6000
@@ -294,8 +327,8 @@ public class GoldController : Controller
 
     public async Task<IActionResult> VendorStock()
     {
-        List<BranchDetailDto> branches =
-            await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+        List<GoldBranchViewModel> branches =
+            await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
 
         VendorStockViewModel viewModel = new()
         {
@@ -318,11 +351,28 @@ public class GoldController : Controller
     public IActionResult BuyGold() => RedirectToAction(nameof(Buy));
     public IActionResult SellGold() => RedirectToAction(nameof(Sell));
 
+
+    private async Task PopulateConvertToPhysicalViewModelAsync(ConvertToPhysicalViewModel model, int userId)
+    {
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        model.GoldBalance = portfolio?.TotalGold ?? 0;
+        model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
+
+        DigitalGoldWallet.MVC.ViewModels.User.AddressViewModel? address =
+            await _userApiService.GetUserAddressAsync(userId);
+
+        if (address is not null && address.AddressId > 0)
+        {
+            model.DeliveryAddressId = address.AddressId;
+            model.DeliveryAddress = $"{address.Street}, {address.City}, {address.State} - {address.PostalCode}, {address.Country}";
+        }
+    }
+
     private async Task PopulateSellViewModelAsync(SellGoldViewModel model, int userId)
     {
-        GoldPortfolioDto? portfolio = await _goldApiService.GetPortfolioAsync(userId);
+        GoldPortfolioViewModel? portfolio = await _goldApiService.GetPortfolioAsync(userId);
         model.GoldBalance = portfolio?.TotalGold ?? 0;
         model.CurrentGoldPrice = portfolio?.CurrentGoldPrice ?? 6000.00m;
-        model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<BranchDetailDto>();
+        model.Branches = await _goldApiService.GetAllBranchesAsync() ?? new List<GoldBranchViewModel>();
     }
 }

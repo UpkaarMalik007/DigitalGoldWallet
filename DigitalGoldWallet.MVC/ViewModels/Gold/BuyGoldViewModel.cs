@@ -6,6 +6,6 @@ namespace DigitalGoldWallet.MVC.ViewModels.Gold
         public decimal GoldQuantity { get; set; }
         public decimal CurrentGoldPrice { get; set; }
         public string? SelectedBranch { get; set; }
-        public List<BranchDetailDto> Branches { get; set; } = new();
+        public List<GoldBranchViewModel> Branches { get; set; } = new();
     }
 }

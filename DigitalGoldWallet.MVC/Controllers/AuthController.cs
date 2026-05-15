@@ -64,8 +64,6 @@ public class AuthController : Controller
             return View(model);
         }
 
-        // IMPORTANT: if the Vendor tab was selected, force MVC session role as Vendor.
-        // Otherwise VendorController.TryGetVendorSession() will reject the dashboard request.
         string role = isVendorLogin
             ? "Vendor"
             : GetString(data, "role", "roleName", "userRole")
@@ -119,7 +117,6 @@ public class AuthController : Controller
 
             HttpContext.Session.SetInt32("VendorId", vendorId.Value);
 
-            // Direct redirect avoids losing the Vendor route through a wrong generic role redirect.
             return RedirectToAction("Dashboard", "Vendor");
         }
 

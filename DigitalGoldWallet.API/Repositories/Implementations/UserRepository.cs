@@ -143,4 +143,36 @@ public class UserRepository : IUserRepository
             .Where(p => p.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<int> GetTotalUsersAsync()
+    {
+        return await _context.Users.CountAsync();
+    }
+
+    public async Task<int> GetTotalVendorsAsync()
+    {
+        return await _context.Vendors.CountAsync();
+    }
+
+    public async Task<int> GetTotalPaymentsAsync()
+    {
+        return await _context.Payments.CountAsync();
+    }
+
+    public async Task<int> GetSuccessfulPaymentsAsync()
+    {
+        return await _context.Payments
+            .CountAsync(p => p.PaymentStatus == "Success");
+    }
+
+    public async Task<int> GetFailedPaymentsAsync()
+    {
+        return await _context.Payments
+            .CountAsync(p => p.PaymentStatus == "Failed");
+    }
+
+    public async Task<int> GetTotalGoldTransactionsAsync()
+    {
+        return await _context.TransactionHistories.CountAsync();
+    }
 }

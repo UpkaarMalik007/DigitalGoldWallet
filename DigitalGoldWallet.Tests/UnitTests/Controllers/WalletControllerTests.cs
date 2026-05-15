@@ -22,7 +22,7 @@ namespace DigitalGoldWallet.Tests.UnitTests
             _walletController = new WalletController(_mockWalletService.Object);
         }
 
-        // ─── POSITIVE TESTS ───────────────────────────────────────────
+        //POSITIVE TESTS
 
         [Fact]
         public async Task GetWalletBalance_ReturnsOk_WithBalance()
@@ -87,7 +87,7 @@ namespace DigitalGoldWallet.Tests.UnitTests
             Assert.Equal(history, okResult.Value);
         }
 
-        // ─── NEGATIVE TESTS ───────────────────────────────────────────
+        // NEGATIVE TESTS
 
         [Fact]
         public async Task GetWalletBalance_ReturnsNotFound_WhenUserDoesNotExist()

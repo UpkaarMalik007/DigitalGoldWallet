@@ -6,6 +6,10 @@
 }
 
 <div class="container">
+    <div class="mb-4">
+        <a asp-action="Dashboard" class="text-gold-dark fw-bold text-decoration-none">← Back to Dashboard</a>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-lg-7 col-md-10">
             <div class="hero-section text-center mb-4">
@@ -14,12 +18,26 @@
             </div>
 
             <div class="card p-5">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger rounded-4 mb-4" asp-validation-summary="All"></div>
+                }
+
+                @if (TempData["SuccessMessage"] is not null)
+                {
+                    <div class="alert alert-success rounded-4 mb-4">@TempData["SuccessMessage"]</div>
+                }
+
                 <div class="text-center mb-5 p-4 bg-cream rounded-4">
                     <small class="text-secondary text-uppercase ls-1 fw-bold">Current Virtual Balance</small>
                     <h3 class="mb-0 text-dark-brown mt-1">@Model.GoldBalance.ToString("N3") <small class="fs-6 text-secondary">gm</small></h3>
                 </div>
 
                 <form asp-action="ConvertToPhysical" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="GoldBalance" type="hidden" />
+                    <input asp-for="DeliveryAddressId" type="hidden" />
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label asp-for="QuantityInGrams" class="form-label text-secondary fw-bold small">Quantity to Convert (gm)</label>
@@ -31,8 +49,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="SelectedBranch" class="form-label text-secondary fw-bold small">Select Pickup/Verification Branch</label>
-                            <select asp-for="SelectedBranch" class="form-select form-control">
+                            <label asp-for="BranchId" class="form-label text-secondary fw-bold small">Select Pickup/Verification Branch</label>
+                            <select asp-for="BranchId" class="form-select form-control">
                                 <option value="">Choose a pickup/storage branch...</option>
                                 @foreach (var branch in Model.Branches)
                                 {
@@ -41,13 +59,21 @@
                                     </option>
                                 }
                             </select>
-                            <span asp-validation-for="SelectedBranch" class="text-danger small"></span>
+                            <span asp-validation-for="BranchId" class="text-danger small"></span>
                         </div>
 
                         <div class="col-12">
-                            <label asp-for="DeliveryAddress" class="form-label text-secondary fw-bold small">Delivery Address (Optional for Home Delivery)</label>
-                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Enter full address for doorstep delivery..."></textarea>
-                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
+                            <label class="form-label text-secondary fw-bold small">Registered Delivery Address</label>
+                            @if (!string.IsNullOrWhiteSpace(Model.DeliveryAddress))
+                            {
+                                <div class="form-control bg-cream" style="height:auto; min-height:70px;">@Model.DeliveryAddress</div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning rounded-4 mb-0">
+                                    No registered address found. Please update your address from Profile before creating a physical gold conversion request.
+                                </div>
+                            }
                         </div>
 
                         <div class="col-12 mt-4">
@@ -55,7 +81,7 @@
                                 <div class="d-flex">
                                     <i class="bi bi-info-circle-fill text-gold-dark me-3 mt-1"></i>
                                     <small class="text-secondary">
-                                        Note: A making charge and delivery fee may apply based on the quantity and coin/bar type selected at the branch. 
+                                        Note: A making charge and delivery fee may apply based on the quantity and coin/bar type selected at the branch.
                                         Minimum conversion is 1 gm.
                                     </small>
                                 </div>

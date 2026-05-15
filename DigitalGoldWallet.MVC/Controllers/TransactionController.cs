@@ -162,7 +162,6 @@ public class TransactionController : Controller
         if (userId == null)
             return RedirectToAction("Login", "Auth");
 
-        // REAL WALLET BALANCE
         var walletData = await _walletApiService.GetWalletBalance(userId.Value);
 
         model.WalletBalance = walletData.Balance;

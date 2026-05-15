@@ -3,7 +3,6 @@ using FluentValidation;
 
 namespace DigitalGoldWallet.API.Validators
 {
-    // Add Money Validation
     public class AddMoneyValidator : AbstractValidator<WalletAmountDTO>
     {
         public AddMoneyValidator()
@@ -18,7 +17,6 @@ namespace DigitalGoldWallet.API.Validators
         }
     }
 
-    // Deduct Money Validation
     public class DeductMoneyValidator
         : AbstractValidator<WalletAmountDTO>
     {
@@ -32,25 +30,4 @@ namespace DigitalGoldWallet.API.Validators
                 .WithMessage("Deduction amount must be greater than 0");
         }
     }
-
-    // // Transfer Money Validation
-    // public class TransferMoneyValidator
-    //     : AbstractValidator<TransferMoneyDTO>
-    // {
-    //     public TransferMoneyValidator()
-    //     {
-    //         RuleFor(x => x.SenderId)
-    //             .GreaterThan(0);
-
-    //         RuleFor(x => x.ReceiverId)
-    //             .GreaterThan(0);
-
-    //         RuleFor(x => x.Amount)
-    //             .GreaterThan(0);
-
-    //         RuleFor(x => x)
-    //             .Must(x => x.SenderId != x.ReceiverId)
-    //             .WithMessage("Sender and Receiver cannot be same");
-    //     }
-    // }
 }

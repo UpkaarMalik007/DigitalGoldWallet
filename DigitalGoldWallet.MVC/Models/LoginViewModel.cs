@@ -12,6 +12,6 @@ namespace DigitalGoldWallet.MVC.Models
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Please select login type")]
-        public string LoginType { get; set; } = "User"; //default to User
+        public string LoginType { get; set; } = "User"; 
     }
 }

@@ -1,6 +1,5 @@
 namespace DigitalGoldWallet.API.DTOs;
 
-// Done By: Ekta
 public class VendorDto
 {
     public int VendorId { get; set; }

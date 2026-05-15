@@ -12,11 +12,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
     {
         private readonly IWalletRepository _walletRepository;
         private readonly IMapper _mapper;
-
-        // public WalletService(IWalletRepository walletRepository)
-        // {
-        //     _walletRepository = walletRepository;
-        // }
         public WalletService(IWalletRepository walletRepository, IMapper mapper)
         {
             _walletRepository = walletRepository;

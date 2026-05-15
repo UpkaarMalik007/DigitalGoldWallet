@@ -7,14 +7,6 @@ namespace DigitalGoldWallet.MVC.Models
         public string? PaymentMethod { get; set; } 
     }
 
-    // public class TransferMoneyModel
-    // {
-    //     public int SenderId { get; set; }
-    //     public int ReceiverId { get; set; }
-    //     public decimal Amount { get; set; }
-    //     public List<UserDropdownModel> Users { get; set; } = new();
-    // }
-
     public class UserDropdownModel
     {
         public int UserId { get; set; }
