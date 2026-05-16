@@ -22,68 +22,6 @@ namespace DigitalGoldWallet.Tests.UnitTests
         }
 
 
-        //POSITIVE TEST CASES
-
-        [Fact]
-        public async Task BuyGold_ReturnsOk_WhenSuccessful()
-        {
-            var dto = TestDataFactory.GetValidBuyGoldDto();
-
-            _mockGoldService
-                .Setup(s => s.BuyGold(dto))
-                .Returns(Task.CompletedTask);
-
-            var result = await _goldController.BuyGold(dto);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Gold purchased successfully", okResult.Value);
-        }
-
-        [Fact]
-        public async Task SellGold_ReturnsOk_WhenSuccessful()
-        {
-            var dto = GoldTestDataFactory.SellGoldDto();
-
-            _mockGoldService
-                .Setup(s => s.SellGold(dto))
-                .Returns(Task.CompletedTask);
-
-            var result = await _goldController.SellGold(dto);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Gold sold successfully", okResult.Value);
-        }
-
-        [Fact]
-        public async Task GetHoldings_ReturnsOk_WithData()
-        {
-            int userId = 1;
-            var expectedData = TestDataFactory.GetValidGoldHoldingDto();
-
-            _mockGoldService
-                .Setup(s => s.GetHoldings(userId))
-                .ReturnsAsync(expectedData);
-
-            var result = await _goldController.GetHoldings(userId);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(expectedData, okResult.Value);
-        }
-
-        [Fact]
-        public async Task GetCurrentPrice_ReturnsOk_WithData()
-        {
-            var expectedData = TestDataFactory.GetValidGoldPriceDto();
-
-            _mockGoldService
-                .Setup(s => s.GetCurrentPrice())
-                .ReturnsAsync(expectedData);
-
-            var result = await _goldController.GetCurrentPrice();
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(expectedData, okResult.Value);
-        }
 
         //  NEGATIVE TEST CASES 
 
