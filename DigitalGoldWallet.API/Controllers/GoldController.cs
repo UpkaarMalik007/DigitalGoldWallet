@@ -18,6 +18,14 @@ namespace DigitalGoldWallet.API.Controllers
         }
 
 
+        [HttpPost("buy")]
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> BuyGold(GoldActionRequestDto dto)
+        {
+            dto.ActionType = GoldActionType.Buy;
+            await _goldService.BuyGold(dto);
+            return Ok("Gold purchased successfully");
+        }
 
 
         [HttpPost("sell")]
