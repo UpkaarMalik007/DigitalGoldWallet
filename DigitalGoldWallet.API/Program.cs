@@ -31,7 +31,8 @@ builder.Services.AddDbContext<DigitalGoldDbContext>(options =>
         throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing in appsettings.json.");
     }
 
-    options.UseSqlServer(connectionString);
+    options.UseSqlServer(connectionString)
+           .UseLazyLoadingProxies();
 });
 
 // JWT Settings
