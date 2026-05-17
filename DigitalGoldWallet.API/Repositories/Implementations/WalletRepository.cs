@@ -17,7 +17,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<User?> GetUserById(int userId)
         {
             return await _context.Users
-                .Include(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.UserId == userId);
         }
 
@@ -39,7 +38,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<Payment>> GetWalletHistory(int userId)
         {
             return await _context.Payments
-                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
         }
@@ -52,16 +50,15 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<Payment?> GetLastTransaction(int userId)
         {
             return await _context.Payments
-                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<Payment>> GetTransactionsByDate(int userId, DateTime startDate, DateTime endDate)
+        public async Task<List<Payment>> GetTransactionsByDate(
+            int userId, DateTime startDate, DateTime endDate)
         {
             return await _context.Payments
-                .Include(x => x.User)
                 .Where(x =>
                     x.UserId == userId &&
                     x.CreatedAt >= startDate &&
@@ -70,12 +67,9 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         }
 
         public async Task<List<Payment>> GetTransactionsByStatus(
-            int userId,
-            string status
-        )
+            int userId, string status)
         {
             return await _context.Payments
-                .Include(x => x.User)
                 .Where(x =>
                     x.UserId == userId &&
                     x.PaymentStatus == status)
@@ -91,7 +85,6 @@ namespace DigitalGoldWallet.API.Repositories.Implementations
         public async Task<List<Payment>> GetAllTransactions(int userId)
         {
             return await _context.Payments
-                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
