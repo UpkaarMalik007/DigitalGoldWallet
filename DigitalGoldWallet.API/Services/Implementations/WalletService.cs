@@ -73,11 +73,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             return "Success";
         }
 
-        // public async Task<List<object>> GetWalletHistory(int userId)
-        // {
-        //     var history = await _walletRepository.GetWalletHistory(userId);
-        //     return history.Cast<object>().ToList();
-        // }
         public async Task<List<object>> GetWalletHistory(int userId)
         {
             var history = await _walletRepository.GetWalletHistory(userId);
@@ -95,33 +90,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             return result.Cast<object>().ToList();
         }
 
-        // public async Task<string> TransferMoney(TransferMoneyDTO dto)
-        // {
-        //     var sender = await _walletRepository.GetUserById(dto.SenderId);
-        //     var receiver = await _walletRepository.GetUserById(dto.ReceiverId);
-        //     if (sender == null || receiver == null)
-        //     {
-        //         throw new NotFoundException();
-        //     }
-        //     if (sender.Balance < dto.Amount)
-        //     {
-        //         throw new BadRequestException();
-        //     }
-        //     sender.Balance -= dto.Amount;
-        //     receiver.Balance += dto.Amount;
-        //     var payment = _mapper.Map<Payment>(dto);
-        //     payment.UserId = sender.UserId;
-        //     payment.PaymentMethod = "Bank Transfer";
-        //     payment.TransactionType = "Debited from wallet";
-        //     payment.PaymentStatus = "Success";
-        //     payment.CreatedAt = DateTime.Now;
-        //     await _walletRepository.UpdateUser(sender);
-        //     await _walletRepository.UpdateUser(receiver);
-        //     await _walletRepository.AddPayment(payment);
-        //     await _walletRepository.SaveChanges();
-        //     return "Transfer Money Successfully";
-        // }
-
         public async Task<object> GetLastTransaction(int userId)
         {
             var transaction = await _walletRepository.GetLastTransaction(userId);
@@ -130,7 +98,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
             {
                 throw new NotFoundException();
             }
-            // return transaction;
             return new
             {
                 transaction.PaymentId,
@@ -177,7 +144,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
         public async Task<List<object>> GetTransactionsByDate(int userId, DateTime startDate, DateTime endDate)
         {
             var transactions = await _walletRepository.GetTransactionsByDate(userId, startDate, endDate);
-            // return transactions.Cast<object>().ToList();
             var result = transactions.Select(x => new
             {
                 x.PaymentId,
@@ -203,7 +169,6 @@ namespace DigitalGoldWallet.API.Services.Implementations
                 x.CreatedAt
             });
             return result.Cast<object>().ToList();
-            // return transactions.Cast<object>().ToList();
         }
 
         public async Task<object> GetUsers()

@@ -4,7 +4,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-string apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7269/";
+string apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5103/";
 if (!apiBaseUrl.EndsWith('/'))
 {
     apiBaseUrl += "/";
@@ -49,11 +49,8 @@ builder.Services.AddSession(options =>
 
 WebApplication app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+app.UseExceptionHandler("/Error/Error500");
+app.UseStatusCodePagesWithReExecute("/Error/Error{0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
