@@ -55,10 +55,6 @@ A full-stack fintech application that enables users to buy, sell, and manage dig
 - **CSS**: 0.7%
 - **Markup & Styling**: Bootstrap or custom CSS framework
 
-### DevOps & Scripting
-- **PowerShell**: 1.3%
-- **Build & Deployment**: PowerShell scripts for automated builds and deployments
-
 ### Database
 - SQL Server (recommended for C# applications)
 
@@ -76,10 +72,8 @@ DigitalGoldWallet/
 │   ├── Views/               # HTML templates
 │   ├── Styles/              # CSS stylesheets
 │   └── Scripts/             # Client-side logic
-├── Database/
-│   └── Migrations/          # Database schema migrations
-└── Deployment/
-    └── Scripts/             # PowerShell deployment scripts
+└── Database/
+    └── Migrations/          # Database schema migrations
 ```
 
 ## 📦 Prerequisites
@@ -87,7 +81,6 @@ DigitalGoldWallet/
 - **.NET Framework** 4.7.2 or higher / **.NET Core** 3.1 or higher
 - **Visual Studio** 2019 or later / **Visual Studio Code**
 - **SQL Server** 2016 or higher
-- **PowerShell** 5.0 or higher
 - **NuGet** Package Manager
 
 ## 🚀 Installation
@@ -186,8 +179,6 @@ DigitalGoldWallet/
 │   ├── js/                           # Client-side scripts
 │   └── images/                       # Static images
 ├── Views/                            # HTML templates
-├── Deployment/
-│   └── deploy.ps1                    # PowerShell deployment script
 ├── appsettings.json
 ├── README.md
 └── .gitignore
