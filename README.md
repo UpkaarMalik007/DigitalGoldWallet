@@ -47,7 +47,7 @@ A full-stack fintech application that enables users to buy, sell, and manage dig
 
 ### Backend
 - **Language**: C# (60.6%)
-- **Framework**: ASP.NET MVC / ASP.NET Core
+- **Framework**: ASP.NET Core 8.0
 - **ORM**: Entity Framework Core
 - **Architecture**: Service-Repository pattern with role-based authorization
 
@@ -121,8 +121,8 @@ SQL Server Database
 
 ## 📦 Prerequisites
 
-- **.NET Framework** 4.7.2 or higher / **.NET Core** 3.1 or higher
-- **Visual Studio** 2019 or later / **Visual Studio Code**
+- **.NET 8.0** or higher
+- **Visual Studio** 2022 or later / **Visual Studio Code**
 - **SQL Server** 2016 or higher
 - **NuGet** Package Manager
 
@@ -318,7 +318,7 @@ For questions or support, please contact:
 ## 🙏 Acknowledgments
 
 - Thanks to all contributors and community members
-- Built with ASP.NET Core and Entity Framework Core
+- Built with ASP.NET Core 8.0 and Entity Framework Core
 - Inspired by secure fintech practices
 
 ---
