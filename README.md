@@ -47,8 +47,9 @@ A full-stack fintech application that enables users to buy, sell, and manage dig
 
 ### Backend
 - **Language**: C# (60.6%)
-- **Framework**: ASP.NET / ASP.NET Core
-- **Architecture**: MVC/MVVM pattern with role-based authorization
+- **Framework**: ASP.NET MVC / ASP.NET Core
+- **ORM**: Entity Framework Core
+- **Architecture**: Service-Repository pattern with role-based authorization
 
 ### Frontend
 - **HTML**: 37.4%
@@ -56,25 +57,67 @@ A full-stack fintech application that enables users to buy, sell, and manage dig
 - **Markup & Styling**: Bootstrap or custom CSS framework
 
 ### Database
-- SQL Server (recommended for C# applications)
+- **SQL Server** 2016 or higher
 
 ## 🏗 Architecture
 
+The application follows a layered architecture pattern with clear separation of concerns:
+
 ```
-DigitalGoldWallet/
-├── Backend/
-│   ├── API/                 # REST API endpoints
-│   ├── Services/            # Business logic
-│   ├── Models/              # Data models
-│   ├── Controllers/         # API controllers
-│   └── Middleware/          # Authentication & Authorization
-├── Frontend/
-│   ├── Views/               # HTML templates
-│   ├── Styles/              # CSS stylesheets
-│   └── Scripts/             # Client-side logic
-└── Database/
-    └── Migrations/          # Database schema migrations
+User / Vendor / Admin
+        |
+        v
+ASP.NET MVC Frontend
+        |
+        v
+API Controllers
+        |
+        v
+Service Layer
+        |
+        v
+Repository Layer
+        |
+        v
+Entity Framework Core
+        |
+        v
+SQL Server Database
 ```
+
+### Architecture Layers
+
+**Presentation Layer (ASP.NET MVC Frontend)**
+- Handles user interface and client interactions
+- Role-based view rendering for Admin, User, and Vendor roles
+- Manages HTTP requests and responses
+
+**API Controller Layer**
+- Exposes RESTful endpoints for frontend and external clients
+- Request/response validation and serialization
+- Handles HTTP status codes and error responses
+
+**Service Layer**
+- Core business logic and workflows
+- Transaction processing
+- Gold price calculations and updates
+- User authentication and authorization
+- Vendor and inventory management
+
+**Repository Layer**
+- Data access abstraction
+- Database operations (CRUD)
+- Query optimization and caching
+
+**Data Access Layer (Entity Framework Core)**
+- ORM framework for database interactions
+- Automatic query translation to SQL
+- Migration management and schema versioning
+
+**Database Layer (SQL Server)**
+- Persistent data storage
+- Transaction management
+- Data integrity and constraints
 
 ## 📦 Prerequisites
 
@@ -170,15 +213,16 @@ dotnet DigitalGoldWallet.dll
 ```
 DigitalGoldWallet/
 ├── src/
-│   ├── DigitalGoldWallet.API/       # API project (C#)
-│   ├── DigitalGoldWallet.Core/      # Core business logic (C#)
-│   ├── DigitalGoldWallet.Data/      # Data access layer (C#)
-│   └── DigitalGoldWallet.Models/    # Data models (C#)
+│   ├── DigitalGoldWallet.API/       # API Controllers
+│   ├── DigitalGoldWallet.Service/   # Business logic & services
+│   ├── DigitalGoldWallet.Repository/# Data access layer
+│   ├── DigitalGoldWallet.Data/      # EF Core models & DbContext
+│   └── DigitalGoldWallet.Models/    # Domain entities
 ├── wwwroot/
 │   ├── css/                          # Stylesheets
 │   ├── js/                           # Client-side scripts
 │   └── images/                       # Static images
-├── Views/                            # HTML templates
+├── Views/                            # HTML templates (ASP.NET MVC)
 ├── appsettings.json
 ├── README.md
 └── .gitignore
@@ -217,7 +261,7 @@ Access control is enforced through:
 - **Data Protection**: Encrypted sensitive data at rest
 - **Input Validation**: Server-side validation on all inputs
 - **CSRF Protection**: Anti-forgery tokens for state-changing operations
-- **SQL Injection Prevention**: Parameterized queries using Entity Framework
+- **SQL Injection Prevention**: Parameterized queries using Entity Framework Core
 - **Audit Logging**: All transactions logged for compliance
 
 ## 🔌 API Endpoints
@@ -274,7 +318,7 @@ For questions or support, please contact:
 ## 🙏 Acknowledgments
 
 - Thanks to all contributors and community members
-- Built with ASP.NET Core and modern web technologies
+- Built with ASP.NET Core and Entity Framework Core
 - Inspired by secure fintech practices
 
 ---
